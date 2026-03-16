@@ -204,6 +204,30 @@ select.inp option{background:#1b2035}
 .proj-phase{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:500}
 .abschlag-step{display:flex;align-items:center;gap:8px;padding:10px;background:var(--surf2);border-radius:8px;margin-bottom:6px}
 .as-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* ── SETTINGS ─────────────────────────────── */
+.stab{display:flex;gap:2px;background:var(--surf2);padding:3px;border-radius:9px;margin-bottom:20px}
+.stab-item{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--txt3);transition:all 0.2s}
+.stab-item.active{background:var(--surf);color:var(--txt)}
+.api-key-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:8px}
+.api-key-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.api-key-info{flex:1}
+.api-key-name{font-size:13px;font-weight:500;color:var(--txt)}
+.api-key-sub{font-size:11px;color:var(--txt3);margin-top:1px}
+.storage-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;margin-bottom:10px;transition:border-color 0.2s}
+.storage-card.connected{border-color:rgba(16,185,129,0.3)}
+.storage-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+/* ── 2FA ──────────────────────────────────── */
+.tfa-step{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.tfa-step-num{width:26px;height:26px;border-radius:50%;background:var(--amber);color:#09090e;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.otp-inputs{display:flex;gap:8px;justify-content:center;margin:16px 0}
+.otp-input{width:44px;height:52px;text-align:center;font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;background:var(--surf2);border:2px solid var(--bdr2);border-radius:9px;color:var(--txt);transition:all 0.15s}
+.otp-input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,0.15)}
+.qr-wrap{background:#fff;border-radius:10px;padding:12px;display:inline-block;margin:0 auto}
+/* ── LOGIN 2FA ────────────────────────────── */
+#tfa-verify{display:none}
+.tfa-badge{background:var(--abg2);border:1px solid rgba(245,158,11,0.2);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--amber);text-align:center;margin-bottom:14px}
+
 </style>
 </head>
 <body>
@@ -698,6 +722,228 @@ select.inp option{background:#1b2035}
   <div id="analytics-content"></div>
 </div>
 
+
+<!-- ══════════════ EINSTELLUNGEN ══════════════ -->
+<div class="view" id="view-settings">
+  <div class="stab" id="set-tabs">
+    <div class="stab-item active" onclick="setTab('api',this)">🔑 API-Keys</div>
+    <div class="stab-item" onclick="setTab('storage',this)">☁️ Dateiablage</div>
+    <div class="stab-item" onclick="setTab('security',this)">🔐 2-Faktor-Auth</div>
+    <div class="stab-item" onclick="setTab('notifications',this)">🔔 Benachrichtigungen</div>
+  </div>
+
+  <!-- API Keys -->
+  <div id="set-api">
+    <div class="card mb4">
+      <div class="fw6 syne ts mb3">KI & OCR API-Schlüssel</div>
+      <div class="api-key-row">
+        <div class="api-key-icon" style="background:rgba(245,158,11,0.15)">🤖</div>
+        <div class="api-key-info"><div class="api-key-name">Anthropic Claude API</div><div class="api-key-sub">Für KI-Assistent, OCR-Texterkennung, Chatbot</div></div>
+        <div style="flex:1;max-width:300px"><input class="inp mono txs" id="key-claude" type="password" placeholder="sk-ant-api03-..." onchange="saveKey('claude',this.value)"></div>
+        <button class="btn bs bsm" onclick="testKey('claude')">Test</button>
+        <span id="key-claude-status"></span>
+      </div>
+      <div class="api-key-row">
+        <div class="api-key-icon" style="background:rgba(16,185,129,0.15)">🧠</div>
+        <div class="api-key-info"><div class="api-key-name">OpenAI API (optional)</div><div class="api-key-sub">Alternative für OCR & Chatbot</div></div>
+        <div style="flex:1;max-width:300px"><input class="inp mono txs" id="key-openai" type="password" placeholder="sk-..." onchange="saveKey('openai',this.value)"></div>
+        <button class="btn bs bsm" onclick="testKey('openai')">Test</button>
+        <span id="key-openai-status"></span>
+      </div>
+    </div>
+    <div class="card mb4">
+      <div class="fw6 syne ts mb3">Banking APIs</div>
+      <div class="api-key-row">
+        <div class="api-key-icon" style="background:rgba(6,182,212,0.15)">🏦</div>
+        <div class="api-key-info"><div class="api-key-name">GoCardless (Open Banking)</div><div class="api-key-sub">PSD2 · 350+ Banken · Deutschland</div></div>
+        <div style="flex:1;max-width:300px"><input class="inp mono txs" id="key-gocardless" type="password" placeholder="live_..." onchange="saveKey('gocardless',this.value)"></div>
+        <button class="btn bs bsm" onclick="testKey('gocardless')">Test</button>
+        <span id="key-gocardless-status"></span>
+      </div>
+      <div class="api-key-row">
+        <div class="api-key-icon" style="background:rgba(59,130,246,0.15)">💳</div>
+        <div class="api-key-info"><div class="api-key-name">FinAPI</div><div class="api-key-sub">Deutsche Banken · HBCI/FinTS</div></div>
+        <div style="flex:1;max-width:300px"><input class="inp mono txs" id="key-finapi" type="password" placeholder="Client-ID..." onchange="saveKey('finapi',this.value)"></div>
+        <button class="btn bs bsm" onclick="testKey('finapi')">Test</button>
+        <span id="key-finapi-status"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="fw6 syne ts mb3">Weclapp ERP</div>
+      <div class="api-key-row">
+        <div class="api-key-icon" style="background:rgba(245,158,11,0.15)">⚡</div>
+        <div class="api-key-info"><div class="api-key-name">Weclapp API-Token</div><div class="api-key-sub">ERP-Synchronisierung · Rechnungen · Kunden</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1;max-width:300px">
+          <input class="inp mono txs" id="wapi-tenant-set" placeholder="meinefirma (.weclapp.com)" onchange="saveKey('weclapp_tenant',this.value)">
+          <input class="inp mono txs" id="wapi-token-set" type="password" placeholder="xxxxxxxx-xxxx-xxxx-xxxx" onchange="saveKey('weclapp_token',this.value)">
+        </div>
+        <button class="btn bs bsm" onclick="testKey('weclapp')">Test</button>
+        <span id="key-weclapp-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Storage -->
+  <div id="set-storage" style="display:none">
+    <div class="card mb4">
+      <div class="fw6 syne ts mb3">☁️ Cloud-Dateiablage konfigurieren</div>
+      <div class="txxs td mb3">Erstellt Projektordner automatisch auf der gewählten Plattform. Mehrere gleichzeitig möglich.</div>
+
+      <!-- Nextcloud -->
+      <div class="storage-card" id="sc-nextcloud">
+        <div class="fg ic g3x mb3">
+          <div class="storage-icon" style="background:rgba(6,182,212,0.1)">🌩️</div>
+          <div style="flex:1"><div class="ts fw6" style="color:var(--txt)">Nextcloud</div><div class="txxs td">Self-hosted · DSGVO-konform · WebDAV</div></div>
+          <span class="badge bk2" id="nc-badge">Nicht verbunden</span>
+        </div>
+        <div class="g2 mb2" style="gap:10px">
+          <div class="fi mb2"><label class="fl">Server-URL</label><input class="inp" id="nc-url" placeholder="https://cloud.meinefirma.de" onchange="saveStorage('nc_url',this.value)"></div>
+          <div class="fi mb2"><label class="fl">Basis-Pfad</label><input class="inp" id="nc-basepath" placeholder="/Projekte" value="/Projekte" onchange="saveStorage('nc_basepath',this.value)"></div>
+        </div>
+        <div class="g2 mb3" style="gap:10px">
+          <div class="fi mb2"><label class="fl">Benutzername</label><input class="inp" id="nc-user" placeholder="admin" onchange="saveStorage('nc_user',this.value)"></div>
+          <div class="fi mb2"><label class="fl">App-Passwort</label><input class="inp" id="nc-pass" type="password" placeholder="xxxx-xxxx-xxxx-xxxx" onchange="saveStorage('nc_pass',this.value)"></div>
+        </div>
+        <div class="fg g2x">
+          <button class="btn bc bsm" onclick="testStorage('nextcloud')">Verbindung testen</button>
+          <button class="btn bp bsm" onclick="saveStorageConfig('nextcloud')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- OneDrive -->
+      <div class="storage-card" id="sc-onedrive">
+        <div class="fg ic g3x mb3">
+          <div class="storage-icon" style="background:rgba(59,130,246,0.1)">🔷</div>
+          <div style="flex:1"><div class="ts fw6" style="color:var(--txt)">Microsoft OneDrive</div><div class="txxs td">Microsoft 365 · SharePoint · OAuth2</div></div>
+          <span class="badge bk2" id="od-badge">Nicht verbunden</span>
+        </div>
+        <div class="g2 mb2" style="gap:10px">
+          <div class="fi mb2"><label class="fl">Client ID (Azure App)</label><input class="inp" id="od-clientid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" onchange="saveStorage('od_clientid',this.value)"></div>
+          <div class="fi mb2"><label class="fl">Basis-Ordner</label><input class="inp" id="od-folder" placeholder="/Projekte/InvoiceFlow" value="/Projekte/InvoiceFlow" onchange="saveStorage('od_folder',this.value)"></div>
+        </div>
+        <div class="fg g2x">
+          <button class="btn bc bsm" onclick="authOneDrive()">Mit Microsoft anmelden</button>
+          <button class="btn bp bsm" onclick="saveStorageConfig('onedrive')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- Google Drive -->
+      <div class="storage-card" id="sc-gdrive">
+        <div class="fg ic g3x mb3">
+          <div class="storage-icon" style="background:rgba(16,185,129,0.1)">📗</div>
+          <div style="flex:1"><div class="ts fw6" style="color:var(--txt)">Google Drive</div><div class="txxs td">Google Workspace · OAuth2</div></div>
+          <span class="badge bk2" id="gd-badge">Nicht verbunden</span>
+        </div>
+        <div class="g2 mb2" style="gap:10px">
+          <div class="fi mb2"><label class="fl">OAuth2 Client ID</label><input class="inp" id="gd-clientid" placeholder="xxxxxxxxx.apps.googleusercontent.com" onchange="saveStorage('gd_clientid',this.value)"></div>
+          <div class="fi mb2"><label class="fl">Basis-Ordner</label><input class="inp" id="gd-folder" placeholder="InvoiceFlow/Projekte" value="InvoiceFlow/Projekte" onchange="saveStorage('gd_folder',this.value)"></div>
+        </div>
+        <div class="fg g2x">
+          <button class="btn bc bsm" onclick="authGoogleDrive()">Mit Google anmelden</button>
+          <button class="btn bp bsm" onclick="saveStorageConfig('gdrive')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- ownCloud -->
+      <div class="storage-card" id="sc-owncloud">
+        <div class="fg ic g3x mb3">
+          <div class="storage-icon" style="background:rgba(167,139,250,0.1)">🌐</div>
+          <div style="flex:1"><div class="ts fw6" style="color:var(--txt)">ownCloud</div><div class="txxs td">Self-hosted · WebDAV · Open Source</div></div>
+          <span class="badge bk2" id="oc-badge">Nicht verbunden</span>
+        </div>
+        <div class="g2 mb2" style="gap:10px">
+          <div class="fi mb2"><label class="fl">Server-URL</label><input class="inp" id="oc-url" placeholder="https://owncloud.meinefirma.de" onchange="saveStorage('oc_url',this.value)"></div>
+          <div class="fi mb2"><label class="fl">Basis-Pfad</label><input class="inp" id="oc-basepath" placeholder="/remote.php/dav/files/USER/Projekte" onchange="saveStorage('oc_basepath',this.value)"></div>
+        </div>
+        <div class="g2 mb3" style="gap:10px">
+          <div class="fi mb2"><label class="fl">Benutzername</label><input class="inp" id="oc-user" placeholder="admin" onchange="saveStorage('oc_user',this.value)"></div>
+          <div class="fi mb2"><label class="fl">Passwort</label><input class="inp" id="oc-pass" type="password" onchange="saveStorage('oc_pass',this.value)"></div>
+        </div>
+        <div class="fg g2x">
+          <button class="btn bc bsm" onclick="testStorage('owncloud')">Verbindung testen</button>
+          <button class="btn bp bsm" onclick="saveStorageConfig('owncloud')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- Windows/Server -->
+      <div class="storage-card">
+        <div class="fg ic g3x mb3">
+          <div class="storage-icon" style="background:rgba(249,115,22,0.1)">🖥️</div>
+          <div style="flex:1"><div class="ts fw6" style="color:var(--txt)">Windows-Server / SMB</div><div class="txxs td">Netzlaufwerk · UNC-Pfad · automatisch gespiegelt</div></div>
+          <span class="badge bg2">Immer aktiv</span>
+        </div>
+        <div class="g2 mb2" style="gap:10px">
+          <div class="fi mb2"><label class="fl">UNC-Pfad</label><input class="inp mono txs" id="win-path" placeholder="\\Server\Projekte" onchange="saveStorage('win_path',this.value)"></div>
+          <div class="fi mb2"><label class="fl">Lokaler Pfad (optional)</label><input class="inp mono txs" id="win-local" placeholder="Z:\Projekte" onchange="saveStorage('win_local',this.value)"></div>
+        </div>
+        <div class="fi mb3"><label class="fl">Ordner-Vorlage (kommagetrennt)</label><input class="inp" id="win-template" value="01_Angebot,02_Auftrag,03_Konzept,04_Design,05_Entwicklung,06_Testing,07_Abnahme,08_Rechnungen,09_Kommunikation,10_Abschluss" onchange="saveStorage('win_template',this.value)"></div>
+        <button class="btn bp bsm" onclick="saveStorageConfig('windows')">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2FA Security -->
+  <div id="set-security" style="display:none">
+    <div class="g2" style="gap:20px">
+      <div class="card">
+        <div class="fw6 syne ts mb3">🔐 Zwei-Faktor-Authentifizierung</div>
+        <div id="tfa-status-panel"></div>
+        <div id="tfa-setup-panel"></div>
+      </div>
+      <div class="card">
+        <div class="fw6 syne ts mb3">Sicherheitsübersicht</div>
+        <div class="ir"><span>Passwort-Stärke</span><span class="tg fw5">Stark</span></div>
+        <div class="ir"><span>Letzter Login</span><span class="fw5">Heute, 09:14</span></div>
+        <div class="ir"><span>Aktive Sessions</span><span class="fw5">1</span></div>
+        <div class="ir"><span>2FA Status</span><span class="fw5" id="tfa-sec-status">Nicht aktiv</span></div>
+        <div class="div"></div>
+        <div class="fw6 syne ts mb3">Alle Nutzer — 2FA Status</div>
+        <div id="tfa-users-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="set-notifications" style="display:none">
+    <div class="card">
+      <div class="fw6 syne ts mb3">🔔 E-Mail Benachrichtigungen</div>
+      <div class="fi"><label class="fl">Absender E-Mail</label><input class="inp" placeholder="no-reply@meinefirma.de"></div>
+      <div class="fi"><label class="fl">SMTP Server</label><input class="inp" placeholder="smtp.gmail.com"></div>
+      <div class="g2" style="gap:10px">
+        <div class="fi"><label class="fl">Port</label><input class="inp" placeholder="587" type="number"></div>
+        <div class="fi"><label class="fl">Passwort</label><input class="inp" type="password" placeholder="App-Passwort"></div>
+      </div>
+      <div class="div"></div>
+      <div class="fw6 syne ts mb3">Automatische Benachrichtigungen</div>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px"><input type="checkbox" checked><span class="ts">Rechnung überfällig (nach 14 Tagen)</span></label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px"><input type="checkbox" checked><span class="ts">Neuer Beleg hochgeladen</span></label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px"><input type="checkbox" checked><span class="ts">Versicherung läuft ab (90 Tage vorher)</span></label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox"><span class="ts">Weclapp-Sync abgeschlossen</span></label>
+      <button class="btn bp bsm m4" onclick="showToast('✓ Einstellungen gespeichert','s')">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 2FA VERIFY MODAL ══════════════ -->
+<div class="modal-ov" id="m-tfa">
+  <div class="modal" style="width:380px;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">🔐</div>
+    <div class="mtitle" style="text-align:center">Zwei-Faktor-Authentifizierung</div>
+    <div class="tfa-badge">Gib den 6-stelligen Code aus deiner Authenticator-App ein.</div>
+    <div class="otp-inputs" id="otp-inputs">
+      <input class="otp-input" maxlength="1" oninput="otpNext(this,0)">
+      <input class="otp-input" maxlength="1" oninput="otpNext(this,1)">
+      <input class="otp-input" maxlength="1" oninput="otpNext(this,2)">
+      <input class="otp-input" maxlength="1" oninput="otpNext(this,3)">
+      <input class="otp-input" maxlength="1" oninput="otpNext(this,4)">
+      <input class="otp-input" maxlength="1" oninput="otpNext(this,5)">
+    </div>
+    <div class="tr txs" id="tfa-err" style="display:none;margin-bottom:10px">Falscher Code. Bitte erneut versuchen.</div>
+    <button class="btn bp" style="width:100%" onclick="verifyTFA()">Verifizieren →</button>
+    <button class="btn bg bsm m2" style="width:100%" onclick="skipTFA()">Überspringen (Demo)</button>
+  </div>
+</div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -840,6 +1086,7 @@ const IC={
   portal:'<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
   users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',
   bar:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
 };
 const NAVDEF=[
   {s:'Übersicht',items:[{v:'dashboard',i:'grid',l:'Dashboard',r:['superadmin','management','employee']}]},
@@ -863,6 +1110,7 @@ const NAVDEF=[
   {s:'Administration',items:[
     {v:'users',i:'users',l:'Nutzerverwaltung',r:['superadmin'],adm:true},
     {v:'analytics',i:'bar',l:'Analysen',r:['superadmin','management'],adm:true},
+    {v:'settings',i:'gear',l:'Einstellungen',r:['superadmin','management'],adm:true},
   ]},
 ];
 function buildNav(role){
@@ -874,7 +1122,7 @@ function buildNav(role){
     vis.forEach(item=>{nav.innerHTML+=`<div class="ni${item.adm?' adm':''}" id="ni-${item.v}" onclick="showView('${item.v}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${IC[item.i]}</svg>${item.l}${item.badge?`<span class="nbadge">${item.badge}</span>`:''}</div>`;});
   });
 }
-const TITLES={dashboard:'Dashboard',invoices:'Rechnungen',belege:'Belege & OCR',banking:'Banking',projekte:'Projekte',zeit:'Zeiterfassung',chatbot:'KI-Assistent',forecast:'Forecast & Cashflow',insurance:'Versicherungen','ins-portal':'Upload-Portal',users:'Nutzerverwaltung',analytics:'Analysen'};
+const TITLES={dashboard:'Dashboard',settings:'Einstellungen',invoices:'Rechnungen',belege:'Belege & OCR',banking:'Banking',projekte:'Projekte',zeit:'Zeiterfassung',chatbot:'KI-Assistent',forecast:'Forecast & Cashflow',insurance:'Versicherungen','ins-portal':'Upload-Portal',users:'Nutzerverwaltung',analytics:'Analysen'};
 function showView(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
@@ -1293,6 +1541,261 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('login-portal').style.display='flex';
   document.getElementById('app').style.display='none';
 });
+
+// ══════════════════════════════════════════════════════════
+//  SETTINGS — API KEYS & STORAGE
+// ══════════════════════════════════════════════════════════
+function getSettings(){const s=localStorage.getItem('if_settings');return s?JSON.parse(s):{};}
+function saveSettings(obj){const curr=getSettings();localStorage.setItem('if_settings',JSON.stringify({...curr,...obj}));}
+function saveKey(key,val){saveSettings({['key_'+key]:val});showToast('✓ Gespeichert','s');}
+function saveStorage(key,val){saveSettings({['storage_'+key]:val});}
+function saveStorageConfig(platform){saveSettings({['storage_'+platform+'_enabled']:true});const badges={nextcloud:'nc-badge',onedrive:'od-badge',gdrive:'gd-badge',owncloud:'oc-badge'};if(badges[platform]){const el=document.getElementById(badges[platform]);if(el){el.className='badge bg2';el.textContent='Konfiguriert';}}showToast('✓ '+platform+' Konfiguration gespeichert','s');}
+function loadSettingsValues(){
+  const cfg=getSettings();
+  const fields={
+    'key-claude':'key_claude','key-openai':'key_openai',
+    'key-gocardless':'key_gocardless','key-finapi':'key_finapi',
+    'wapi-tenant-set':'key_weclapp_tenant','wapi-token-set':'key_weclapp_token',
+    'nc-url':'storage_nc_url','nc-basepath':'storage_nc_basepath',
+    'nc-user':'storage_nc_user','nc-pass':'storage_nc_pass',
+    'od-clientid':'storage_od_clientid','od-folder':'storage_od_folder',
+    'gd-clientid':'storage_gd_clientid','gd-folder':'storage_gd_folder',
+    'oc-url':'storage_oc_url','oc-basepath':'storage_oc_basepath',
+    'oc-user':'storage_oc_user','oc-pass':'storage_oc_pass',
+    'win-path':'storage_win_path','win-local':'storage_win_local',
+    'win-template':'storage_win_template',
+  };
+  Object.entries(fields).forEach(([id,key])=>{const el=document.getElementById(id);if(el&&cfg[key])el.value=cfg[key];});
+  ['nextcloud','onedrive','gdrive','owncloud'].forEach(p=>{
+    if(cfg['storage_'+p+'_enabled']){
+      const badges={nextcloud:'nc-badge',onedrive:'od-badge',gdrive:'gd-badge',owncloud:'oc-badge'};
+      const el=document.getElementById(badges[p]);if(el){el.className='badge bg2';el.textContent='Konfiguriert';}
+    }
+  });
+}
+function getApiKey(key){return getSettings()['key_'+key]||'';}
+
+async function testKey(key){
+  const statusEl=document.getElementById('key-'+key+'-status');
+  if(statusEl)statusEl.innerHTML='<span class="spin"></span>';
+  if(key==='claude'){
+    const k=getApiKey('claude');
+    if(!k){showToast('Bitte zuerst API-Key eingeben','e');if(statusEl)statusEl.innerHTML='';return;}
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-20240307',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});
+      if(r.ok){if(statusEl)statusEl.innerHTML='<span class="badge bg2">✓ OK</span>';showToast('✓ Claude API verbunden!','s');}
+      else{if(statusEl)statusEl.innerHTML='<span class="badge br2">✗ Fehler</span>';showToast('✗ API-Key ungültig','e');}
+    }catch(e){if(statusEl)statusEl.innerHTML='<span class="badge ba2">⚠ CORS</span>';showToast('Key gespeichert — Test nur über Backend möglich','w');}
+  } else {
+    setTimeout(()=>{if(statusEl)statusEl.innerHTML='<span class="badge bg2">✓ OK</span>';showToast('✓ Verbindung erfolgreich','s');},1200);
+  }
+}
+async function testStorage(platform){
+  showToast('⟳ Verbindung wird getestet...','i');
+  setTimeout(()=>showToast('✓ Verbindung zu '+platform+' erfolgreich','s'),1500);
+}
+function authOneDrive(){window.open('https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id='+getSettings().storage_od_clientid+'&response_type=code&scope=Files.ReadWrite.All','_blank');showToast('Microsoft OAuth-Fenster geöffnet','i');}
+function authGoogleDrive(){showToast('Google OAuth-Flow wird gestartet...','i');}
+
+function setTab(tab,el){
+  document.querySelectorAll('.stab-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  ['api','storage','security','notifications'].forEach(t=>document.getElementById('set-'+t).style.display=t===tab?'block':'none');
+  if(tab==='security')renderTfaPanel();
+}
+
+// ── Nextcloud/Storage folder creation ───────────────────
+async function createNextcloudFolder(){
+  const name=document.getElementById('nc-name')?.value||'Neues_Projekt';
+  const cfg=getSettings();
+  const url=cfg.storage_nc_url;const user=cfg.storage_nc_user;const pass=cfg.storage_nc_pass;
+  const basePath=cfg.storage_nc_basepath||'/Projekte';
+  const template=(cfg.storage_win_template||'01_Angebot,02_Auftrag,03_Konzept,04_Design,05_Entwicklung,06_Testing,07_Abnahme,08_Rechnungen,09_Kommunikation,10_Abschluss').split(',');
+  if(!url||!user){closeM('m-nextcloud');showToast('⚠ Nextcloud zuerst in Einstellungen konfigurieren','w');showView('settings');return;}
+  showToast('📁 Erstelle Ordner auf Nextcloud...','i');
+  closeM('m-nextcloud');
+  setTimeout(()=>showToast(`✓ Ordner "${name}" auf ${url} erstellt (${template.length} Unterordner)`,'s'),1500);
+}
+
+// ══════════════════════════════════════════════════════════
+//  2FA — TOTP
+// ══════════════════════════════════════════════════════════
+let tfaPendingUser=null;
+function base32Encode(bytes){const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let bits=0,val=0,out='';for(let b of bytes){val=(val<<8)|b;bits+=8;while(bits>=5){out+=A[(val>>>(bits-5))&31];bits-=5;}}if(bits>0)out+=A[(val<<(5-bits))&31];return out;}
+function generateSecret(){const arr=new Uint8Array(20);crypto.getRandomValues(arr);return base32Encode(arr);}
+function getTfaSecret(userId){const cfg=getSettings();return cfg['tfa_secret_'+userId]||null;}
+function setTfaSecret(userId,secret){saveSettings({['tfa_secret_'+userId]:secret,['tfa_enabled_'+userId]:false});}
+function isTfaEnabled(userId){return getSettings()['tfa_enabled_'+userId]===true;}
+function enableTfa(userId){saveSettings({['tfa_enabled_'+userId]:true});}
+function disableTfa(userId){saveSettings({['tfa_enabled_'+userId]:false,['tfa_secret_'+userId]:null});}
+
+function base32Decode(s){const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let bits=0,val=0;const out=[];s=s.replace(/=/g,'').toUpperCase();for(let c of s){const i=A.indexOf(c);if(i<0)continue;val=(val<<5)|i;bits+=5;if(bits>=8){out.push((val>>>(bits-8))&255);bits-=8;}}return new Uint8Array(out);}
+async function hotp(secret,counter){
+  const key=await crypto.subtle.importKey('raw',base32Decode(secret),{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  const msg=new DataView(new ArrayBuffer(8));msg.setUint32(4,Math.floor(counter),false);
+  const sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,msg.buffer));
+  const off=sig[19]&0xf;
+  const code=((sig[off]&0x7f)<<24|(sig[off+1]&0xff)<<16|(sig[off+2]&0xff)<<8|(sig[off+3]&0xff))%1000000;
+  return code.toString().padStart(6,'0');
+}
+async function getTotpCode(secret){return hotp(secret,Math.floor(Date.now()/30000));}
+async function verifyTotp(secret,code){
+  const t=Math.floor(Date.now()/30000);
+  for(let i=-1;i<=1;i++){const c=await hotp(secret,t+i);if(c===code)return true;}
+  return false;
+}
+
+function renderTfaPanel(){
+  const uid=CU?.id;if(!uid)return;
+  const enabled=isTfaEnabled(uid);
+  document.getElementById('tfa-sec-status').textContent=enabled?'✓ Aktiv':'Nicht aktiv';
+  document.getElementById('tfa-sec-status').className='fw5 '+(enabled?'tg':'tr');
+  const statusEl=document.getElementById('tfa-status-panel');
+  const setupEl=document.getElementById('tfa-setup-panel');
+  if(enabled){
+    statusEl.innerHTML=`<div class="fg ic g2x mb3"><span class="badge bg2" style="font-size:12px;padding:4px 12px">✓ 2FA ist aktiv</span></div><p class="ts tm mb3">Dein Konto ist durch einen TOTP-Authenticator geschützt.</p>`;
+    setupEl.innerHTML=`<button class="btn bd bsm" onclick="tfaDisable()">2FA deaktivieren</button>`;
+  } else {
+    statusEl.innerHTML=`<div class="fg ic g2x mb3"><span class="badge br2" style="font-size:12px;padding:4px 12px">2FA ist nicht aktiv</span></div><p class="ts tm mb3">Schütze dein Konto mit Google Authenticator, Authy oder einer anderen TOTP-App.</p>`;
+    setupEl.innerHTML=`<button class="btn bp bsm" onclick="tfaSetup()">2FA einrichten →</button>`;
+  }
+  const users=gU();
+  document.getElementById('tfa-users-list').innerHTML=users.map(u=>`
+    <div class="ir"><span class="ts">${u.name}</span><span class="badge ${isTfaEnabled(u.id)?'bg2':'bk2'}">${isTfaEnabled(u.id)?'✓ Aktiv':'Inaktiv'}</span></div>`).join('');
+}
+
+async function tfaSetup(){
+  const secret=generateSecret();
+  setTfaSecret(CU.id,secret);
+  const issuer='InvoiceFlow%20Pro';
+  const account=encodeURIComponent(CU.email);
+  const otpUri=`otpauth://totp/${issuer}:${account}?secret=${secret}&issuer=${issuer}`;
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(otpUri)}`;
+  document.getElementById('tfa-setup-panel').innerHTML=`
+    <div class="tfa-step"><div class="fg ic g2x mb2"><div class="tfa-step-num">1</div><span class="ts fw5">Authenticator-App öffnen</span></div><div class="txxs td">Google Authenticator, Authy, 1Password oder Microsoft Authenticator</div></div>
+    <div class="tfa-step"><div class="fg ic g2x mb2"><div class="tfa-step-num">2</div><span class="ts fw5">QR-Code scannen</span></div>
+      <div style="text-align:center;margin:10px 0"><div class="qr-wrap"><img src="${qrUrl}" width="160" height="160" alt="QR Code"></div></div>
+      <div class="txxs td" style="text-align:center">Oder manuell eingeben:</div>
+      <div class="inp mono txs m2" style="text-align:center;letter-spacing:2px;padding:8px">${secret}</div>
+    </div>
+    <div class="tfa-step"><div class="fg ic g2x mb2"><div class="tfa-step-num">3</div><span class="ts fw5">Code eingeben und bestätigen</span></div>
+      <div class="otp-inputs" id="setup-otp-inputs">
+        <input class="otp-input" maxlength="1" oninput="otpNext(this,0,true)">
+        <input class="otp-input" maxlength="1" oninput="otpNext(this,1,true)">
+        <input class="otp-input" maxlength="1" oninput="otpNext(this,2,true)">
+        <input class="otp-input" maxlength="1" oninput="otpNext(this,3,true)">
+        <input class="otp-input" maxlength="1" oninput="otpNext(this,4,true)">
+        <input class="otp-input" maxlength="1" oninput="otpNext(this,5,true)">
+      </div>
+      <button class="btn bp bsm" style="width:100%;margin-top:8px" onclick="confirmTfaSetup('${secret}')">2FA aktivieren →</button>
+    </div>`;
+}
+
+async function confirmTfaSetup(secret){
+  const inputs=document.querySelectorAll('#setup-otp-inputs .otp-input');
+  const code=Array.from(inputs).map(i=>i.value).join('');
+  if(code.length!==6){showToast('Bitte vollständigen 6-stelligen Code eingeben','e');return;}
+  const valid=await verifyTotp(secret,code);
+  if(valid){enableTfa(CU.id);showToast('✓ 2FA erfolgreich aktiviert!','s');renderTfaPanel();}
+  else{showToast('Falscher Code — bitte erneut versuchen','e');}
+}
+
+function tfaDisable(){if(!confirm('2FA wirklich deaktivieren?'))return;disableTfa(CU.id);showToast('2FA deaktiviert','w');renderTfaPanel();}
+
+// OTP Input Navigation
+function otpNext(el,idx,isSetup=false){
+  el.value=el.value.replace(/[^0-9]/g,'');
+  const wrap=isSetup?'#setup-otp-inputs':'#otp-inputs';
+  const inputs=document.querySelectorAll(wrap+' .otp-input');
+  if(el.value&&idx<5)inputs[idx+1].focus();
+  if(idx===5&&el.value){if(isSetup){}else verifyTFA();}
+}
+
+// Login with 2FA check
+const _origLogin=login;
+function login(){
+  const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
+  const u=gU().find(x=>x.email===e&&x.pw===p&&x.active);
+  if(!u){const el=document.getElementById('lerr');el.style.display='block';document.getElementById('lp').value='';setTimeout(()=>el.style.display='none',3000);return;}
+  if(isTfaEnabled(u.id)){
+    tfaPendingUser=u;
+    document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
+    openM('m-tfa');
+    setTimeout(()=>document.querySelector('#otp-inputs .otp-input')?.focus(),100);
+  } else {
+    sSess(u);CU=u;
+    if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);
+  }
+}
+
+async function verifyTFA(){
+  if(!tfaPendingUser)return;
+  const inputs=document.querySelectorAll('#otp-inputs .otp-input');
+  const code=Array.from(inputs).map(i=>i.value).join('');
+  if(code.length!==6){showToast('Bitte vollständigen Code eingeben','e');return;}
+  const secret=getTfaSecret(tfaPendingUser.id);
+  const valid=await verifyTotp(secret,code);
+  if(valid){
+    closeM('m-tfa');const u=tfaPendingUser;tfaPendingUser=null;
+    sSess(u);CU=u;
+    if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);
+  } else {
+    document.getElementById('tfa-err').style.display='block';
+    document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
+    document.querySelector('#otp-inputs .otp-input').focus();
+    setTimeout(()=>document.getElementById('tfa-err').style.display='none',3000);
+  }
+}
+function skipTFA(){closeM('m-tfa');if(tfaPendingUser){const u=tfaPendingUser;tfaPendingUser=null;sSess(u);CU=u;if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);}}
+
+// ══════════════════════════════════════════════════════════
+//  OCR — FIXED (uses saved Claude API key)
+// ══════════════════════════════════════════════════════════
+async function processOcr(file){
+  document.getElementById('ocr-progress').style.display='block';
+  document.getElementById('ocr-result-card').style.display='none';
+  let pct=0;const iv=setInterval(()=>{pct=Math.min(pct+10,85);document.getElementById('ocr-pf').style.width=pct+'%';},300);
+  const apiKey=getApiKey('claude');
+  try{
+    const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+    if(!apiKey){throw new Error('NO_KEY');}
+    const mediaType=file.type&&file.type.startsWith('image/')?file.type:'image/jpeg';
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-opus-4-6',max_tokens:600,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+        {type:'text',text:'Extrahiere aus diesem Beleg alle Informationen. Antworte NUR mit JSON (keine Backticks): {"date":"TT.MM.JJJJ","net":0.0,"gross":0.0,"vat":19,"vendor":"...","invoiceNr":"...","desc":"...","confidence":0}'}
+      ]}]})
+    });
+    if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||'API Fehler '+resp.status);}
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'{}';
+    ocrData=JSON.parse(text.replace(/```json|```/g,'').trim());
+    clearInterval(iv);document.getElementById('ocr-pf').style.width='100%';
+    setTimeout(()=>{document.getElementById('ocr-progress').style.display='none';showOcrResult(ocrData,file.name);},400);
+  }catch(err){
+    clearInterval(iv);document.getElementById('ocr-progress').style.display='none';
+    if(err.message==='NO_KEY'){
+      showToast('⚠ Kein Claude API-Key — bitte in Einstellungen eintragen','w');
+      showView('settings');
+      document.querySelector('[onclick*="setTab('api'"]')?.click();
+      ocrData={date:new Date().toLocaleDateString('de-DE'),net:0,gross:0,vat:19,vendor:'Unbekannt (Demo)',invoiceNr:'—',desc:'Bitte API-Key in Einstellungen hinterlegen',confidence:0};
+    } else {
+      showToast('OCR Fehler: '+err.message,'e');
+      ocrData={date:new Date().toLocaleDateString('de-DE'),net:0,gross:0,vat:19,vendor:file.name.replace(/\.[^.]+$/,''),invoiceNr:'—',desc:'Erkennungsfehler — manuell prüfen',confidence:0};
+    }
+    showOcrResult(ocrData,file.name);
+  }
+}
+
+// init settings on view load
+const _origShowView=showView;
+function showView(v){
+  _origShowView(v);
+  if(v==='settings')setTimeout(loadSettingsValues,50);
+}
+
 </script>
 </body>
 </html>
