@@ -1,42 +1,12 @@
 services:
-
-  # ── Frontend (Nginx) ─────────────────────────────────────
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: invoiceflow-frontend
+  invoiceflow:
+    build: .
+    container_name: invoiceflow-pro
     restart: unless-stopped
     ports:
       - "80:80"
-    depends_on:
-      - proxy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/"]
       interval: 30s
       timeout: 5s
       retries: 3
-
-  # ── Weclapp API Proxy (Node.js) ──────────────────────────
-  proxy:
-    build:
-      context: ./proxy
-      dockerfile: Dockerfile
-    container_name: invoiceflow-proxy
-    restart: unless-stopped
-    ports:
-      - "3001:3001"
-    environment:
-      - PORT=3001
-      - ALLOWED_ORIGINS=http://localhost,http://localhost:80
-    env_file:
-      - ./proxy/.env
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-networks:
-  default:
-    name: invoiceflow-network
