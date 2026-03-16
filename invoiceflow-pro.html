@@ -342,7 +342,7 @@ select.inp option{background:#1b2035}
 </div></div>
 
 <!-- APP -->
-<div id="app" style="display:flex">
+<div id="app" style="display:none">
   <nav id="sidebar">
     <div class="logo"><div class="logo-mark">InvoiceFlow</div><div class="logo-sub">Enterprise Suite</div></div>
     <div class="nav" id="nav-menu"></div>
@@ -1031,8 +1031,13 @@ function fd(e,p){document.getElementById('le').value=e;document.getElementById('
 function login(){
   const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
   const u=gU().find(x=>x.email===e&&x.pw===p&&x.active);
-  if(!u){const el=document.getElementById('lerr');el.style.display='block';document.getElementById('lp').value='';setTimeout(()=>el.style.display='none',3000);return;}
-  sSess(u);CU=u;
+  if(!u){
+    const el=document.getElementById('lerr');
+    el.style.display='block';
+    document.getElementById('lp').value='';
+    setTimeout(()=>el.style.display='none',3000);
+    return;
+  }
   if(typeof isTfaEnabled==='function'&&isTfaEnabled(u.id)){
     tfaPendingUser=u;
     document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
@@ -1544,7 +1549,7 @@ function showToast(msg,type='s'){const t=document.getElementById('toast');t.text
 
 // init
 document.addEventListener('DOMContentLoaded',()=>{
-  renderAbschlagSteps();
+  try{renderAbschlagSteps();}catch(e){console.warn('renderAbschlagSteps:',e);}
   const sess=gSess();
   if(sess){const u=gU().find(x=>x.id===sess.id&&x.active);if(u){CU=u;if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);return;}}
   document.getElementById('login-portal').style.display='flex';
