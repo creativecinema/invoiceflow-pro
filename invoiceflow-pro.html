@@ -1033,6 +1033,14 @@ function login(){
   const u=gU().find(x=>x.email===e&&x.pw===p&&x.active);
   if(!u){const el=document.getElementById('lerr');el.style.display='block';document.getElementById('lp').value='';setTimeout(()=>el.style.display='none',3000);return;}
   sSess(u);CU=u;
+  if(typeof isTfaEnabled==='function'&&isTfaEnabled(u.id)){
+    tfaPendingUser=u;
+    document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
+    openM('m-tfa');
+    setTimeout(()=>document.querySelector('#otp-inputs .otp-input')?.focus(),100);
+    return;
+  }
+  sSess(u);CU=u;
   if(u.role==='insurance_portal'){launchInsurancePortal();return;}
   launchApp(u);
 }
@@ -1132,6 +1140,7 @@ function showView(v){
   if(v==='users')renderUsers();
   if(v==='analytics')renderAnalytics();
   if(v==='forecast')renderForecast();
+  if(v==='settings')setTimeout(loadSettingsValues,50);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1711,22 +1720,7 @@ function otpNext(el,idx,isSetup=false){
   if(idx===5&&el.value){if(isSetup){}else verifyTFA();}
 }
 
-// Login with 2FA check
-const _origLogin=login;
-function login(){
-  const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
-  const u=gU().find(x=>x.email===e&&x.pw===p&&x.active);
-  if(!u){const el=document.getElementById('lerr');el.style.display='block';document.getElementById('lp').value='';setTimeout(()=>el.style.display='none',3000);return;}
-  if(isTfaEnabled(u.id)){
-    tfaPendingUser=u;
-    document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
-    openM('m-tfa');
-    setTimeout(()=>document.querySelector('#otp-inputs .otp-input')?.focus(),100);
-  } else {
-    sSess(u);CU=u;
-    if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);
-  }
-}
+// Login with 2FA check — merged into doLogin2FA, called from HTML button
 
 async function verifyTFA(){
   if(!tfaPendingUser)return;
@@ -1789,12 +1783,7 @@ async function processOcr(file){
   }
 }
 
-// init settings on view load
-const _origShowView=showView;
-function showView(v){
-  _origShowView(v);
-  if(v==='settings')setTimeout(loadSettingsValues,50);
-}
+// Settings load handled inside main showView()
 
 </script>
 </body>
