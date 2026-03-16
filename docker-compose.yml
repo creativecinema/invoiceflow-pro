@@ -1,32 +1,40 @@
 services:
 
-  # Frontend (Nginx)
   frontend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: invoiceflow-pro
     restart: unless-stopped
     ports:
       - "80:80"
+    depends_on:
+      - ai-proxy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/"]
       interval: 30s
       timeout: 5s
       retries: 3
 
-  # Claude OCR Proxy (Python, kein npm nötig)
-  claude-proxy:
-    image: python:3.12-slim
-    container_name: invoiceflow-claude-proxy
+  ai-proxy:
+    image: python:3.12-alpine
+    container_name: invoiceflow-proxy
     restart: unless-stopped
-    working_dir: /app
-    volumes:
-      - ./proxy-claude.py:/app/proxy-claude.py:ro
-    command: python3 proxy-claude.py
     ports:
-      - "3002:3002"
+      - "3001:3001"
+    volumes:
+      - ./proxy.py:/app/proxy.py:ro
+    working_dir: /app
+    command: python3 proxy.py
+    environment:
+      - PROXY_PORT=3001
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3002/health')"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 5s
+      start_period: 10s
+
+networks:
+  default:
+    name: invoiceflow-net

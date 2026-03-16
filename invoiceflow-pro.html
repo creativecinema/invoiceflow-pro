@@ -1252,28 +1252,21 @@ async function processOcr(file) {
     if (engine === 'openai' && openaiKey) {
       // OpenAI supports CORS - works directly in browser
       if(statusTxt) statusTxt.textContent = 'GPT-4o Vision analysiert...';
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      const resp = await fetch('/proxy/openai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + openaiKey },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          max_tokens: 1500,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: 'data:' + mediaType + ';base64,' + base64, detail: 'high' } },
-              { type: 'text', text: OCR_PROMPT }
-            ]
-          }]
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: openaiKey, payload: {
+          model: 'gpt-4o', max_tokens: 1500,
+          messages: [{ role: 'user', content: [
+            { type: 'image_url', image_url: { url: 'data:'+(file.type||'image/jpeg')+';base64,'+base64, detail:'high' } },
+            { type: 'text', text: OCR_PROMPT }
+          ]}]
+        }})
       });
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error('OpenAI ' + resp.status + ': ' + (errData.error?.message || 'Unbekannter Fehler'));
-      }
+      if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error('OpenAI: '+(e.error?.message||resp.status)); }
       const data = await resp.json();
-      const text = (data.choices?.[0]?.message?.content || '').trim();
-      result = JSON.parse(text.replace(/```json|```/g, '').trim());
+      const text = (data.choices?.[0]?.message?.content||'').trim();
+      result = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,'').trim());
 
     } else if (engine === 'claude' && claudeKey) {
       // Claude: Try via proxy first, then direct (for server deployments)
@@ -1297,32 +1290,21 @@ async function processOcr(file) {
 
       if (!usedProxy) {
         // Direct call (works if CORS headers are set, or in development)
-        const resp = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': claudeKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-opus-4-6',
-            max_tokens: 1500,
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-                { type: 'text', text: OCR_PROMPT }
-              ]
-            }]
-          })
-        });
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          throw new Error('Claude ' + resp.status + ': ' + (errData.error?.message || 'API Fehler'));
-        }
-        const data = await resp.json();
-        const text = (data.content?.[0]?.text || '').trim();
-        result = JSON.parse(text.replace(/```json|```/g, '').trim());
+        const resp = await fetch('/proxy/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: claudeKey, payload: {
+          model: 'claude-opus-4-6', max_tokens: 1500,
+          messages: [{ role: 'user', content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: OCR_PROMPT }
+          ]}]
+        }})
+      });
+      if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error('Claude: '+(e.error?.message||resp.status)); }
+      const data = await resp.json();
+      const text = (data.content?.[0]?.text||'').trim();
+      result = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,'').trim());
       }
 
     } else {
@@ -1499,10 +1481,13 @@ async function sendChat() {
   }
   const ctx = `Du bist KI-Assistent für InvoiceFlow Pro. Aktuelle Daten: Rechnungen: ${JSON.stringify(INVOICES)}, Projekte: ${JSON.stringify(PROJECTS)}, Versicherungen: ${JSON.stringify(INSURANCE.map(i=>({type:i.type,company:i.company,premium:i.premium,expiry:i.expiry,status:i.status})))}. Antworte auf Deutsch, präzise, max 200 Wörter.`;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/proxy/claude', {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-      body: JSON.stringify({model:'claude-haiku-20240307',max_tokens:400,system:ctx,messages:chatHistory})
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        apiKey: apiKey,
+        payload: {model:'claude-haiku-20240307',max_tokens:400,system:ctx,messages:chatHistory}
+      })
     });
     const data = await res.json();
     const reply = data.content?.[0]?.text || 'Keine Antwort.';
@@ -1718,20 +1703,22 @@ document.querySelectorAll('[data-test]').forEach(btn => {
       const k = cfg['key_claude'] || '';
       if (!k) { toast('Bitte Claude API-Key eingeben', 'e'); if(statusEl)statusEl.innerHTML='<span class="badge br">Kein Key</span>'; return; }
       try {
-        const r = await fetch('https://api.anthropic.com/v1/messages', {
-          method:'POST',
-          headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
-          body:JSON.stringify({model:'claude-haiku-20240307',max_tokens:5,messages:[{role:'user',content:'Hi'}]})
-        });
-        if (r.ok || r.status===400) {
-          if(statusEl)statusEl.innerHTML='<span class="badge bg">✓ Claude OK</span>';
-          toast('✓ Claude API Key gültig!', 's');
-        } else {
-          const e = await r.json().catch(()=>({}));
-          if(statusEl)statusEl.innerHTML='<span class="badge br">✗ '+r.status+'</span>';
-          toast('Claude: '+(e.error?.message||'Fehler '+r.status), 'e');
-        }
-      } catch(e) {
+        const r = await fetch('/proxy/test-claude', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({apiKey:k})
+          });
+          const d = await r.json().catch(()=>({}));
+          if (r.ok || r.status===400) {
+            if(statusEl)statusEl.innerHTML='<span class="badge bg">✓ Claude OK</span>';
+            toast('✓ Claude API verbunden!','s');
+          } else {
+            if(statusEl)statusEl.innerHTML='<span class="badge br">✗ '+r.status+'</span>';
+            toast('Claude Fehler: '+(d.error?.message||r.status),'e');
+          }
+        } catch(e) {
+          if(statusEl)statusEl.innerHTML='<span class="badge br">✗ Fehler</span>';
+          toast('Fehler: '+e.message,'e');
+        } catch(e) {
         // CORS error in browser = key accepted by anthropic but browser blocks
         if(statusEl)statusEl.innerHTML='<span class="badge ba">✓ Key gespeichert</span>';
         toast('✓ Claude Key gespeichert — OCR funktioniert direkt auf dem Server', 'i');
@@ -1741,8 +1728,21 @@ document.querySelectorAll('[data-test]').forEach(btn => {
       const k = cfg['key_openai'] || '';
       if (!k) { toast('Bitte OpenAI API-Key eingeben', 'e'); if(statusEl)statusEl.innerHTML='<span class="badge br">Kein Key</span>'; return; }
       try {
-        const r = await fetch('https://api.openai.com/v1/models', {
-          headers:{'Authorization':'Bearer '+k}
+        const r = await fetch('/proxy/test-openai', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({apiKey:k})
+          });
+          const d = await r.json().catch(()=>({}));
+          if (r.ok) {
+            if(statusEl)statusEl.innerHTML='<span class="badge bg">✓ OpenAI OK</span>';
+            toast('✓ OpenAI API verbunden!','s');
+          } else {
+            if(statusEl)statusEl.innerHTML='<span class="badge br">✗ '+r.status+'</span>';
+            toast('OpenAI Fehler: '+(d.error?.message||r.status),'e');
+          }
+        } catch(e) {
+          if(statusEl)statusEl.innerHTML='<span class="badge br">✗ Fehler</span>';
+          toast('Fehler: '+e.message,'e');
         });
         if (r.ok) {
           if(statusEl)statusEl.innerHTML='<span class="badge bg">✓ OpenAI OK</span>';
