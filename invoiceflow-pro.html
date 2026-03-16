@@ -2802,13 +2802,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (emailInput) emailInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
   if (pwInput)    pwInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
 
-  // Demo buttons
+  // Demo buttons — fill fields AND login immediately
   var demoButtons = document.querySelectorAll('.ldemo-btn');
   for (var di = 0; di < demoButtons.length; di++) {
     (function(btn) {
       btn.addEventListener('click', function() {
         if (emailInput) emailInput.value = btn.getAttribute('data-email') || '';
         if (pwInput)    pwInput.value    = btn.getAttribute('data-pw')    || '';
+        doLogin();
       });
     })(demoButtons[di]);
   }
