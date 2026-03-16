@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvoiceFlow Pro — Intelligente Abrechnung</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0c0f1a;--surface:#131726;--surface2:#1b2035;--border:rgba(255,255,255,0.07);
+    --border2:rgba(255,255,255,0.12);--amber:#f59e0b;--amber2:#fbbf24;--amber-bg:rgba(245,158,11,0.1);
+    --green:#10b981;--green-bg:rgba(16,185,129,0.1);--red:#ef4444;--red-bg:rgba(239,68,68,0.1);
+    --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.1);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--radius:10px;--radius2:14px;
+  }
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
+  /* Sidebar */
+  #sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+  .logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+  .logo-mark{font-size:18px;font-weight:600;color:var(--text);letter-spacing:-0.5px}
+  .logo-mark span{color:var(--amber)}
+  .logo-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+  .nav{padding:12px 10px;flex:1;overflow-y:auto}
+  .nav-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;padding:8px 8px 4px;margin-top:8px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;transition:all 0.15s;margin:1px 0;position:relative}
+  .nav-item:hover{background:var(--surface2);color:var(--text)}
+  .nav-item.active{background:var(--amber-bg);color:var(--amber)}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0}
+  .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
+  .sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--amber),#e97316);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:#fff;flex-shrink:0}
+  .user-info p{font-size:12px;font-weight:500}
+  .user-info span{font-size:10px;color:var(--text3)}
+  /* Main */
+  #main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+  .topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50}
+  .page-title{font-size:16px;font-weight:600;letter-spacing:-0.3px}
+  .topbar-actions{display:flex;gap:10px;align-items:center}
+  .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
+  .btn-primary{background:var(--amber);color:#0c0f1a}
+  .btn-primary:hover{background:var(--amber2)}
+  .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+  .btn-sm{padding:5px 12px;font-size:12px}
+  .content{padding:24px 28px;flex:1}
+  /* Cards */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:20px}
+  .card-sm{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+  /* Grid */
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  /* KPI */
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:18px 20px}
+  .kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .kpi-value{font-size:26px;font-weight:600;letter-spacing:-1px;color:var(--text)}
+  .kpi-sub{font-size:12px;color:var(--text3);margin-top:4px}
+  .kpi-change{font-size:12px;font-weight:500;margin-top:4px}
+  .up{color:var(--green)}.down{color:var(--red)}
+  /* Table */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+  td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,0.02)}
+  /* Badge */
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .badge-green{background:var(--green-bg);color:var(--green)}
+  .badge-red{background:var(--red-bg);color:var(--red)}
+  .badge-amber{background:var(--amber-bg);color:var(--amber)}
+  .badge-blue{background:var(--blue-bg);color:var(--blue)}
+  .badge-purple{background:var(--purple-bg);color:var(--purple)}
+  /* View */
+  .view{display:none}.view.active{display:block}
+  /* Form */
+  .form-group{margin-bottom:16px}
+  .form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;font-weight:500}
+  .form-input{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;transition:border 0.15s}
+  .form-input:focus{outline:none;border-color:var(--amber)}
+  select.form-input option{background:#1b2035}
+  /* Line items */
+  .line-item{display:grid;grid-template-columns:1fr 80px 100px 100px 40px;gap:10px;align-items:center;margin-bottom:8px}
+  .line-header{display:grid;grid-template-columns:1fr 80px 100px 100px 40px;gap:10px;margin-bottom:6px}
+  /* Stats bar */
+  .stat-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:6px}
+  .stat-fill{height:100%;border-radius:3px;background:var(--amber);transition:width 0.5s ease}
+  /* Invoice preview */
+  .invoice-preview{background:#fff;color:#111;padding:48px;max-width:680px;margin:0 auto;border-radius:var(--radius2);font-family:'IBM Plex Sans',sans-serif}
+  .inv-header{display:flex;justify-content:space-between;margin-bottom:40px}
+  .inv-logo{font-size:22px;font-weight:600;color:#111;letter-spacing:-0.5px}
+  .inv-logo span{color:#f59e0b}
+  .inv-meta p{font-size:13px;color:#666;text-align:right}
+  .inv-meta p.big{font-size:24px;font-weight:600;color:#111;text-align:right}
+  .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:36px}
+  .inv-from p,.inv-to p{font-size:13px;color:#555;line-height:1.7}
+  .inv-from .label,.inv-to .label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:6px}
+  .inv-table{width:100%;border-collapse:collapse;margin-bottom:24px}
+  .inv-table th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;text-align:left;padding:8px 0;border-bottom:1px solid #eee}
+  .inv-table td{padding:10px 0;font-size:13px;color:#333;border-bottom:1px solid #f5f5f5}
+  .inv-table tr:last-child td{border-bottom:none}
+  .inv-totals{text-align:right;margin-bottom:32px}
+  .inv-totals p{font-size:13px;color:#666;margin-bottom:4px}
+  .inv-totals .total{font-size:20px;font-weight:600;color:#111;border-top:2px solid #111;padding-top:10px;margin-top:10px}
+  .inv-footer{font-size:12px;color:#aaa;text-align:center;padding-top:24px;border-top:1px solid #eee}
+  /* Time tracking */
+  .time-running{animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+  /* AI Chat */
+  .ai-msg{padding:14px 16px;border-radius:var(--radius);font-size:13px;line-height:1.6;margin-bottom:10px}
+  .ai-msg.bot{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+  .ai-msg.user{background:var(--amber-bg);border:1px solid rgba(245,158,11,0.2);color:var(--amber);text-align:right}
+  /* Tabs */
+  .tabs{display:flex;gap:2px;background:var(--surface2);padding:3px;border-radius:8px;width:fit-content;margin-bottom:20px}
+  .tab{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3);transition:all 0.15s}
+  .tab.active{background:var(--surface);color:var(--text)}
+  /* Chart container */
+  .chart-wrap{position:relative;width:100%;height:200px}
+  /* Search */
+  .search-wrap{position:relative;flex:1;max-width:280px}
+  .search-wrap input{width:100%;padding:7px 12px 7px 32px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit}
+  .search-wrap input:focus{outline:none;border-color:var(--border2)}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3)}
+  /* Progress ring */
+  .ring{transform:rotate(-90deg)}
+  /* Notification dot */
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--red);position:absolute;top:6px;right:6px}
+  /* Responsive scrollable areas */
+  .scroll-x{overflow-x:auto}
+  /* Flex utils */
+  .flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+  .gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.mt-1{margin-top:4px}.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+  .mb-1{margin-bottom:4px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}.mb-6{margin-bottom:24px}
+  .text-sm{font-size:12px}.text-xs{font-size:11px}.text-amber{color:var(--amber)}.text-green{color:var(--green)}.text-red{color:var(--red)}.text-muted{color:var(--text2)}.text-dim{color:var(--text3)}
+  .fw-500{font-weight:500}.fw-600{font-weight:600}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  /* Divider */
+  .divider{height:1px;background:var(--border);margin:16px 0}
+  /* Empty state */
+  .empty{text-align:center;padding:60px 20px;color:var(--text3)}
+  .empty svg{width:40px;height:40px;margin:0 auto 12px;display:block;opacity:0.3}
+  /* Tooltip-like info */
+  .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .info-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div class="logo">
+    <div class="logo-mark">Invoice<span>Flow</span></div>
+    <div class="logo-sub">Pro Edition</div>
+  </div>
+  <div class="nav">
+    <div class="nav-label">Übersicht</div>
+    <div class="nav-item active" onclick="showView('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-label">Abrechnung</div>
+    <div class="nav-item" onclick="showView('invoices',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Rechnungen
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" onclick="showView('quotes',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Angebote
+    </div>
+    <div class="nav-item" onclick="showView('create',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Neue Rechnung
+    </div>
+    <div class="nav-label">Verwaltung</div>
+    <div class="nav-item" onclick="showView('customers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Kunden
+    </div>
+    <div class="nav-item" onclick="showView('time',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Zeiterfassung
+    </div>
+    <div class="nav-label">KI-Features</div>
+    <div class="nav-item" onclick="showView('ai',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      KI-Assistent
+    </div>
+    <div class="nav-item" onclick="showView('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analysen
+    </div>
+  </div>
+  <div class="sidebar-user">
+    <div class="avatar">ML</div>
+    <div class="user-info">
+      <p>Max Lehmann</p>
+      <span>Pro Plan</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Main -->
+<div id="main">
+  <div class="topbar">
+    <div class="page-title" id="page-title">Dashboard</div>
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Suchen...">
+      </div>
+      <button class="btn btn-ghost btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="showView('create',document.querySelector('[onclick*=create]'))">+ Neue Rechnung</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="grid-4 mb-4">
+        <div class="kpi">
+          <div class="kpi-label">Umsatz (MTD)</div>
+          <div class="kpi-value">€ 48.320</div>
+          <div class="kpi-change up">↑ 12,4 % zum Vormonat</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Offene Rechnungen</div>
+          <div class="kpi-value">€ 18.750</div>
+          <div class="kpi-sub" style="color:var(--amber)">3 Rechnungen überfällig</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Bezahlt (MTD)</div>
+          <div class="kpi-value">€ 31.890</div>
+          <div class="kpi-change up">↑ 8,1 % zum Vormonat</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Ø Zahlungsziel</div>
+          <div class="kpi-value">17 Tage</div>
+          <div class="kpi-change up">↓ 3 Tage besser</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-4">
+        <div class="card">
+          <div class="flex justify-between items-center mb-3">
+            <span class="fw-500">Umsatz — letzten 6 Monate</span>
+            <div class="tabs" style="margin:0">
+              <div class="tab active" onclick="switchTab(this,'monthly')">Monatlich</div>
+              <div class="tab" onclick="switchTab(this,'weekly')">Wöchentlich</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="fw-500 mb-3">Offene Posten</div>
+          <div class="info-row"><span>0–14 Tage</span><span class="text-green fw-500">€ 9.200</span></div>
+          <div class="info-row"><span>15–30 Tage</span><span style="color:var(--amber)" class="fw-500">€ 5.500</span></div>
+          <div class="info-row"><span>31–60 Tage</span><span class="text-red fw-500">€ 2.850</span></div>
+          <div class="info-row"><span>&#62;60 Tage</span><span class="text-red fw-500">€ 1.200</span></div>
+          <div class="divider"></div>
+          <div class="chart-wrap" style="height:120px"><canvas id="donutChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-3 mb-4">
+        <div class="card" style="grid-column:span 2">
+          <div class="flex justify-between items-center mb-3">
+            <span class="fw-500">Letzte Rechnungen</span>
+            <button class="btn btn-ghost btn-sm" onclick="showView('invoices',document.querySelector('[onclick*=invoices]'))">Alle anzeigen</button>
+          </div>
+          <div class="scroll-x">
+            <table>
+              <thead><tr><th>Nr.</th><th>Kunde</th><th>Datum</th><th>Betrag</th><th>Status</th><th></th></tr></thead>
+              <tbody id="dashboard-invoices"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="fw-500 mb-3">Top Kunden</div>
+          <div id="top-customers"></div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card-sm">
+          <div class="text-xs text-dim mb-1">Zeiterfassung heute</div>
+          <div style="font-size:22px;font-weight:600;color:var(--text)">4 h 23 m</div>
+          <div class="stat-bar mt-2"><div class="stat-fill" style="width:55%"></div></div>
+          <div class="text-xs text-dim mt-1">55 % des Tagesziels (8 h)</div>
+        </div>
+        <div class="card-sm">
+          <div class="text-xs text-dim mb-1">Angebote ausstehend</div>
+          <div style="font-size:22px;font-weight:600;color:var(--amber)">4</div>
+          <div class="text-xs text-dim mt-2">Potenzial: <span class="text-amber">€ 28.400</span></div>
+        </div>
+        <div class="card-sm">
+          <div class="text-xs text-dim mb-1">DATEV / XRechnung</div>
+          <div style="font-size:22px;font-weight:600;color:var(--green)">Bereit</div>
+          <button class="btn btn-ghost btn-sm mt-2" style="width:100%">Export starten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECHNUNGEN -->
+    <div class="view" id="view-invoices">
+      <div class="flex justify-between items-center mb-4">
+        <div class="tabs" style="margin:0">
+          <div class="tab active" onclick="filterInvoices('all',this)">Alle</div>
+          <div class="tab" onclick="filterInvoices('open',this)">Offen</div>
+          <div class="tab" onclick="filterInvoices('paid',this)">Bezahlt</div>
+          <div class="tab" onclick="filterInvoices('overdue',this)">Überfällig</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showView('create',document.querySelector('[onclick*=create]'))">+ Neue Rechnung</button>
+      </div>
+      <div class="card" style="padding:0">
+        <table>
+          <thead><tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Fälligkeit</th><th>Betrag (netto)</th><th>MwSt.</th><th>Gesamt</th><th>Status</th><th>Aktionen</th></tr></thead>
+          <tbody id="invoices-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ANGEBOTE -->
+    <div class="view" id="view-quotes">
+      <div class="flex justify-between items-center mb-4">
+        <div class="text-muted text-sm">4 aktive Angebote · Potenzial € 28.400</div>
+        <button class="btn btn-primary btn-sm">+ Neues Angebot</button>
+      </div>
+      <div class="card" style="padding:0">
+        <table>
+          <thead><tr><th>Nummer</th><th>Kunde</th><th>Erstellt</th><th>Gültig bis</th><th>Betrag</th><th>Status</th><th>Aktionen</th></tr></thead>
+          <tbody id="quotes-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NEUE RECHNUNG -->
+    <div class="view" id="view-create">
+      <div class="grid-2" style="gap:24px">
+        <div>
+          <div class="card mb-4">
+            <div class="fw-500 mb-4">Rechnungsdetails</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Rechnungsnummer</label>
+                <input class="form-input mono" value="RE-2025-0042" readonly style="color:var(--text2)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Rechnungsdatum</label>
+                <input class="form-input" type="date" id="inv-date">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Zahlungsziel (Tage)</label>
+                <select class="form-input" id="inv-days">
+                  <option>14</option><option selected>30</option><option>45</option><option>60</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Währung</label>
+                <select class="form-input"><option>EUR €</option><option>USD $</option><option>CHF</option></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kunde</label>
+              <select class="form-input" id="inv-customer">
+                <option value="">Kunde auswählen...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Betreff (optional)</label>
+              <input class="form-input" placeholder="z.B. Webentwicklung März 2025">
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="fw-500 mb-3">Rechnungspositionen</div>
+            <div class="line-header">
+              <span class="text-xs text-dim">Beschreibung</span>
+              <span class="text-xs text-dim">Menge</span>
+              <span class="text-xs text-dim">Einzelpreis</span>
+              <span class="text-xs text-dim">Gesamt</span>
+              <span></span>
+            </div>
+            <div id="line-items"></div>
+            <button class="btn btn-ghost btn-sm mt-3" onclick="addLineItem()">+ Position hinzufügen</button>
+
+            <div class="divider"></div>
+            <div style="text-align:right">
+              <div class="info-row"><span class="text-dim">Zwischensumme</span><span id="subtotal" class="fw-500">€ 0,00</span></div>
+              <div class="info-row">
+                <span class="text-dim">MwSt.
+                  <select id="vat-rate" class="form-input" style="width:70px;display:inline;padding:2px 6px" onchange="calcTotal()">
+                    <option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option>
+                  </select>
+                </span>
+                <span id="vat-amount" class="fw-500">€ 0,00</span>
+              </div>
+              <div class="info-row" style="border-top:2px solid var(--text);margin-top:8px;padding-top:8px"><span class="fw-600">Gesamtbetrag</span><span id="total-amount" class="fw-600" style="color:var(--amber);font-size:16px">€ 0,00</span></div>
+            </div>
+
+            <div class="flex gap-3 mt-4">
+              <button class="btn btn-primary" onclick="saveInvoice()" style="flex:1">Rechnung erstellen</button>
+              <button class="btn btn-ghost" onclick="showView('preview',null)">Vorschau</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card mb-4">
+            <div class="fw-500 mb-3">🤖 KI-Vorschläge</div>
+            <p class="text-sm text-muted mb-3">Basierend auf vergangenen Rechnungen für diesen Kunden:</p>
+            <div id="ai-suggestions">
+              <div class="card-sm mb-2" onclick="applyAISuggestion('Webentwicklung & Design',1,2800)" style="cursor:pointer;border:1px solid var(--border2)">
+                <div class="fw-500 text-sm">Webentwicklung & Design</div>
+                <div class="text-xs text-dim mt-1">Letzte Abrechnung: 1× € 2.800</div>
+              </div>
+              <div class="card-sm mb-2" onclick="applyAISuggestion('SEO-Beratung (monatlich)',1,950)" style="cursor:pointer;border:1px solid var(--border2)">
+                <div class="fw-500 text-sm">SEO-Beratung (monatlich)</div>
+                <div class="text-xs text-dim mt-1">Retainer: 1× € 950</div>
+              </div>
+              <div class="card-sm" onclick="applyAISuggestion('Projektmanagement',8,120)" style="cursor:pointer;border:1px solid var(--border2)">
+                <div class="fw-500 text-sm">Projektmanagement</div>
+                <div class="text-xs text-dim mt-1">8 Std. × € 120</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="fw-500 mb-3">Zahlungshinweis</div>
+            <textarea class="form-input" rows="3" style="resize:none">Bitte überweisen Sie den Rechnungsbetrag innerhalb von 30 Tagen auf das unten genannte Konto. Bei Fragen wenden Sie sich gerne an uns.</textarea>
+            <div class="form-group mt-3">
+              <label class="form-label">Bankdaten</label>
+              <input class="form-input mono text-sm" value="DE89 3704 0044 0532 0130 00 · BIC: COBADEFFXXX">
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="fw-500 mb-3">Optionen</div>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+              <input type="checkbox" checked> <span class="text-sm">XRechnung (B2B)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+              <input type="checkbox" checked> <span class="text-sm">PDF automatisch generieren</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+              <input type="checkbox"> <span class="text-sm">Per E-Mail versenden</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <input type="checkbox" checked> <span class="text-sm">DATEV-Export einbeziehen</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECHNUNG VORSCHAU -->
+    <div class="view" id="view-preview">
+      <div class="flex justify-between items-center mb-4">
+        <button class="btn btn-ghost btn-sm" onclick="showView('create',document.querySelector('[onclick*=create]'))">&larr; Zurück zur Bearbeitung</button>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm">📥 PDF herunterladen</button>
+          <button class="btn btn-primary btn-sm" onclick="saveInvoice()">✓ Rechnung senden</button>
+        </div>
+      </div>
+      <div class="invoice-preview" id="inv-preview-content">
+        <div class="inv-header">
+          <div><div class="inv-logo">Invoice<span>Flow</span></div><p style="font-size:12px;color:#999;margin-top:4px">Max Lehmann · Steuerberatung & Consulting</p></div>
+          <div class="inv-meta"><p class="big">RECHNUNG</p><p>Nr. RE-2025-0042</p><p>Datum: 16.03.2025</p><p>Fällig: 15.04.2025</p></div>
+        </div>
+        <div class="inv-parties">
+          <div class="inv-from"><p class="label">Von</p><p><strong>Max Lehmann</strong><br>Musterstraße 12<br>80333 München<br>USt-ID: DE123456789</p></div>
+          <div class="inv-to"><p class="label">An</p><p id="preview-customer"><strong>Acme GmbH</strong><br>Industriestraße 45<br>10115 Berlin<br>Deutschland</p></div>
+        </div>
+        <table class="inv-table">
+          <thead><tr><th style="width:50%">Beschreibung</th><th>Menge</th><th>Preis</th><th style="text-align:right">Gesamt</th></tr></thead>
+          <tbody id="preview-items">
+            <tr><td>Webentwicklung & Beratung</td><td>1</td><td>€ 2.800,00</td><td style="text-align:right">€ 2.800,00</td></tr>
+          </tbody>
+        </table>
+        <div class="inv-totals">
+          <p>Nettobetrag: <strong>€ 2.800,00</strong></p>
+          <p>MwSt. 19 %: <strong>€ 532,00</strong></p>
+          <p class="total">Gesamtbetrag: <strong>€ 3.332,00</strong></p>
+        </div>
+        <p style="font-size:13px;color:#333;margin-bottom:24px">Bitte überweisen Sie den Betrag bis zum 15.04.2025 auf folgendes Konto:<br><strong>IBAN: DE89 3704 0044 0532 0130 00 · BIC: COBADEFFXXX</strong></p>
+        <div class="inv-footer">Vielen Dank für Ihr Vertrauen · Steuernummer: 123/456/78901 · Finanzamt München</div>
+      </div>
+    </div>
+
+    <!-- KUNDEN -->
+    <div class="view" id="view-customers">
+      <div class="flex justify-between items-center mb-4">
+        <div class="text-muted text-sm" id="customer-count"></div>
+        <button class="btn btn-primary btn-sm" onclick="openNewCustomer()">+ Neuer Kunde</button>
+      </div>
+      <div class="card" style="padding:0">
+        <table>
+          <thead><tr><th>Unternehmen</th><th>Ansprechpartner</th><th>E-Mail</th><th>Umsatz gesamt</th><th>Letzte Rechnung</th><th>Status</th><th></th></tr></thead>
+          <tbody id="customers-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ZEITERFASSUNG -->
+    <div class="view" id="view-time">
+      <div class="grid-4 mb-4">
+        <div class="kpi"><div class="kpi-label">Diese Woche</div><div class="kpi-value">23 h</div><div class="kpi-change up">↑ 4 h zum Vorjahr</div></div>
+        <div class="kpi"><div class="kpi-label">Nicht abgerechnet</div><div class="kpi-value">8,5 h</div><div class="kpi-sub" style="color:var(--amber)">= € 1.020</div></div>
+        <div class="kpi"><div class="kpi-label">Auslastung</div><div class="kpi-value">72 %</div><div class="kpi-change up">↑ 5 % zum Vormonat</div></div>
+        <div class="kpi"><div class="kpi-label">Ø Stundensatz</div><div class="kpi-value">€ 120</div></div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="fw-500 mb-3">Zeit erfassen</div>
+        <div class="grid-4" style="gap:12px">
+          <div class="form-group" style="margin:0"><select class="form-input" id="time-customer"><option>Acme GmbH</option><option>TechStart AG</option></select></div>
+          <div class="form-group" style="margin:0"><input class="form-input" placeholder="Tätigkeitsbeschreibung" id="time-desc"></div>
+          <div class="form-group" style="margin:0"><input class="form-input" type="number" placeholder="Stunden" id="time-hours" step="0.25" min="0"></div>
+          <button class="btn btn-primary" onclick="addTimeEntry()" style="margin-top:0">Eintragen</button>
+        </div>
+        <div class="flex gap-3 mt-3 items-center">
+          <button class="btn btn-ghost btn-sm" id="timer-btn" onclick="toggleTimer()">⏱ Stoppuhr starten</button>
+          <span class="mono text-sm text-amber" id="timer-display" style="display:none">00:00:00</span>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0">
+        <table>
+          <thead><tr><th>Datum</th><th>Kunde / Projekt</th><th>Beschreibung</th><th>Stunden</th><th>Stundensatz</th><th>Betrag</th><th>Status</th><th></th></tr></thead>
+          <tbody id="time-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KI-ASSISTENT -->
+    <div class="view" id="view-ai">
+      <div class="grid-2" style="gap:24px">
+        <div>
+          <div class="card mb-4">
+            <div class="fw-500 mb-1">🤖 KI-Abrechnungsassistent</div>
+            <p class="text-sm text-muted mb-4">Powered by Claude — Beschreibe dein Anliegen und lass die KI helfen.</p>
+            <div id="ai-chat" style="max-height:360px;overflow-y:auto;margin-bottom:16px">
+              <div class="ai-msg bot">Hallo! Ich bin dein KI-Assistent. Ich kann dir helfen:<br>• Rechnungen schnell erstellen<br>• Mahntexte formulieren<br>• Zahlungsausfälle analysieren<br>• Steuerliche Hinweise geben<br><br>Wie kann ich helfen?</div>
+            </div>
+            <div class="flex gap-2">
+              <input class="form-input" id="ai-input" placeholder="Frage stellen oder Aufgabe beschreiben..." onkeydown="if(event.key==='Enter')sendAI()">
+              <button class="btn btn-primary" onclick="sendAI()">→</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="fw-500 mb-3">Schnellaktionen</div>
+            <div class="grid-2" style="gap:8px">
+              <button class="btn btn-ghost" style="text-align:left;font-size:12px" onclick="aiQuick('Schreibe einen höflichen Mahntext für eine 14 Tage überfällige Rechnung.')">📧 Mahntext erstellen</button>
+              <button class="btn btn-ghost" style="text-align:left;font-size:12px" onclick="aiQuick('Analysiere meine Zahlungsausfälle und gib mir Empfehlungen.')">📊 Ausfälle analysieren</button>
+              <button class="btn btn-ghost" style="text-align:left;font-size:12px" onclick="aiQuick('Erstelle Rechnungspositionen für einen Full-Stack-Webentwicklungsauftrag à 5.000 €.')">🧾 Positionen generieren</button>
+              <button class="btn btn-ghost" style="text-align:left;font-size:12px" onclick="aiQuick('Welche steuerlichen Besonderheiten muss ich bei EU-Auslandsrechnungen beachten?')">⚖️ Steuer-Tipp</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="fw-500 mb-3">KI-Insights</div>
+            <div class="card-sm mb-3" style="border-left:3px solid var(--amber)">
+              <div class="fw-500 text-sm">💡 Umsatzpotenzial erkannt</div>
+              <p class="text-sm text-muted mt-1">Acme GmbH hat diesen Monat noch kein Angebot erhalten. Letzter Auftrag: vor 38 Tagen.</p>
+              <button class="btn btn-ghost btn-sm mt-2">Angebot erstellen →</button>
+            </div>
+            <div class="card-sm mb-3" style="border-left:3px solid var(--red)">
+              <div class="fw-500 text-sm">⚠️ Zahlungsverzug-Risiko</div>
+              <p class="text-sm text-muted mt-1">Rechnung RE-2025-0031 (€ 2.850) ist seit 22 Tagen überfällig. KI empfiehlt: Mahnung senden.</p>
+              <button class="btn btn-ghost btn-sm mt-2">Mahnung generieren →</button>
+            </div>
+            <div class="card-sm" style="border-left:3px solid var(--green)">
+              <div class="fw-500 text-sm">✓ Zeiterfassung → Rechnung</div>
+              <p class="text-sm text-muted mt-1">8,5 h nicht abgerechnete Stunden für TechStart AG erkannt. Soll eine Rechnung erstellt werden?</p>
+              <button class="btn btn-primary btn-sm mt-2" onclick="showView('create',document.querySelector('[onclick*=create]'))">Jetzt abrechnen →</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="fw-500 mb-3">Automatisierungsregeln</div>
+            <div class="info-row">
+              <span class="text-sm">Auto-Mahnung nach 14 Tagen</span>
+              <span class="badge badge-green">Aktiv</span>
+            </div>
+            <div class="info-row">
+              <span class="text-sm">Monatliche Retainer-Rechnung</span>
+              <span class="badge badge-green">Aktiv</span>
+            </div>
+            <div class="info-row">
+              <span class="text-sm">DATEV-Export täglich</span>
+              <span class="badge badge-amber">Pause</span>
+            </div>
+            <div class="info-row">
+              <span class="text-sm">Zahlungseingang buchen</span>
+              <span class="badge badge-green">Aktiv</span>
+            </div>
+            <button class="btn btn-ghost btn-sm mt-3" style="width:100%">+ Neue Automatisierung</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSEN -->
+    <div class="view" id="view-analytics">
+      <div class="grid-2 mb-4">
+        <div class="card">
+          <div class="fw-500 mb-3">Umsatz nach Kunde</div>
+          <div class="chart-wrap" style="height:260px"><canvas id="customerChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="fw-500 mb-3">Zahlungsverhalten</div>
+          <div class="chart-wrap" style="height:260px"><canvas id="paymentChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="fw-500 mb-3">Profitabelste Kunden</div>
+          <div id="profit-customers"></div>
+        </div>
+        <div class="card">
+          <div class="fw-500 mb-3">Branchen-Verteilung</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="sectorChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="fw-500 mb-3">Jahresvergleich</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="yearChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// DATA
+const invoices=[
+  {id:'RE-2025-0039',customer:'Acme GmbH',date:'01.03.2025',due:'31.03.2025',net:2800,tax:532,total:3332,status:'paid'},
+  {id:'RE-2025-0040',customer:'TechStart AG',date:'05.03.2025',due:'04.04.2025',net:4500,tax:855,total:5355,status:'open'},
+  {id:'RE-2025-0038',customer:'Digital Media KG',date:'20.02.2025',due:'22.03.2025',net:1200,tax:228,total:1428,status:'overdue'},
+  {id:'RE-2025-0037',customer:'FreshBrand GmbH',date:'15.02.2025',due:'17.03.2025',net:6800,tax:1292,total:8092,status:'open'},
+  {id:'RE-2025-0036',customer:'Acme GmbH',date:'01.02.2025',due:'03.03.2025',net:2800,tax:532,total:3332,status:'paid'},
+  {id:'RE-2025-0035',customer:'Nova Consulting',date:'28.01.2025',due:'27.02.2025',net:3200,tax:608,total:3808,status:'overdue'},
+  {id:'RE-2025-0034',customer:'TechStart AG',date:'15.01.2025',due:'14.02.2025',net:9500,tax:1805,total:11305,status:'paid'},
+];
+const customers=[
+  {id:1,company:'Acme GmbH',name:'Thomas Müller',email:'t.mueller@acme.de',revenue:42800,lastInvoice:'01.03.2025',status:'active'},
+  {id:2,company:'TechStart AG',name:'Sandra Berger',email:'s.berger@techstart.de',revenue:38200,lastInvoice:'05.03.2025',status:'active'},
+  {id:3,company:'Digital Media KG',name:'Klaus Hoffmann',email:'k.hoffmann@digitalmedia.de',revenue:18400,lastInvoice:'20.02.2025',status:'active'},
+  {id:4,company:'FreshBrand GmbH',name:'Jana Weber',email:'j.weber@freshbrand.de',revenue:27600,lastInvoice:'15.02.2025',status:'active'},
+  {id:5,company:'Nova Consulting',name:'Peter Schmidt',email:'p.schmidt@nova.de',revenue:15800,lastInvoice:'28.01.2025',status:'inactive'},
+];
+const quotes=[
+  {id:'AN-2025-0018',customer:'Acme GmbH',created:'10.03.2025',valid:'10.04.2025',amount:12500,status:'sent'},
+  {id:'AN-2025-0017',customer:'Neue Firma AG',created:'05.03.2025',valid:'05.04.2025',amount:8900,status:'draft'},
+  {id:'AN-2025-0016',customer:'TechStart AG',created:'01.03.2025',valid:'01.04.2025',amount:4200,status:'accepted'},
+  {id:'AN-2025-0015',customer:'Digital Media KG',created:'20.02.2025',valid:'22.03.2025',amount:2800,status:'sent'},
+];
+const timeEntries=[
+  {date:'16.03.2025',customer:'Acme GmbH',desc:'Frontend-Entwicklung',hours:4,rate:120,billed:false},
+  {date:'15.03.2025',customer:'TechStart AG',desc:'API-Integration',hours:6,rate:120,billed:false},
+  {date:'14.03.2025',customer:'FreshBrand GmbH',desc:'Design Review',hours:2,rate:110,billed:true},
+  {date:'13.03.2025',customer:'Acme GmbH',desc:'Workshop Vorbereitung',hours:3,rate:120,billed:true},
+  {date:'12.03.2025',customer:'Nova Consulting',desc:'Beratung',hours:1.5,rate:150,billed:true},
+];
+let lineItems=[{desc:'',qty:1,price:0}];
+let timerInterval=null,timerSecs=0,timerRunning=false;
+const fmt=v=>'€ '+v.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function showView(name,navEl){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(navEl)navEl.classList.add('active');
+  const titles={dashboard:'Dashboard',invoices:'Rechnungen',quotes:'Angebote',create:'Neue Rechnung',preview:'Rechnungsvorschau',customers:'Kunden',time:'Zeiterfassung',ai:'KI-Assistent',analytics:'Analysen'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+  if(name==='analytics')initAnalyticsCharts();
+}
+
+function switchTab(el,mode){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+function filterInvoices(f,el){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderInvoices(f);}
+
+function statusBadge(s){const m={paid:'badge-green',open:'badge-blue',overdue:'badge-red',sent:'badge-amber',draft:'badge-purple',accepted:'badge-green',active:'badge-green',inactive:'badge-red'};const l={paid:'Bezahlt',open:'Offen',overdue:'Überfällig',sent:'Versendet',draft:'Entwurf',accepted:'Akzeptiert',active:'Aktiv',inactive:'Inaktiv'};return`<span class="badge ${m[s]||''}">${l[s]||s}</span>`;}
+
+function renderInvoices(filter='all'){
+  const tb=document.getElementById('invoices-table');
+  const list=filter==='all'?invoices:invoices.filter(i=>i.status===filter);
+  tb.innerHTML=list.map(inv=>`<tr>
+    <td class="mono" style="color:var(--text)">${inv.id}</td>
+    <td style="color:var(--text)">${inv.customer}</td>
+    <td>${inv.date}</td>
+    <td style="color:${inv.status==='overdue'?'var(--red)':''}">${inv.due}</td>
+    <td>${fmt(inv.net)}</td>
+    <td>${fmt(inv.tax)}</td>
+    <td class="fw-500" style="color:var(--text)">${fmt(inv.total)}</td>
+    <td>${statusBadge(inv.status)}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="showView('preview',null)">Vorschau</button></td>
+  </tr>`).join('');
+}
+
+function renderDashboard(){
+  const tb=document.getElementById('dashboard-invoices');
+  tb.innerHTML=invoices.slice(0,5).map(inv=>`<tr>
+    <td class="mono" style="color:var(--text);font-size:12px">${inv.id}</td>
+    <td style="color:var(--text)">${inv.customer}</td>
+    <td style="font-size:12px">${inv.date}</td>
+    <td class="fw-500">${fmt(inv.total)}</td>
+    <td>${statusBadge(inv.status)}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="showView('preview',null)">→</button></td>
+  </tr>`).join('');
+
+  const tc=document.getElementById('top-customers');
+  const sorted=[...customers].sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+  const max=sorted[0].revenue;
+  tc.innerHTML=sorted.map(c=>`<div style="margin-bottom:12px">
+    <div class="flex justify-between text-sm"><span class="fw-500">${c.company}</span><span class="text-amber">${fmt(c.revenue)}</span></div>
+    <div class="stat-bar mt-1"><div class="stat-fill" style="width:${Math.round(c.revenue/max*100)}%"></div></div>
+  </div>`).join('');
+}
+
+function renderCustomers(){
+  const tb=document.getElementById('customers-table');
+  tb.innerHTML=customers.map(c=>`<tr>
+    <td><span class="fw-500" style="color:var(--text)">${c.company}</span></td>
+    <td>${c.name}</td>
+    <td style="color:var(--blue)">${c.email}</td>
+    <td class="fw-500 text-amber">${fmt(c.revenue)}</td>
+    <td>${c.lastInvoice}</td>
+    <td>${statusBadge(c.status)}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="showView('invoices',document.querySelector('[onclick*=invoices]'))">Rechnungen</button></td>
+  </tr>`).join('');
+  document.getElementById('customer-count').textContent=`${customers.length} Kunden · Gesamtumsatz ${fmt(customers.reduce((s,c)=>s+c.revenue,0))}`;
+}
+
+function renderQuotes(){
+  const tb=document.getElementById('quotes-table');
+  tb.innerHTML=quotes.map(q=>`<tr>
+    <td class="mono" style="color:var(--text);font-size:12px">${q.id}</td>
+    <td style="color:var(--text)">${q.customer}</td>
+    <td>${q.created}</td>
+    <td>${q.valid}</td>
+    <td class="fw-500">${fmt(q.amount)}</td>
+    <td>${statusBadge(q.status)}</td>
+    <td><div class="flex gap-2"><button class="btn btn-ghost btn-sm">Bearbeiten</button><button class="btn btn-primary btn-sm">→ Rechnung</button></div></td>
+  </tr>`).join('');
+}
+
+function renderTime(){
+  const tb=document.getElementById('time-table');
+  tb.innerHTML=timeEntries.map(t=>`<tr>
+    <td>${t.date}</td>
+    <td style="color:var(--text)">${t.customer}</td>
+    <td>${t.desc}</td>
+    <td class="fw-500 mono">${t.hours} h</td>
+    <td>${fmt(t.rate)}/h</td>
+    <td class="fw-500 text-amber">${fmt(t.hours*t.rate)}</td>
+    <td>${t.billed?statusBadge('paid'):'<span class="badge badge-amber">Offen</span>'}</td>
+    <td>${!t.billed?'<button class="btn btn-ghost btn-sm">Abrechnen</button>':''}</td>
+  </tr>`).join('');
+}
+
+// Line items
+function renderLineItems(){
+  const c=document.getElementById('line-items');
+  c.innerHTML=lineItems.map((item,i)=>`<div class="line-item">
+    <input class="form-input text-sm" placeholder="Beschreibung" value="${item.desc}" onchange="lineItems[${i}].desc=this.value;calcTotal()">
+    <input class="form-input text-sm mono" type="number" min="0" step="0.01" value="${item.qty}" onchange="lineItems[${i}].qty=+this.value;calcTotal()">
+    <input class="form-input text-sm mono" type="number" min="0" step="0.01" value="${item.price}" onchange="lineItems[${i}].price=+this.value;calcTotal()" placeholder="0,00">
+    <span class="mono text-sm" style="text-align:right;padding:8px 4px;color:var(--amber)">${fmt(item.qty*item.price)}</span>
+    <button onclick="removeItem(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px">×</button>
+  </div>`).join('');
+  calcTotal();
+}
+
+function addLineItem(){lineItems.push({desc:'',qty:1,price:0});renderLineItems();}
+function removeItem(i){lineItems.splice(i,1);if(!lineItems.length)lineItems=[{desc:'',qty:1,price:0}];renderLineItems();}
+function applyAISuggestion(desc,qty,price){lineItems.push({desc,qty,price});renderLineItems();}
+
+function calcTotal(){
+  const net=lineItems.reduce((s,i)=>s+i.qty*i.price,0);
+  const vat=parseInt(document.getElementById('vat-rate').value)/100;
+  const vatAmt=net*vat;
+  document.getElementById('subtotal').textContent=fmt(net);
+  document.getElementById('vat-amount').textContent=fmt(vatAmt);
+  document.getElementById('total-amount').textContent=fmt(net+vatAmt);
+}
+
+function saveInvoice(){
+  alert('✓ Rechnung RE-2025-0042 wurde erstellt und wird per E-Mail versendet!');
+  showView('invoices',document.querySelector('[onclick*="invoices"]'));
+}
+
+function openNewCustomer(){alert('Kunden-Formular öffnet sich...');}
+
+// Timer
+function toggleTimer(){
+  if(!timerRunning){
+    timerRunning=true;
+    document.getElementById('timer-btn').textContent='⏹ Stoppuhr stoppen';
+    document.getElementById('timer-display').style.display='inline';
+    timerInterval=setInterval(()=>{
+      timerSecs++;
+      const h=Math.floor(timerSecs/3600).toString().padStart(2,'0');
+      const m=Math.floor((timerSecs%3600)/60).toString().padStart(2,'0');
+      const s=(timerSecs%60).toString().padStart(2,'0');
+      document.getElementById('timer-display').textContent=`${h}:${m}:${s}`;
+    },1000);
+  }else{
+    timerRunning=false;
+    clearInterval(timerInterval);
+    const hrs=(timerSecs/3600).toFixed(2);
+    document.getElementById('timer-btn').textContent='⏱ Stoppuhr starten';
+    document.getElementById('time-hours').value=hrs;
+    document.getElementById('timer-display').style.display='none';
+    timerSecs=0;
+  }
+}
+
+function addTimeEntry(){
+  const desc=document.getElementById('time-desc').value;
+  const hours=parseFloat(document.getElementById('time-hours').value)||0;
+  const customer=document.getElementById('time-customer').value;
+  if(!desc||!hours){alert('Bitte Beschreibung und Stunden angeben.');return;}
+  timeEntries.unshift({date:'16.03.2025',customer,desc,hours,rate:120,billed:false});
+  renderTime();
+  document.getElementById('time-desc').value='';
+  document.getElementById('time-hours').value='';
+}
+
+// AI Chat
+async function sendAI(){
+  const input=document.getElementById('ai-input');
+  const msg=input.value.trim();
+  if(!msg)return;
+  input.value='';
+  const chat=document.getElementById('ai-chat');
+  chat.innerHTML+=`<div class="ai-msg user">${msg}</div>`;
+  const thinking=document.createElement('div');
+  thinking.className='ai-msg bot';
+  thinking.textContent='Analysiere...';
+  chat.appendChild(thinking);
+  chat.scrollTop=chat.scrollHeight;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:'Du bist ein freundlicher KI-Assistent für InvoiceFlow Pro, eine moderne Abrechnungssoftware. Antworte auf Deutsch, präzise und hilfreich. Maximal 200 Wörter.',
+        messages:[{role:'user',content:msg}]
+      })
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Leider keine Antwort erhalten.';
+    thinking.textContent=reply;
+  }catch(e){
+    thinking.textContent='Verbindungsfehler. Bitte stelle sicher, dass der API-Key konfiguriert ist.';
+  }
+  chat.scrollTop=chat.scrollHeight;
+}
+function aiQuick(msg){document.getElementById('ai-input').value=msg;sendAI();}
+
+// Revenue Chart
+function initRevenueChart(){
+  const ctx=document.getElementById('revenueChart').getContext('2d');
+  new Chart(ctx,{type:'bar',data:{
+    labels:['Okt','Nov','Dez','Jan','Feb','Mär'],
+    datasets:[
+      {label:'Umsatz',data:[32000,28500,41000,35200,43100,48320],backgroundColor:'rgba(245,158,11,0.7)',borderRadius:6},
+      {label:'Bezahlt',data:[30000,27000,39500,33800,40200,31890],backgroundColor:'rgba(16,185,129,0.5)',borderRadius:6},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
+}
+
+function initDonutChart(){
+  const ctx=document.getElementById('donutChart').getContext('2d');
+  new Chart(ctx,{type:'doughnut',data:{
+    labels:['0–14 Tage','15–30 Tage','31–60 Tage','>60 Tage'],
+    datasets:[{data:[9200,5500,2850,1200],backgroundColor:['#10b981','#f59e0b','#ef4444','#991b1b'],borderWidth:0,hoverOffset:4}]
+  },options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
+}
+
+function initAnalyticsCharts(){
+  if(document.getElementById('customerChart').dataset.init)return;
+  document.getElementById('customerChart').dataset.init=1;
+  const c1=document.getElementById('customerChart').getContext('2d');
+  new Chart(c1,{type:'bar',data:{labels:customers.map(c=>c.company.split(' ')[0]),datasets:[{data:customers.map(c=>c.revenue),backgroundColor:['rgba(245,158,11,0.8)','rgba(59,130,246,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(239,68,68,0.8)'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11},callback:v=>'€'+Math.round(v/1000)+'k'}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}}}}});
+  const c2=document.getElementById('paymentChart').getContext('2d');
+  new Chart(c2,{type:'line',data:{labels:['Okt','Nov','Dez','Jan','Feb','Mär'],datasets:[{label:'Ø Zahlungsziel (Tage)',data:[22,19,24,21,18,17],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#f59e0b'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}}}}});
+  const c3=document.getElementById('sectorChart').getContext('2d');
+  new Chart(c3,{type:'doughnut',data:{labels:['Tech','Medien','Beratung','Handel'],datasets:[{data:[45,20,25,10],backgroundColor:['#3b82f6','#f59e0b','#10b981','#a78bfa'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#64748b',font:{size:11},boxWidth:10}}}}});
+  const c4=document.getElementById('yearChart').getContext('2d');
+  new Chart(c4,{type:'line',data:{labels:['Q1','Q2','Q3','Q4'],datasets:[{label:'2024',data:[95000,112000,98000,134000],borderColor:'rgba(100,116,139,0.6)',borderDash:[4,4],tension:0.4,pointRadius:3},{label:'2025',data:[108000,0,0,0],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
+  const pc=document.getElementById('profit-customers');
+  const sorted=[...customers].sort((a,b)=>b.revenue-a.revenue);
+  pc.innerHTML=sorted.map((c,i)=>`<div class="info-row"><span class="flex gap-2 items-center"><span class="text-dim text-xs" style="min-width:14px">${i+1}</span><span class="text-sm">${c.company.split(' ')[0]}</span></span><span class="text-amber fw-500 text-sm">${fmt(c.revenue)}</span></div>`).join('');
+}
+
+// Populate customer selects
+function populateCustomerSelect(){
+  const sel=document.getElementById('inv-customer');
+  customers.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.company;sel.appendChild(o);});
+}
+
+// Init date
+function initDate(){
+  const d=document.getElementById('inv-date');
+  d.value=new Date().toISOString().split('T')[0];
+}
+
+// Boot
+document.addEventListener('DOMContentLoaded',()=>{
+  renderDashboard();
+  renderInvoices();
+  renderCustomers();
+  renderQuotes();
+  renderTime();
+  populateCustomerSelect();
+  initDate();
+  addLineItem();
+  setTimeout(()=>{initRevenueChart();initDonutChart();},100);
+});
+</script>
+</body>
+</html>

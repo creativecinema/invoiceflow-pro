@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Docker
+*.log
+
+# Env-Dateien (niemals in Git!)
+.env
+.env.local
+.env.production
+
+# SSL-Zertifikate (niemals in Git!)
+*.pem
+*.key
+*.crt
+letsencrypt/

@@ -1,0 +1,34 @@
+name: Deploy InvoiceFlow Pro
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Dateien auf Hetzner-Server uebertragen
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host:     ${{ secrets.HETZNER_HOST }}
+          username: root
+          key:      ${{ secrets.HETZNER_SSH_KEY }}
+          source:   "invoiceflow-pro.html,Dockerfile,docker-compose.yml,nginx/"
+          target:   "/opt/invoiceflow"
+
+      - name: Docker Container neu bauen & starten
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.HETZNER_HOST }}
+          username: root
+          key:      ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd /opt/invoiceflow
+            docker compose pull || true
+            docker compose up -d --build --remove-orphans
+            docker image prune -f
+            echo "✓ Deployment erfolgreich – $(date)"
