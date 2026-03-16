@@ -1229,38 +1229,12 @@ function toast(msg, type='s') {
 
 
 
-// ═══════════════════════════════════════════════════════
-//  APP LAUNCH
-// ═══════════════════════════════════════════════════════
-function launchPortal(user) {
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app-page').style.display   = 'block';
-  setupSidebar(user);
-  buildNav(user.role);
-  showView('v-ins-portal');
-}
 
-function launchApp(user) {
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app-page').style.display   = 'block';
-  setupSidebar(user);
-  buildNav(user.role);
-  renderAll();
-  showView('v-dashboard');
-  setTimeout(initCharts, 150);
-}
+// APP LAUNCH — delegated to bootApp() (uses correct HTML IDs)
+function launchPortal(user) { bootApp(user); }
+function launchApp(user)    { bootApp(user); }
+function setupSidebar(user) { /* handled in bootApp */ }
 
-function setupSidebar(user) {
-  const ini = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const avClasses = {superadmin:'sb-av sb-av-sa', management:'sb-av sb-av-mg', employee:'sb-av sb-av-em', ins_portal:'sb-av sb-av-ip'};
-  const roleLabels = {superadmin:'👑 Superadmin', management:'💼 Geschäftsführung', employee:'👤 Mitarbeiter', ins_portal:'🛡️ Makler-Portal'};
-  const roleClasses= {superadmin:'sb-role sr-sa', management:'sb-role sr-mg', employee:'sb-role sr-em', ins_portal:'sb-role sr-ip'};
-  document.getElementById('av').textContent = ini;
-  document.getElementById('av').className   = avClasses[user.role] || 'sb-av sb-av-em';
-  document.getElementById('uname').textContent = user.name;
-  document.getElementById('udept').textContent  = user.dept;
-  document.getElementById('urole').innerHTML = `<span class="${roleClasses[user.role]||'sb-role sr-em'}">${roleLabels[user.role]||user.role}</span>`;
-}
 
 
 
@@ -1333,7 +1307,7 @@ function showView(viewId) {
   if (el) el.classList.add('active');
   const ni = document.getElementById('ni-' + viewId);
   if (ni) ni.classList.add('active');
-  document.getElementById('ptitle').textContent = VIEW_TITLES[viewId] || viewId;
+  document.getElementById('page-title').textContent = VIEW_TITLES[viewId] || viewId;
   if (viewId === 'v-users')     renderUsers();
   if (viewId === 'v-kunden')    renderKunden();
   if (viewId === 'v-artikel')   renderArtikel();
