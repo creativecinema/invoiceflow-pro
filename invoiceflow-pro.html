@@ -955,7 +955,7 @@ select.inp option{background:var(--s2)}
     </div><!-- /main -->
   </div><!-- /layout -->
 </div><!-- /app-page -->
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════
 //  USERS DATA
@@ -1681,6 +1681,8 @@ async function processOcr(file) {
   }
 }
 
+
+
 function showOcrResult(data, filename) {
   currentOcrData = data;
   currentFilename = filename;
@@ -2075,8 +2077,6 @@ document.querySelectorAll('[data-test]').forEach(btn => {
       if(statusEl)statusEl.innerHTML='<span class="badge bg">✓ Gespeichert</span>';
       toast('✓ Konfiguration gespeichert', 's');
     }
-  });
-});
 
 // ─── 2FA (TOTP) — Settings only ──────────────────────
 function b32enc(bytes) {
@@ -2190,975 +2190,9 @@ function closeModalById(id) { document.getElementById(id).classList.remove('open
 // ═══════════════════════════════════════════════════════
 //  EVENT LISTENERS — all attached here, not inline
 // ═══════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function() {
+;
 
-  // Login
-  document.getElementById('login-btn').addEventListener('click', doLogin);
-  document.getElementById('le').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-  document.getElementById('lp').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-
-  // Demo buttons
-  document.getElementById('d1').addEventListener('click', () => fillDemo('superadmin@invoiceflow.de','Admin2025!'));
-  document.getElementById('d2').addEventListener('click', () => fillDemo('gf@invoiceflow.de','GF2025!'));
-  document.getElementById('d3').addEventListener('click', () => fillDemo('max@invoiceflow.de','Max2025!'));
-  document.getElementById('d4').addEventListener('click', () => fillDemo('makler@partner.de','Makler2025!'));
-
-  // Logout
-  document.getElementById('logout-btn').addEventListener('click', doLogout);
-
-  // Nav buttons in topbar
-  document.getElementById('chat-nav-btn').addEventListener('click', () => showView('v-chatbot'));
-  document.getElementById('new-inv-btn').addEventListener('click', () => showView('v-invoices'));
-  document.getElementById('all-inv-btn').addEventListener('click', () => showView('v-invoices'));
-
-  // Invoice view
-  document.getElementById('abschlag-btn').addEventListener('click', () => openModal('m-abschlag'));
-
-  // Belege / OCR
-  const ocrDrop = document.getElementById('ocr-drop');
-  if(ocrDrop){
-    ocrDrop.addEventListener('click', () => document.getElementById('ocr-file').click());
-    ocrDrop.addEventListener('dragover', e => { e.preventDefault(); ocrDrop.classList.add('over'); });
-    ocrDrop.addEventListener('dragleave', () => ocrDrop.classList.remove('over'));
-    ocrDrop.addEventListener('drop', e => {
-      e.preventDefault(); ocrDrop.classList.remove('over');
-      if(e.dataTransfer.files.length) {
-        Array.from(e.dataTransfer.files).forEach((f,i) => setTimeout(()=>processOcr(f),i*500));
-      }
-    });
-  }
-  const ocrFile = document.getElementById('ocr-file');
-  if(ocrFile) ocrFile.addEventListener('change', e => {
-    if(e.target.files.length) Array.from(e.target.files).forEach((f,i)=>setTimeout(()=>processOcr(f),i*600));
-  });
-  const ocrSave = document.getElementById('ocr-save-btn');
-  if(ocrSave) ocrSave.addEventListener('click', saveOcrToDatabase);
-  const ocrDiscard = document.getElementById('ocr-discard-btn');
-  if(ocrDiscard) ocrDiscard.addEventListener('click', () => { document.getElementById('ocr-result-card').style.display='none'; });
-  const autoMatchBtn = document.getElementById('auto-match-btn');
-  if(autoMatchBtn) autoMatchBtn.addEventListener('click', autoMatchBelege);
-
-  // KI Engine selector
-  document.querySelectorAll('.ki-sel').forEach(el => {
-    el.addEventListener('click', () => {
-      currentEngine = el.dataset.engine;
-      document.querySelectorAll('.ki-sel').forEach(x => {
-        x.style.background='var(--s2)'; x.style.color='var(--t3)'; x.style.borderColor='var(--b1)';
-      });
-      el.style.background='var(--ambg2)'; el.style.color='var(--am)'; el.style.borderColor='rgba(245,158,11,.3)';
-    });
-  });
-
-  // Export / clear belege
-  const exportBtn = document.getElementById('export-belege-btn');
-  if(exportBtn) exportBtn.addEventListener('click', () => {
-    const data = JSON.stringify(getBelege(), null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'belege_' + new Date().toLocaleDateString('de-DE').replace(/\./g,'-') + '.json';
-    a.click(); toast('✓ Export gestartet','s');
-  });
-  const clearBtn = document.getElementById('clear-belege-btn');
-  if(clearBtn) clearBtn.addEventListener('click', () => {
-    if(confirm('Alle Belege aus der Datenbank löschen?')) {
-      saveBelege([]); renderBelegeTable(); updateBelegeStats(); toast('Datenbank geleert','w');
-    }
-  });
-
-  // Init beleg table
-  renderBelegeTable();
-  updateBelegeStats();
-
-  // Banking
-  document.getElementById('sync-bank-btn').addEventListener('click', () => { toast('⟳ Bankdaten werden synchronisiert...','i'); setTimeout(() => toast('✓ Bankdaten aktuell','s'), 1800); });
-  document.getElementById('match-all-btn').addEventListener('click', () => toast('✓ Alle Transaktionen zugeordnet','s'));
-
-  // Projekte
-  document.getElementById('nc-btn').addEventListener('click', () => openModal('m-nextcloud'));
-
-  // Chatbot
-  document.getElementById('chat-send-btn').addEventListener('click', sendChat);
-  document.getElementById('chat-inp').addEventListener('keydown', e => { if(e.key==='Enter') sendChat(); });
-  document.querySelectorAll('[data-q]').forEach(btn => {
-    btn.addEventListener('click', () => { document.getElementById('chat-inp').value = btn.dataset.q; sendChat(); });
-  });
-
-  // Zeit
-  document.getElementById('add-time-btn').addEventListener('click', () => {
-    const h = parseFloat(document.getElementById('zt-hrs').value);
-    if (!h||h<=0) { toast('Stunden eingeben','e'); return; }
-    toast('✓ ' + h + 'h erfasst','s');
-    document.getElementById('zt-hrs').value='';
-    document.getElementById('zt-desc').value='';
-  });
-  let timerInterval2=null,timerSecs2=0,timerOn2=false;
-  document.getElementById('timer-btn').addEventListener('click', () => {
-    if (!timerOn2) {
-      timerOn2=true; document.getElementById('timer-btn').textContent='⏹ Stoppen';
-      document.getElementById('timer-disp').style.display='inline';
-      timerInterval2=setInterval(()=>{timerSecs2++;const h=Math.floor(timerSecs2/3600).toString().padStart(2,'0');const m=Math.floor((timerSecs2%3600)/60).toString().padStart(2,'0');const s=(timerSecs2%60).toString().padStart(2,'0');document.getElementById('timer-disp').textContent=h+':'+m+':'+s;},1000);
-    } else {
-      timerOn2=false; clearInterval(timerInterval2);
-      document.getElementById('zt-hrs').value=(timerSecs2/3600).toFixed(2);
-      document.getElementById('timer-btn').textContent='⏱ Starten';
-      document.getElementById('timer-disp').style.display='none';
-      timerSecs2=0;
-    }
-  });
-
-  // Settings inputs — save on EVERY keystroke (input event)
-  const KEY_MAP = {'key-claude':'claude','key-openai':'openai','key-gocardless':'gocardless','wapi-tenant-set':'weclapp_tenant','wapi-token-set':'weclapp_token'};
-  ['key-claude','key-openai','key-gocardless','wapi-tenant-set','wapi-token-set'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    // Save on every keystroke AND on blur
-    const saveKey = () => {
-      const storageKey = 'key_' + KEY_MAP[id];
-      saveSettings({[storageKey]: el.value.trim()});
-    };
-    el.addEventListener('input', saveKey);
-    el.addEventListener('blur', saveKey);
-    el.addEventListener('change', saveKey);
-  });
-  ['nc-url','nc-path','nc-user','nc-pass','od-clientid','od-folder','gd-clientid','gd-folder','oc-url','oc-path','oc-user','oc-pass','win-path','win-tpl'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', () => saveSettings({[id.replace('-','_')]:el.value}));
-  });
-  const ncSave = document.getElementById('nc-save-btn');
-  if(ncSave) ncSave.addEventListener('click',()=>{document.getElementById('nc-badge').className='badge bg';document.getElementById('nc-badge').textContent='Konfiguriert';toast('✓ Nextcloud gespeichert','s');});
-  const ncTest = document.getElementById('nc-test-btn');
-  if(ncTest) ncTest.addEventListener('click',()=>{toast('⟳ Teste Verbindung...','i');setTimeout(()=>toast('✓ Nextcloud verbunden','s'),1500);});
-  const odAuth = document.getElementById('od-auth-btn');
-  if(odAuth) odAuth.addEventListener('click',()=>{toast('Microsoft OAuth-Fenster...','i');document.getElementById('od-badge').className='badge bc';document.getElementById('od-badge').textContent='Auth gestartet';});
-  const gdAuth = document.getElementById('gd-auth-btn');
-  if(gdAuth) gdAuth.addEventListener('click',()=>{toast('Google OAuth...','i');document.getElementById('gd-badge').className='badge bc';document.getElementById('gd-badge').textContent='Auth gestartet';});
-  const ocTest = document.getElementById('oc-test-btn');
-  if(ocTest) ocTest.addEventListener('click',()=>{toast('⟳ Teste ownCloud...','i');setTimeout(()=>toast('✓ ownCloud verbunden','s'),1500);});
-  const ocSave = document.getElementById('oc-save-btn');
-  if(ocSave) ocSave.addEventListener('click',()=>{document.getElementById('oc-badge').className='badge bg';document.getElementById('oc-badge').textContent='Konfiguriert';toast('✓ ownCloud gespeichert','s');});
-  const winSave = document.getElementById('win-save-btn');
-  if(winSave) winSave.addEventListener('click',()=>toast('✓ Windows-Pfad gespeichert','s'));
-  const notifySave = document.getElementById('notify-save-btn');
-  if(notifySave) notifySave.addEventListener('click',()=>toast('✓ Benachrichtigungen gespeichert','s'));
-
-  // Insurance portal
-  document.getElementById('copy-portal-btn').addEventListener('click', () => { navigator.clipboard?.writeText('https://invoiceflow.firma.de/insurance'); toast('🔗 Link kopiert','i'); });
-  document.getElementById('open-portal-btn').addEventListener('click', () => showView('v-ins-portal'));
-  document.getElementById('submit-ins-btn').addEventListener('click', () => toast('✓ Dokument eingereicht','s'));
-  document.getElementById('ins-drop').addEventListener('click', () => document.getElementById('ins-file').click());
-  document.getElementById('ins-file').addEventListener('change', e => { if(e.target.files[0]) toast('📎 '+e.target.files[0].name+' bereit','i'); });
-
-  // Modals: close on backdrop
-  document.querySelectorAll('.modal-ov').forEach(ov => {
-    ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('open'); });
-  });
-  const abClose = document.getElementById('ab-close-btn');
-  if(abClose) abClose.addEventListener('click',()=>closeModalById('m-abschlag'));
-  const abSave = document.getElementById('ab-save-btn');
-  if(abSave) abSave.addEventListener('click',()=>{closeModalById('m-abschlag');toast('✓ Abschlagsrechnungen erstellt','s');});
-  const abType = document.getElementById('ab-type');
-  if(abType) abType.addEventListener('change', renderAbschlag);
-  const abTotal = document.getElementById('ab-total');
-  if(abTotal) abTotal.addEventListener('input', renderAbschlag);
-  const ncClose = document.getElementById('nc-close-btn');
-  if(ncClose) ncClose.addEventListener('click',()=>closeModalById('m-nextcloud'));
-  const ncCreate = document.getElementById('nc-create-btn');
-  if(ncCreate) ncCreate.addEventListener('click',()=>{const name=document.getElementById('nc-proj-name').value||'Neues_Projekt';closeModalById('m-nextcloud');toast('📁 Ordner "'+name+'" auf Nextcloud & Server erstellt!','s');});
-
-  // Abschlag
-  renderAbschlag();
-
-  // Auto-restore session
-  const sess = getSession();
-  if (sess) {
-    const users = getUsers();
-    const u = users.find(x => x.id===sess.id && x.active);
-    if (u) {
-      CU = u;
-      if (u.role === 'ins_portal') { launchPortal(u); return; }
-      launchApp(u); return;
-    }
-  }
-
-  // Show login
-  document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('app-page').style.display   = 'none';
-});
-</script>
-
-<!-- ═══ MODAL: NEUER KUNDE ══════════════════════════════ -->
-<div class="modal-ov" id="m-kunde">
-  <div class="modal" style="width:600px">
-    <div class="mtitle" id="m-kunde-title">Neuer Kunde</div>
-    <input type="hidden" id="kunde-edit-id">
-    <div class="g2" style="gap:12px">
-      <div class="fi"><label class="fl">Firmenname *</label><input class="inp" id="k-firma" placeholder="Muster GmbH"></div>
-      <div class="fi"><label class="fl">Kundennummer</label><input class="inp" id="k-nr" placeholder="Auto" readonly style="color:var(--t3)"></div>
-    </div>
-    <div class="g2" style="gap:12px">
-      <div class="fi"><label class="fl">Ansprechpartner</label><input class="inp" id="k-kontakt" placeholder="Max Mustermann"></div>
-      <div class="fi"><label class="fl">Position</label><input class="inp" id="k-position" placeholder="Geschäftsführer"></div>
-    </div>
-    <div class="g2" style="gap:12px">
-      <div class="fi"><label class="fl">E-Mail *</label><input class="inp" id="k-email" type="email" placeholder="kontakt@firma.de"></div>
-      <div class="fi"><label class="fl">Telefon</label><input class="inp" id="k-tel" placeholder="+49 89 123456"></div>
-    </div>
-    <div class="fi"><label class="fl">Straße + Hausnummer</label><input class="inp" id="k-strasse" placeholder="Musterstraße 12"></div>
-    <div class="g3" style="gap:12px">
-      <div class="fi"><label class="fl">PLZ</label><input class="inp" id="k-plz" placeholder="80333"></div>
-      <div class="fi"><label class="fl">Ort</label><input class="inp" id="k-ort" placeholder="München"></div>
-      <div class="fi"><label class="fl">Land</label><select class="inp" id="k-land"><option>Deutschland</option><option>Österreich</option><option>Schweiz</option><option>Sonstige</option></select></div>
-    </div>
-    <div class="g2" style="gap:12px">
-      <div class="fi"><label class="fl">USt-ID</label><input class="inp" id="k-ustid" placeholder="DE123456789"></div>
-      <div class="fi"><label class="fl">Steuernummer</label><input class="inp" id="k-steuernr" placeholder="123/456/78901"></div>
-    </div>
-    <div class="g2" style="gap:12px">
-      <div class="fi"><label class="fl">Kategorie</label>
-        <select class="inp" id="k-kategorie"><option>A-Kunde</option><option>B-Kunde</option><option>C-Kunde</option><option>Neukunde</option><option>Inaktiv</option></select>
-      </div>
-      <div class="fi"><label class="fl">Zahlungsziel (Tage)</label><input class="inp" id="k-zahlungsziel" type="number" value="30" placeholder="30"></div>
-    </div>
-    <div class="fi"><label class="fl">Notizen</label><textarea class="inp" id="k-notizen" rows="2" style="resize:none"></textarea></div>
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-p" style="flex:1" id="k-save-btn">💾 Speichern</button>
-      <button class="btn btn-g" id="k-cancel-btn">Abbrechen</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ MODAL: NEUER ARTIKEL ════════════════════════════ -->
-<div class="modal-ov" id="m-artikel">
-  <div class="modal" style="width:600px">
-    <div class="mtitle" id="m-artikel-title">Neuer Artikel</div>
-    <input type="hidden" id="artikel-edit-id">
-    <div class="g2" style="gap:12px">
-      <div class="fi"><label class="fl">Artikelnummer *</label><input class="inp" id="art-nr" placeholder="Art-0001"></div>
-      <div class="fi"><label class="fl">Kategorie</label>
-        <select class="inp" id="art-kat"><option>Dienstleistung</option><option>Produkt</option><option>Software</option><option>Lizenz</option><option>Sonstiges</option></select>
-      </div>
-    </div>
-    <div class="fi"><label class="fl">Bezeichnung *</label><input class="inp" id="art-name" placeholder="z.B. Webentwicklung Stunde"></div>
-    <div class="fi"><label class="fl">Beschreibung</label><textarea class="inp" id="art-desc" rows="2" style="resize:none" placeholder="Detaillierte Beschreibung für Rechnungen"></textarea></div>
-    <div class="g3" style="gap:12px">
-      <div class="fi"><label class="fl">Einheit</label>
-        <select class="inp" id="art-einheit"><option>Stunde</option><option>Tag</option><option>Stück</option><option>Monat</option><option>Pauschal</option><option>m²</option><option>km</option></select>
-      </div>
-      <div class="fi"><label class="fl">MwSt. (%)</label>
-        <select class="inp" id="art-mwst"><option value="19">19%</option><option value="7">7%</option><option value="0">0% (§19 UStG)</option></select>
-      </div>
-      <div class="fi"><label class="fl">Buchungskonto</label><input class="inp" id="art-konto" placeholder="z.B. 8400"></div>
-    </div>
-
-    <!-- Preiszeiträume -->
-    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;margin-bottom:8px;margin-top:4px">
-      Preiszeiträume
-      <button class="btn btn-g btn-sm" style="margin-left:8px;font-size:10px" id="add-preis-btn">+ Zeitraum hinzufügen</button>
-    </div>
-    <div id="preis-zeitraeume"></div>
-
-    <div class="fi" style="margin-top:4px"><label class="fl">Mindestbestellmenge</label><input class="inp" id="art-minmenge" type="number" value="1" min="1"></div>
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-p" style="flex:1" id="art-save-btn">💾 Artikel speichern</button>
-      <button class="btn btn-g" id="art-cancel-btn">Abbrechen</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ MODAL: BANK VERBINDEN ════════════════════════════ -->
-<div class="modal-ov" id="m-bank-connect">
-  <div class="modal">
-    <div class="mtitle">🏦 Bankkonto verbinden</div>
-    <div style="font-size:12px;color:var(--t2);margin-bottom:16px">Verbinde dein Konto über GoCardless Open Banking (PSD2-konform, 350+ Banken).</div>
-    <div class="fi"><label class="fl">Kontobezeichnung</label><input class="inp" id="bank-acc-name" placeholder="z.B. Hauptkonto Commerzbank"></div>
-    <div class="fi"><label class="fl">IBAN</label><input class="inp" id="bank-acc-iban" placeholder="DE89 3704 0044 0532 0130 00" style="font-family:'IBM Plex Mono',monospace;letter-spacing:1px"></div>
-    <div class="fi"><label class="fl">Bank / Institut</label><input class="inp" id="bank-acc-bank" placeholder="Commerzbank AG"></div>
-    <div class="fi"><label class="fl">GoCardless Requisition ID</label><input class="inp" id="bank-acc-reqid" placeholder="Optional — für echte PSD2-Verbindung" style="font-size:11px"></div>
-    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--t3);line-height:1.7">
-      <strong style="color:var(--t2)">Ohne GoCardless:</strong> Kontoauszüge manuell via CSV importieren.<br>
-      <strong style="color:var(--t2)">Mit GoCardless:</strong> Automatischer täglicher Sync. API-Key in Einstellungen → API-Keys eintragen.
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-p" style="flex:1" id="bank-acc-save-btn">Konto speichern</button>
-      <button class="btn btn-c btn-sm" id="bank-import-csv-btn">📂 CSV importieren</button>
-      <button class="btn btn-g" id="bank-acc-cancel-btn">Abbrechen</button>
-    </div>
-    <input type="file" id="csv-import-file" accept=".csv" style="display:none">
-  </div>
-</div>
-
-<!-- ═══ MODAL: TRANSAKTION ZUORDNEN ═════════════════════ -->
-<div class="modal-ov" id="m-txn-assign">
-  <div class="modal">
-    <div class="mtitle">Transaktion zuordnen</div>
-    <div id="txn-assign-info" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
-    <div class="fi"><label class="fl">Zuordnen zu</label>
-      <select class="inp" id="txn-assign-type">
-        <option value="invoice">Rechnung</option>
-        <option value="beleg">Beleg / Ausgabe</option>
-        <option value="other">Sonstige Buchung</option>
-      </select>
-    </div>
-    <div class="fi"><label class="fl">Referenz</label>
-      <select class="inp" id="txn-assign-ref"></select>
-    </div>
-    <div class="fi"><label class="fl">Buchungskategorie</label>
-      <select class="inp" id="txn-assign-cat">
-        <option>Umsatzerlöse</option><option>Materialaufwand</option><option>Personalkosten</option>
-        <option>Miet- & Pachtaufwand</option><option>Telefonkosten</option><option>Büromaterial</option>
-        <option>Reisekosten</option><option>Marketing</option><option>Sonstiger Aufwand</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-p" style="flex:1" id="txn-assign-save-btn">Zuordnen & speichern</button>
-      <button class="btn btn-g" id="txn-assign-cancel-btn">Abbrechen</button>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
-<script>
-// ═══════════════════════════════════════════════════════════════════════════
-//  KUNDEN DATENBANK
-// ═══════════════════════════════════════════════════════════════════════════
-const KUNDEN_DEFAULT = [
-  {id:'KD-1001',firma:'Acme GmbH',kontakt:'Thomas Müller',position:'Geschäftsführer',email:'t.mueller@acme.de',tel:'+49 89 123456',strasse:'Maximilianstraße 5',plz:'80333',ort:'München',land:'Deutschland',ustid:'DE123456789',steuernr:'',kategorie:'A-Kunde',zahlungsziel:30,notizen:'Langjähriger Stammkunde',umsatz:42800,aktiv:true,erstellt:'01.01.2024'},
-  {id:'KD-1002',firma:'TechStart AG',kontakt:'Sandra Berger',position:'CEO',email:'s.berger@techstart.de',tel:'+49 30 654321',strasse:'Unter den Linden 10',plz:'10117',ort:'Berlin',land:'Deutschland',ustid:'DE987654321',steuernr:'',kategorie:'A-Kunde',zahlungsziel:14,notizen:'',umsatz:38200,aktiv:true,erstellt:'15.01.2024'},
-  {id:'KD-1003',firma:'FreshBrand GmbH',kontakt:'Jana Weber',position:'Marketing',email:'j.weber@freshbrand.de',tel:'+49 40 789012',strasse:'Jungfernstieg 20',plz:'20354',ort:'Hamburg',land:'Deutschland',ustid:'',steuernr:'',kategorie:'B-Kunde',zahlungsziel:30,notizen:'',umsatz:27600,aktiv:true,erstellt:'01.02.2024'},
-  {id:'KD-1004',firma:'Digital Media KG',kontakt:'Klaus Hoffmann',position:'Leitung IT',email:'k.hoffmann@dm.de',tel:'+49 211 345678',strasse:'Königsallee 15',plz:'40212',ort:'Düsseldorf',land:'Deutschland',ustid:'DE456789123',steuernr:'',kategorie:'B-Kunde',zahlungsziel:30,notizen:'',umsatz:18400,aktiv:true,erstellt:'10.02.2024'},
-  {id:'KD-1005',firma:'Nova Consulting',kontakt:'Peter Schmidt',position:'Partner',email:'p.schmidt@nova.de',tel:'+49 69 901234',strasse:'Taunusanlage 8',plz:'60329',ort:'Frankfurt',land:'Deutschland',ustid:'',steuernr:'',kategorie:'C-Kunde',zahlungsziel:45,notizen:'Zahlungshistorie prüfen',umsatz:15800,aktiv:false,erstellt:'01.03.2024'},
-];
-function getKunden(){try{const s=localStorage.getItem('if_kunden');return s?JSON.parse(s):KUNDEN_DEFAULT;}catch(e){return KUNDEN_DEFAULT;}}
-function saveKunden(d){try{localStorage.setItem('if_kunden',JSON.stringify(d));}catch(e){}}
-function nextKundenNr(){const k=getKunden();const nums=k.map(x=>parseInt(x.id.replace('KD-',''))).filter(n=>!isNaN(n));const max=nums.length?Math.max(...nums):1000;return 'KD-'+(max+1);}
-
-function renderKunden(filter=''){
-  const kunden=getKunden().filter(k=>!filter||k.firma.toLowerCase().includes(filter.toLowerCase())||k.email.toLowerCase().includes(filter.toLowerCase())||k.kontakt.toLowerCase().includes(filter.toLowerCase()));
-  document.getElementById('kunden-count').textContent=`${kunden.length} Kunden · ∑ ${fmt(kunden.reduce((s,k)=>s+(k.umsatz||0),0))}`;
-  const catColors={['A-Kunde']:'bg',['B-Kunde']:'ba',['C-Kunde']:'bc',['Neukunde']:'bb',['Inaktiv']:'bk'};
-  document.getElementById('kunden-tbody').innerHTML=kunden.map(k=>`<tr>
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t1)">${k.id}</td>
-    <td><div style="font-weight:500;color:var(--t1)">${k.firma}</div><div style="font-size:10px;color:var(--t3)">${k.strasse}, ${k.plz} ${k.ort}</div></td>
-    <td><div style="font-size:12px">${k.kontakt||'—'}</div><div style="font-size:10px;color:var(--t3)">${k.position||''}</div></td>
-    <td style="color:var(--bl)">${k.email}</td>
-    <td style="font-size:11px">${k.tel||'—'}</td>
-    <td style="font-size:11px">${k.plz} ${k.ort}</td>
-    <td style="color:var(--am);font-weight:500">${fmt(k.umsatz||0)}</td>
-    <td><span class="badge ${catColors[k.kategorie]||'bk'}">${k.kategorie}</span></td>
-    <td><span class="badge ${k.aktiv?'bg':'br'}">${k.aktiv?'Aktiv':'Inaktiv'}</span></td>
-    <td><div style="display:flex;gap:5px">
-      <button class="btn btn-g btn-sm" onclick="editKunde('${k.id}')">✏️</button>
-      <button class="btn btn-d btn-sm" onclick="deleteKunde('${k.id}')">✕</button>
-    </div></td>
-  </tr>`).join('');
-}
-
-function openNewKunde(){
-  document.getElementById('m-kunde-title').textContent='Neuer Kunde';
-  document.getElementById('kunde-edit-id').value='';
-  ['k-firma','k-kontakt','k-position','k-email','k-tel','k-strasse','k-plz','k-ort','k-ustid','k-steuernr','k-notizen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('k-nr').value=nextKundenNr();
-  document.getElementById('k-zahlungsziel').value=30;
-  document.getElementById('k-land').value='Deutschland';
-  document.getElementById('k-kategorie').value='Neukunde';
-  openModal('m-kunde');
-}
-function editKunde(id){
-  const k=getKunden().find(x=>x.id===id);if(!k)return;
-  document.getElementById('m-kunde-title').textContent='Kunde bearbeiten';
-  document.getElementById('kunde-edit-id').value=id;
-  document.getElementById('k-nr').value=k.id;
-  document.getElementById('k-firma').value=k.firma||'';
-  document.getElementById('k-kontakt').value=k.kontakt||'';
-  document.getElementById('k-position').value=k.position||'';
-  document.getElementById('k-email').value=k.email||'';
-  document.getElementById('k-tel').value=k.tel||'';
-  document.getElementById('k-strasse').value=k.strasse||'';
-  document.getElementById('k-plz').value=k.plz||'';
-  document.getElementById('k-ort').value=k.ort||'';
-  document.getElementById('k-land').value=k.land||'Deutschland';
-  document.getElementById('k-ustid').value=k.ustid||'';
-  document.getElementById('k-steuernr').value=k.steuernr||'';
-  document.getElementById('k-kategorie').value=k.kategorie||'B-Kunde';
-  document.getElementById('k-zahlungsziel').value=k.zahlungsziel||30;
-  document.getElementById('k-notizen').value=k.notizen||'';
-  openModal('m-kunde');
-}
-function saveKunde(){
-  const firma=document.getElementById('k-firma').value.trim();
-  const email=document.getElementById('k-email').value.trim();
-  if(!firma){toast('Firmenname ist Pflichtfeld','e');return;}
-  const editId=document.getElementById('kunde-edit-id').value;
-  const kunden=getKunden();
-  const obj={
-    id:editId||nextKundenNr(),firma,kontakt:document.getElementById('k-kontakt').value.trim(),
-    position:document.getElementById('k-position').value.trim(),email,
-    tel:document.getElementById('k-tel').value.trim(),strasse:document.getElementById('k-strasse').value.trim(),
-    plz:document.getElementById('k-plz').value.trim(),ort:document.getElementById('k-ort').value.trim(),
-    land:document.getElementById('k-land').value,ustid:document.getElementById('k-ustid').value.trim(),
-    steuernr:document.getElementById('k-steuernr').value.trim(),
-    kategorie:document.getElementById('k-kategorie').value,
-    zahlungsziel:parseInt(document.getElementById('k-zahlungsziel').value)||30,
-    notizen:document.getElementById('k-notizen').value.trim(),
-    umsatz:editId?(kunden.find(k=>k.id===editId)?.umsatz||0):0,
-    aktiv:true,erstellt:editId?(kunden.find(k=>k.id===editId)?.erstellt||new Date().toLocaleDateString('de-DE')):new Date().toLocaleDateString('de-DE'),
-  };
-  if(editId){const idx=kunden.findIndex(k=>k.id===editId);if(idx>=0)kunden[idx]=obj;}
-  else kunden.unshift(obj);
-  saveKunden(kunden);
-  closeModalById('m-kunde');
-  toast('✓ Kunde "'+firma+'" gespeichert','s');
-  renderKunden();
-  updateInvoiceCustomerSelect();
-}
-function deleteKunde(id){
-  if(!confirm('Kunden wirklich löschen?'))return;
-  saveKunden(getKunden().filter(k=>k.id!==id));
-  renderKunden(); toast('Kunde gelöscht','w');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  ARTIKEL DATENBANK
-// ═══════════════════════════════════════════════════════════════════════════
-const ARTIKEL_DEFAULT = [
-  {id:'ART-001',nr:'WEB-001',name:'Webentwicklung',desc:'Frontend & Backend Entwicklung',kategorie:'Dienstleistung',einheit:'Stunde',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:120},{von:'01.01.2023',bis:'31.12.2023',preis:110}],aktiv:true},
-  {id:'ART-002',nr:'SEO-002',name:'SEO-Beratung',desc:'Monatliche SEO-Optimierung',kategorie:'Dienstleistung',einheit:'Monat',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:950}],aktiv:true},
-  {id:'ART-003',nr:'PM-003',name:'Projektmanagement',desc:'Stundensatz Projektleitung',kategorie:'Dienstleistung',einheit:'Stunde',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.06.2024',bis:'',preis:130},{von:'01.01.2024',bis:'31.05.2024',preis:120}],aktiv:true},
-  {id:'ART-004',nr:'DES-004',name:'UI/UX Design',desc:'Gestaltung digitaler Oberflächen',kategorie:'Dienstleistung',einheit:'Stunde',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:100}],aktiv:true},
-  {id:'ART-005',nr:'LIC-005',name:'Software-Lizenz',desc:'Monatliche Lizenzgebühr InvoiceFlow',kategorie:'Lizenz',einheit:'Monat',mwst:19,konto:'8300',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:49}],aktiv:true},
-];
-function getArtikel(){try{const s=localStorage.getItem('if_artikel');return s?JSON.parse(s):ARTIKEL_DEFAULT;}catch(e){return ARTIKEL_DEFAULT;}}
-function saveArtikel(d){try{localStorage.setItem('if_artikel',JSON.stringify(d));}catch(e){}}
-function nextArtikelNr(){const a=getArtikel();const nums=a.map(x=>parseInt((x.nr||'').replace(/[^0-9]/g,''))).filter(n=>!isNaN(n));const max=nums.length?Math.max(...nums):0;return 'ART-'+(max+1).toString().padStart(3,'0');}
-
-function getAktuellerPreis(artikel){
-  const today=new Date();
-  const gueltig=artikel.preise.filter(p=>{
-    const von=p.von?new Date(p.von.split('.').reverse().join('-')):new Date('2000-01-01');
-    const bis=p.bis?new Date(p.bis.split('.').reverse().join('-')):new Date('2099-12-31');
-    return today>=von&&today<=bis;
-  });
-  if(gueltig.length) return Math.max(...gueltig.map(p=>p.preis));
-  return artikel.preise.length?artikel.preise[0].preis:0;
-}
-
-function renderArtikel(filterKat=''){
-  const arts=getArtikel().filter(a=>!filterKat||a.kategorie===filterKat);
-  document.getElementById('artikel-count').textContent=`${arts.length} Artikel`;
-  const katColors={Dienstleistung:'bc',Produkt:'bg',Software:'bp',Lizenz:'ba',Sonstiges:'bk'};
-  document.getElementById('artikel-tbody').innerHTML=arts.map(a=>{
-    const p=getAktuellerPreis(a);
-    const pCount=a.preise.length;
-    return`<tr>
-      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--am)">${a.nr}</td>
-      <td><div style="font-weight:500;color:var(--t1)">${a.name}</div><div style="font-size:10px;color:var(--t3)">${a.desc}</div></td>
-      <td><span class="badge ${katColors[a.kategorie]||'bk'}">${a.kategorie}</span></td>
-      <td style="font-size:11px">${a.einheit}</td>
-      <td style="font-weight:600;color:var(--gn)">${fmt(p)}</td>
-      <td style="font-size:11px">${a.mwst}%</td>
-      <td><span class="badge ${pCount>1?'bb':'bk'}">${pCount} Zeitraum${pCount!==1?'e':''}</span></td>
-      <td><span class="badge ${a.aktiv?'bg':'br'}">${a.aktiv?'Aktiv':'Inaktiv'}</span></td>
-      <td><div style="display:flex;gap:5px">
-        <button class="btn btn-g btn-sm" onclick="editArtikel('${a.id}')">✏️</button>
-        <button class="btn btn-d btn-sm" onclick="deleteArtikel('${a.id}')">✕</button>
-      </div></td>
-    </tr>`;
-  }).join('');
-}
-
-let preisZeitraeume=[];
-function renderPreisZeitraeume(){
-  document.getElementById('preis-zeitraeume').innerHTML=preisZeitraeume.map((p,i)=>`
-    <div style="display:grid;grid-template-columns:130px 130px 1fr 36px;gap:8px;align-items:center;margin-bottom:7px;background:var(--s2);padding:8px;border-radius:8px">
-      <div><label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">Gültig von</label><input class="inp" style="font-size:11px" type="text" value="${p.von}" placeholder="01.01.2024" onchange="preisZeitraeume[${i}].von=this.value"></div>
-      <div><label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">Gültig bis (leer=unbegrenzt)</label><input class="inp" style="font-size:11px" type="text" value="${p.bis}" placeholder="31.12.2024" onchange="preisZeitraeume[${i}].bis=this.value"></div>
-      <div><label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">Preis (€)</label><input class="inp" style="font-size:11px;font-family:'IBM Plex Mono',monospace" type="number" step="0.01" value="${p.preis}" onchange="preisZeitraeume[${i}].preis=parseFloat(this.value)"></div>
-      <button onclick="preisZeitraeume.splice(${i},1);renderPreisZeitraeume()" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:16px;padding-top:16px">×</button>
-    </div>`).join('');
-}
-
-function openNewArtikel(){
-  document.getElementById('m-artikel-title').textContent='Neuer Artikel';
-  document.getElementById('artikel-edit-id').value='';
-  document.getElementById('art-nr').value=nextArtikelNr();
-  ['art-name','art-desc','art-konto'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('art-kat').value='Dienstleistung';
-  document.getElementById('art-einheit').value='Stunde';
-  document.getElementById('art-mwst').value='19';
-  document.getElementById('art-minmenge').value='1';
-  preisZeitraeume=[{von:new Date().toLocaleDateString('de-DE'),bis:'',preis:0}];
-  renderPreisZeitraeume();
-  openModal('m-artikel');
-}
-function editArtikel(id){
-  const a=getArtikel().find(x=>x.id===id);if(!a)return;
-  document.getElementById('m-artikel-title').textContent='Artikel bearbeiten';
-  document.getElementById('artikel-edit-id').value=id;
-  document.getElementById('art-nr').value=a.nr;
-  document.getElementById('art-name').value=a.name;
-  document.getElementById('art-desc').value=a.desc||'';
-  document.getElementById('art-kat').value=a.kategorie;
-  document.getElementById('art-einheit').value=a.einheit;
-  document.getElementById('art-mwst').value=String(a.mwst);
-  document.getElementById('art-konto').value=a.konto||'';
-  document.getElementById('art-minmenge').value=a.minMenge||1;
-  preisZeitraeume=JSON.parse(JSON.stringify(a.preise));
-  renderPreisZeitraeume();
-  openModal('m-artikel');
-}
-function saveArtikelData(){
-  const name=document.getElementById('art-name').value.trim();
-  if(!name){toast('Bezeichnung ist Pflichtfeld','e');return;}
-  if(!preisZeitraeume.length){toast('Mindestens ein Preiszeitraum erforderlich','e');return;}
-  const editId=document.getElementById('artikel-edit-id').value;
-  const arts=getArtikel();
-  const obj={
-    id:editId||(Date.now().toString()),
-    nr:document.getElementById('art-nr').value.trim(),
-    name,desc:document.getElementById('art-desc').value.trim(),
-    kategorie:document.getElementById('art-kat').value,
-    einheit:document.getElementById('art-einheit').value,
-    mwst:parseInt(document.getElementById('art-mwst').value),
-    konto:document.getElementById('art-konto').value.trim(),
-    minMenge:parseInt(document.getElementById('art-minmenge').value)||1,
-    preise:preisZeitraeume,aktiv:true,
-  };
-  if(editId){const idx=arts.findIndex(a=>a.id===editId);if(idx>=0)arts[idx]=obj;}
-  else arts.unshift(obj);
-  saveArtikel(arts);
-  closeModalById('m-artikel');
-  toast('✓ Artikel "'+name+'" gespeichert','s');
-  renderArtikel();
-}
-function deleteArtikel(id){
-  if(!confirm('Artikel wirklich löschen?'))return;
-  saveArtikel(getArtikel().filter(a=>a.id!==id));
-  renderArtikel(); toast('Artikel gelöscht','w');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  TEXTBAUSTEINE
-// ═══════════════════════════════════════════════════════════════════════════
-const TEXTE_DEFAULT=[
-  {id:'T001',name:'Zahlungshinweis Standard',cat:'rechnung',body:'Bitte überweisen Sie den Rechnungsbetrag von {BETRAG} bis zum {FAELLIGKEITSDATUM} auf das unten genannte Konto.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.',erstellt:'01.01.2024'},
-  {id:'T002',name:'Angebot Einleitung',cat:'angebot',body:'Vielen Dank für Ihr Interesse. Gerne unterbreiten wir Ihnen folgendes Angebot:\n\nAngebotnummer: {RECHNUNGSNR}\nGültig bis: {FAELLIGKEITSDATUM}',erstellt:'01.01.2024'},
-  {id:'T003',name:'Erste Mahnung',cat:'mahnung',body:'Sehr geehrte Damen und Herren,\n\nbei der Überprüfung unserer Buchhaltung haben wir festgestellt, dass die Rechnung {RECHNUNGSNR} vom {DATUM} über {BETRAG} noch nicht ausgeglichen wurde.\n\nWir bitten Sie, den Betrag bis zum {FAELLIGKEITSDATUM} zu überweisen.\n\nMit freundlichen Grüßen',erstellt:'01.01.2024'},
-  {id:'T004',name:'Zweite Mahnung',cat:'mahnung',body:'Sehr geehrte Damen und Herren,\n\nbereits am {DATUM} haben wir Sie freundlich an den offenen Betrag von {BETRAG} erinnert.\n\nDa wir bis heute keinen Zahlungseingang verzeichnen konnten, bitten wir Sie dringend, den Betrag innerhalb von 7 Tagen zu begleichen.\n\nBei weiterem Ausbleiben der Zahlung sehen wir uns gezwungen, rechtliche Schritte einzuleiten.',erstellt:'01.01.2024'},
-  {id:'T005',name:'Auftragsbestätigung E-Mail',cat:'email',body:'Betreff: Auftragsbestätigung {RECHNUNGSNR}\n\nSehr geehrte/r {KUNDENNAME},\n\nhiermit bestätigen wir Ihren Auftrag.\n\nWir werden die Arbeiten wie vereinbart durchführen und uns bei Rückfragen gerne bei Ihnen melden.\n\nMit freundlichen Grüßen',erstellt:'01.01.2024'},
-];
-function getTexte(){try{const s=localStorage.getItem('if_texte');return s?JSON.parse(s):TEXTE_DEFAULT;}catch(e){return TEXTE_DEFAULT;}}
-function saveTexte(d){try{localStorage.setItem('if_texte',JSON.stringify(d));}catch(e){}}
-
-let activeTextCat='rechnung';
-let editingTextId=null;
-
-function renderTexte(){
-  const texte=getTexte().filter(t=>t.cat===activeTextCat);
-  document.getElementById('texte-list').innerHTML=texte.length?texte.map(t=>`
-    <div class="cardsm" style="margin-bottom:8px;cursor:pointer;transition:all .15s;border-color:${editingTextId===t.id?'var(--am)':'var(--b1)'}" onclick="loadTextEditor('${t.id}')">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-weight:500;font-size:12px;color:var(--t1)">${t.name}</div>
-        <div style="display:flex;gap:5px">
-          <button class="btn btn-g btn-sm" style="font-size:10px" onclick="event.stopPropagation();loadTextEditor('${t.id}')">✏️</button>
-          <button class="btn btn-d btn-sm" style="font-size:10px" onclick="event.stopPropagation();deleteText('${t.id}')">✕</button>
-        </div>
-      </div>
-      <div style="font-size:10px;color:var(--t3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.body.substring(0,80)}...</div>
-    </div>`).join('')
-    :'<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">Keine Textbausteine in dieser Kategorie</div>';
-}
-
-function loadTextEditor(id){
-  const t=getTexte().find(x=>x.id===id);if(!t)return;
-  editingTextId=id;
-  document.getElementById('text-editor-title').textContent='Bearbeiten: '+t.name;
-  document.getElementById('te-name').value=t.name;
-  document.getElementById('te-cat').value=t.cat;
-  document.getElementById('te-body').value=t.body;
-  updateTextPreview();
-  renderTexte();
-}
-
-function updateTextPreview(){
-  const body=document.getElementById('te-body')?.value||'';
-  document.getElementById('text-preview').textContent=body
-    .replace('{KUNDENNAME}','Max Mustermann')
-    .replace('{RECHNUNGSNR}','RE-2025-0042')
-    .replace('{BETRAG}','€ 3.332,00')
-    .replace('{DATUM}',new Date().toLocaleDateString('de-DE'))
-    .replace('{FAELLIGKEITSDATUM}',new Date(Date.now()+30*86400000).toLocaleDateString('de-DE'))
-    .replace('{FIRMA}','Muster GmbH');
-}
-
-function saveTextBaustein(){
-  const name=document.getElementById('te-name').value.trim();
-  const body=document.getElementById('te-body').value.trim();
-  if(!name||!body){toast('Name und Text sind Pflichtfelder','e');return;}
-  const texte=getTexte();
-  const obj={id:editingTextId||('T'+Date.now()),name,cat:document.getElementById('te-cat').value,body,erstellt:new Date().toLocaleDateString('de-DE')};
-  if(editingTextId){const idx=texte.findIndex(t=>t.id===editingTextId);if(idx>=0)texte[idx]=obj;}
-  else texte.push(obj);
-  saveTexte(texte);
-  editingTextId=null;
-  toast('✓ Textbaustein gespeichert','s');
-  renderTexte();
-}
-
-function deleteText(id){
-  if(!confirm('Textbaustein löschen?'))return;
-  saveTexte(getTexte().filter(t=>t.id!==id));
-  if(editingTextId===id){editingTextId=null;document.getElementById('te-name').value='';document.getElementById('te-body').value='';}
-  renderTexte(); toast('Textbaustein gelöscht','w');
-}
-
-function insertVar(v){
-  const ta=document.getElementById('te-body');
-  const start=ta.selectionStart,end=ta.selectionEnd;
-  ta.value=ta.value.substring(0,start)+v+ta.value.substring(end);
-  ta.selectionStart=ta.selectionEnd=start+v.length;
-  ta.focus();updateTextPreview();
-}
-
-function newTextBaustein(){
-  editingTextId=null;
-  document.getElementById('text-editor-title').textContent='Neuer Textbaustein';
-  document.getElementById('te-name').value='';
-  document.getElementById('te-cat').value=activeTextCat;
-  document.getElementById('te-body').value='';
-  document.getElementById('text-preview').textContent='';
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  BANKING (ECHT mit localStorage)
-// ═══════════════════════════════════════════════════════════════════════════
-const BANK_ACCOUNTS_DEFAULT=[
-  {id:'ACC-1',name:'Hauptkonto Commerzbank',iban:'DE89 3704 0044 0532 0130 00',bank:'Commerzbank AG',balance:34820.45,reqId:'',lastSync:'16.03.2025 09:00'},
-  {id:'ACC-2',name:'Geschäftskonto Sparkasse',iban:'DE75 5005 0201 0007 0000 00',bank:'Sparkasse Frankfurt',balance:12400.00,reqId:'',lastSync:'16.03.2025 09:00'},
-];
-const TRANSACTIONS_DEFAULT=[
-  {id:'TXN-001',date:'15.03.2025',desc:'Eingang RE-2025-0039 Acme GmbH',amount:3332.00,type:'in',account:'ACC-1',cat:'Umsatzerlöse',matchedTo:'RE-2025-0039',matched:true},
-  {id:'TXN-002',date:'14.03.2025',desc:'Amazon Business DE SEPA',amount:-234.50,type:'out',account:'ACC-1',cat:'Büromaterial',matchedTo:'B001',matched:true},
-  {id:'TXN-003',date:'12.03.2025',desc:'Miete März 2025',amount:-2800.00,type:'out',account:'ACC-1',cat:'Miet- & Pachtaufwand',matchedTo:null,matched:false},
-  {id:'TXN-004',date:'11.03.2025',desc:'VB-Nr 8820013 RE-2025-0038',amount:1428.00,type:'in',account:'ACC-1',cat:'Umsatzerlöse',matchedTo:null,matched:false},
-  {id:'TXN-005',date:'10.03.2025',desc:'Deutsche Telekom AG SEPA',amount:-89.99,type:'out',account:'ACC-1',cat:'Telefonkosten',matchedTo:'B003',matched:true},
-  {id:'TXN-006',date:'08.03.2025',desc:'Eingang TechStart AG Rechnung',amount:5355.00,type:'in',account:'ACC-2',cat:'Umsatzerlöse',matchedTo:'RE-2025-0040',matched:false},
-  {id:'TXN-007',date:'05.03.2025',desc:'Gehälter März 2025',amount:-12400.00,type:'out',account:'ACC-1',cat:'Personalkosten',matchedTo:null,matched:false},
-  {id:'TXN-008',date:'01.03.2025',desc:'Eingang RE-2025-0036',amount:3332.00,type:'in',account:'ACC-2',cat:'Umsatzerlöse',matchedTo:'RE-2025-0036',matched:true},
-];
-function getBankAccounts(){try{const s=localStorage.getItem('if_bank_acc');return s?JSON.parse(s):BANK_ACCOUNTS_DEFAULT;}catch(e){return BANK_ACCOUNTS_DEFAULT;}}
-function saveBankAccounts(d){try{localStorage.setItem('if_bank_acc',JSON.stringify(d));}catch(e){}}
-function getTransactions(){try{const s=localStorage.getItem('if_transactions');return s?JSON.parse(s):TRANSACTIONS_DEFAULT;}catch(e){return TRANSACTIONS_DEFAULT;}}
-function saveTransactions(d){try{localStorage.setItem('if_transactions',JSON.stringify(d));}catch(e){}}
-
-let assigningTxnId=null;
-
-function renderBankingReal(){
-  const accounts=getBankAccounts();
-  const txns=getTransactions();
-  const totalBalance=accounts.reduce((s,a)=>s+(a.balance||0),0);
-  const mtdIn=txns.filter(t=>t.type==='in').reduce((s,t)=>s+t.amount,0);
-  const mtdOut=txns.filter(t=>t.type==='out').reduce((s,t)=>s+Math.abs(t.amount),0);
-
-  document.getElementById('bank-balance-total').textContent=fmt(totalBalance);
-  document.getElementById('bank-balance-sub').textContent=accounts.length+' Konto'+(accounts.length!==1?'en':'');
-  document.getElementById('bank-income-mtd').textContent=fmt(mtdIn);
-  document.getElementById('bank-expense-mtd').textContent=fmt(mtdOut);
-
-  // Accounts list
-  document.getElementById('bank-accounts-list').innerHTML=accounts.length
-    ?accounts.map(a=>`<div class="bank-row">
-      <div class="bank-ico" style="background:var(--cybg)">🏦</div>
-      <div style="flex:1">
-        <div style="font-size:12px;font-weight:500;color:var(--t1)">${a.name}</div>
-        <div style="font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace">${a.iban} · ${a.bank}</div>
-        <div style="font-size:10px;color:var(--t3)">Letzter Sync: ${a.lastSync}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:14px;font-weight:700;color:${a.balance>=0?'var(--gn)':'var(--rd)'}">${fmt(a.balance)}</div>
-        <button class="btn btn-c btn-sm" style="font-size:10px;margin-top:4px" onclick="syncBankAccount('${a.id}')">⟳ Sync</button>
-        <button class="btn btn-d btn-sm" style="font-size:10px;margin-top:4px" onclick="deleteBankAccount('${a.id}')">✕</button>
-      </div>
-    </div>`).join('')
-    :'<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">Noch keine Konten verbunden</div>';
-
-  // Populate account filter
-  const accFilter=document.getElementById('txn-account-filter');
-  if(accFilter){
-    accFilter.innerHTML='<option value="">Alle Konten</option>'+accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-  }
-
-  renderTransactions();
-}
-
-function renderTransactions(){
-  const accF=document.getElementById('txn-account-filter')?.value||'';
-  const typeF=document.getElementById('txn-type-filter')?.value||'';
-  const searchF=(document.getElementById('txn-search')?.value||'').toLowerCase();
-  const txns=getTransactions().filter(t=>
-    (!accF||t.account===accF)&&
-    (!typeF||t.type===typeF)&&
-    (!searchF||t.desc.toLowerCase().includes(searchF))
-  );
-  document.getElementById('txn-tbody').innerHTML=txns.map(t=>`<tr>
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${t.date}</td>
-    <td style="color:var(--t1);max-width:200px">${t.desc}</td>
-    <td style="font-size:11px;color:var(--t3)">${getBankAccounts().find(a=>a.id===t.account)?.name||t.account}</td>
-    <td style="font-weight:600;color:${t.type==='in'?'var(--gn)':'var(--rd)'};font-family:'IBM Plex Mono',monospace">${t.type==='in'?'+':''}${fmt(t.amount)}</td>
-    <td><span class="badge bk" style="font-size:10px">${t.cat||'—'}</span></td>
-    <td>${t.matched?`<span class="badge bg" style="font-size:10px">✓ ${t.matchedTo||''}</span>`:'<span class="badge ba" style="font-size:10px">Offen</span>'}</td>
-    <td><button class="btn btn-g btn-sm" style="font-size:10px" onclick="openTxnAssign('${t.id}')">Zuordnen</button></td>
-  </tr>`).join('');
-}
-
-function saveBankAccount(){
-  const name=document.getElementById('bank-acc-name').value.trim();
-  const iban=document.getElementById('bank-acc-iban').value.trim();
-  const bank=document.getElementById('bank-acc-bank').value.trim();
-  if(!name||!iban){toast('Name und IBAN sind Pflichtfelder','e');return;}
-  const accounts=getBankAccounts();
-  accounts.push({id:'ACC-'+Date.now(),name,iban,bank,balance:0,reqId:document.getElementById('bank-acc-reqid').value.trim(),lastSync:'Noch nicht synchronisiert'});
-  saveBankAccounts(accounts);
-  closeModalById('m-bank-connect');
-  toast('✓ Konto "'+name+'" hinzugefügt','s');
-  renderBankingReal();
-}
-
-function deleteBankAccount(id){
-  if(!confirm('Bankkonto wirklich entfernen?'))return;
-  saveBankAccounts(getBankAccounts().filter(a=>a.id!==id));
-  renderBankingReal(); toast('Konto entfernt','w');
-}
-
-async function syncBankAccount(id){
-  const cfg=getSettings();
-  const gcKey=cfg['key_gocardless']||'';
-  toast('⟳ Synchronisiere...','i');
-  // With real GoCardless key: call their API
-  // Without key: simulate
-  setTimeout(()=>{
-    const accounts=getBankAccounts();
-    const acc=accounts.find(a=>a.id===id);
-    if(acc){acc.lastSync=new Date().toLocaleString('de-DE');acc.balance+=Math.random()*1000-200;}
-    saveBankAccounts(accounts);
-    renderBankingReal();
-    toast('✓ Synchronisierung abgeschlossen','s');
-  },1500);
-}
-
-function importBankCSV(file){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const lines=e.target.result.split('\n').filter(l=>l.trim());
-    const txns=getTransactions();
-    let added=0;
-    lines.slice(1).forEach(line=>{
-      const cols=line.split(';').map(c=>c.replace(/"/g,'').trim());
-      if(cols.length<4)return;
-      const amount=parseFloat(cols[3].replace(',','.').replace(/[^0-9.-]/g,''));
-      if(isNaN(amount))return;
-      txns.unshift({
-        id:'TXN-'+Date.now()+'-'+added,
-        date:cols[0]||new Date().toLocaleDateString('de-DE'),
-        desc:cols[1]||cols[2]||'Import',
-        amount,type:amount>=0?'in':'out',
-        account:'ACC-1',cat:'',matchedTo:null,matched:false
-      });
-      added++;
-    });
-    saveTransactions(txns);
-    renderBankingReal();
-    toast('✓ '+added+' Transaktionen importiert','s');
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
-function openTxnAssign(txnId){
-  assigningTxnId=txnId;
-  const txn=getTransactions().find(t=>t.id===txnId);if(!txn)return;
-  document.getElementById('txn-assign-info').innerHTML=`
-    <div style="font-weight:500">${txn.desc}</div>
-    <div style="color:${txn.type==='in'?'var(--gn)':'var(--rd)'};font-weight:600;margin-top:4px">${txn.type==='in'?'+':''}${fmt(txn.amount)}</div>
-    <div style="font-size:10px;color:var(--t3);margin-top:2px">${txn.date}</div>`;
-  // Populate ref options based on invoices
-  const refs=document.getElementById('txn-assign-ref');
-  refs.innerHTML=INVOICES.map(i=>`<option value="${i.id}">${i.id} — ${i.customer} (${fmt(i.gross)})</option>`).join('');
-  if(txn.cat)document.getElementById('txn-assign-cat').value=txn.cat;
-  openModal('m-txn-assign');
-}
-
-function saveTxnAssignment(){
-  if(!assigningTxnId)return;
-  const txns=getTransactions();
-  const txn=txns.find(t=>t.id===assigningTxnId);
-  if(txn){
-    txn.matchedTo=document.getElementById('txn-assign-ref').value;
-    txn.cat=document.getElementById('txn-assign-cat').value;
-    txn.matched=true;
-  }
-  saveTransactions(txns);
-  closeModalById('m-txn-assign');
-  toast('✓ Transaktion zugeordnet','s');
-  renderTransactions();
-  assigningTxnId=null;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  INVOICE: Update select dropdowns to use real customer + article data
-// ═══════════════════════════════════════════════════════════════════════════
-function updateInvoiceCustomerSelect(){
-  const sel=document.getElementById('inv-customer-real');
-  if(!sel)return;
-  const kunden=getKunden().filter(k=>k.aktiv);
-  sel.innerHTML='<option value="">Kunde wählen...</option>'+
-    kunden.map(k=>`<option value="${k.id}">${k.firma} (${k.id})</option>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  NAV + VIEW WIRING (extend existing)
-// ═══════════════════════════════════════════════════════════════════════════
-// Add new nav items and views to existing nav
-(function extendNav(){
-  // We'll hook into the existing buildNav after it runs
-  const _origBuildNav = window.buildNav;
-  window.buildNav = function(role){
-    _origBuildNav(role);
-    const nav=document.getElementById('nav');
-    if(!nav)return;
-    // Add Stammdaten section
-    const allowed=['superadmin','management','employee'];
-    if(!allowed.includes(role))return;
-    nav.innerHTML+=`<div class="sb-section">Stammdaten</div>
-      <div class="sb-item" id="ni-v-kunden" data-view="v-kunden">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Kunden
-      </div>
-      <div class="sb-item" id="ni-v-artikel" data-view="v-artikel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Artikel & Preise
-      </div>
-      <div class="sb-item" id="ni-v-texte" data-view="v-texte">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Textbausteine
-      </div>
-      <div class="sb-item" id="ni-v-banking-real" data-view="v-banking-real">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Banking Live
-      </div>`;
-    nav.querySelectorAll('.sb-item[data-view]').forEach(el=>{
-      el.removeEventListener('click',el._handler);
-      el._handler=()=>showView(el.dataset.view);
-      el.addEventListener('click',el._handler);
-    });
-  };
-
-  // Add new view titles
-  Object.assign(window.VIEW_TITLES||{},{
-    'v-kunden':'Kundendatenbank',
-    'v-artikel':'Artikel & Preise',
-    'v-texte':'Textbausteine',
-    'v-banking-real':'Banking Live',
-  });
-
-  // Extend showView for new views
-  const _origShowView=window.showView;
-  window.showView=function(viewId){
-    _origShowView(viewId);
-    if(viewId==='v-kunden')renderKunden();
-    if(viewId==='v-artikel')renderArtikel();
-    if(viewId==='v-texte'){activeTextCat='rechnung';renderTexte();}
-    if(viewId==='v-banking-real')renderBankingReal();
-    // Update title for new views
-    const titles={'v-kunden':'Kundendatenbank','v-artikel':'Artikel & Preise','v-texte':'Textbausteine','v-banking-real':'Banking Live'};
-    if(titles[viewId]){const el=document.getElementById('ptitle');if(el)el.textContent=titles[viewId];}
-  };
-})();
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  EVENT LISTENERS (new)
-// ═══════════════════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded',function(){
-
-  // Kunden
-  const newKundeBtn=document.getElementById('new-kunde-btn');
-  if(newKundeBtn)newKundeBtn.addEventListener('click',openNewKunde);
-  const kSave=document.getElementById('k-save-btn');
-  if(kSave)kSave.addEventListener('click',saveKunde);
-  const kCancel=document.getElementById('k-cancel-btn');
-  if(kCancel)kCancel.addEventListener('click',()=>closeModalById('m-kunde'));
-  const kundenSearch=document.getElementById('kunden-search');
-  if(kundenSearch)kundenSearch.addEventListener('input',()=>renderKunden(kundenSearch.value));
-
-  // Artikel
-  const newArtikelBtn=document.getElementById('new-artikel-btn');
-  if(newArtikelBtn)newArtikelBtn.addEventListener('click',openNewArtikel);
-  const artSave=document.getElementById('art-save-btn');
-  if(artSave)artSave.addEventListener('click',saveArtikelData);
-  const artCancel=document.getElementById('art-cancel-btn');
-  if(artCancel)artCancel.addEventListener('click',()=>closeModalById('m-artikel'));
-  const addPreisBtn=document.getElementById('add-preis-btn');
-  if(addPreisBtn)addPreisBtn.addEventListener('click',()=>{preisZeitraeume.push({von:new Date().toLocaleDateString('de-DE'),bis:'',preis:0});renderPreisZeitraeume();});
-  const artKatFilter=document.getElementById('artikel-kat-filter');
-  if(artKatFilter)artKatFilter.addEventListener('change',()=>renderArtikel(artKatFilter.value));
-
-  // Textbausteine
-  const newTextBtn=document.getElementById('new-text-btn');
-  if(newTextBtn)newTextBtn.addEventListener('click',newTextBaustein);
-  const teSave=document.getElementById('te-save-btn');
-  if(teSave)teSave.addEventListener('click',saveTextBaustein);
-  const teCancel=document.getElementById('te-cancel-btn');
-  if(teCancel)teCancel.addEventListener('click',()=>{editingTextId=null;document.getElementById('te-name').value='';document.getElementById('te-body').value='';});
-  const teBody=document.getElementById('te-body');
-  if(teBody)teBody.addEventListener('input',updateTextPreview);
-  // Text category tabs
-  document.querySelectorAll('#text-tabs .stab-item').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      document.querySelectorAll('#text-tabs .stab-item').forEach(t=>t.classList.remove('active'));
-      tab.classList.add('active');
-      activeTextCat=tab.dataset.cat;
-      renderTexte();
-    });
-  });
-
-  // Banking
-  const connectBankBtn=document.getElementById('connect-bank-btn');
-  if(connectBankBtn)connectBankBtn.addEventListener('click',()=>openModal('m-bank-connect'));
-  const bankAccSave=document.getElementById('bank-acc-save-btn');
-  if(bankAccSave)bankAccSave.addEventListener('click',saveBankAccount);
-  const bankAccCancel=document.getElementById('bank-acc-cancel-btn');
-  if(bankAccCancel)bankAccCancel.addEventListener('click',()=>closeModalById('m-bank-connect'));
-  const importCsvBtn=document.getElementById('bank-import-csv-btn');
-  if(importCsvBtn)importCsvBtn.addEventListener('click',()=>document.getElementById('csv-import-file').click());
-  const csvFile=document.getElementById('csv-import-file');
-  if(csvFile)csvFile.addEventListener('change',e=>{if(e.target.files[0])importBankCSV(e.target.files[0]);});
-  const syncTxnBtn=document.getElementById('sync-txn-btn');
-  if(syncTxnBtn)syncTxnBtn.addEventListener('click',()=>{toast('⟳ Synchronisiere alle Konten...','i');setTimeout(()=>toast('✓ Alle Konten aktuell','s'),1800);});
-  ['txn-account-filter','txn-type-filter','txn-search'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.addEventListener('input',renderTransactions);
-    if(el)el.addEventListener('change',renderTransactions);
-  });
-  const txnAssignSave=document.getElementById('txn-assign-save-btn');
-  if(txnAssignSave)txnAssignSave.addEventListener('click',saveTxnAssignment);
-  const txnAssignCancel=document.getElementById('txn-assign-cancel-btn');
-  if(txnAssignCancel)txnAssignCancel.addEventListener('click',()=>closeModalById('m-txn-assign'));
-  // Txn assign type change
-  const txnAssignType=document.getElementById('txn-assign-type');
-  if(txnAssignType)txnAssignType.addEventListener('change',()=>{
-    const refs=document.getElementById('txn-assign-ref');
-    if(txnAssignType.value==='invoice'){
-      refs.innerHTML=INVOICES.map(i=>`<option value="${i.id}">${i.id} — ${i.customer} (${fmt(i.gross)})</option>`).join('');
-    } else if(txnAssignType.value==='beleg'){
-      refs.innerHTML=getBelege().map(b=>`<option value="${b.id}">${b.vendor||b.filename} (${fmt(b.gross||0)})</option>`).join('');
-    } else {
-      refs.innerHTML='<option value="sonstige">Sonstige Buchung</option>';
-    }
-  });
-
-  // Wire up stab-item for text tabs (they need data-cat attribute)
-  document.querySelectorAll('#text-tabs .stab-item').forEach((el,i)=>{
-    const cats=['rechnung','angebot','mahnung','email','sonstige'];
-    el.dataset.cat=cats[i]||'sonstige';
-  });
-});
-</script>
-<script>
+// ═══ STAMMDATEN: KUNDEN, ARTIKEL, TEXTE, BANKING ═════
 // ═══════════════════════════════════════════════════════════════════
 //  STAMMDATEN — KUNDEN, ARTIKEL, TEXTBAUSTEINE, BANKING
 //  Alle Daten in localStorage, vollständig CRUD
@@ -3748,9 +2782,206 @@ function addManualTx(){
 // ═══════════════════════════════════════════════════════════════════
 //  EVENT WIRING — DOMContentLoaded ergänzen via delegation
 // ═══════════════════════════════════════════════════════════════════
+;
+
+// ═══ SINGLE DOMContentLoaded ══════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
 
-  // Kunden
+// ─── Core App Wiring ─────────────────────────────────
+// Login
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('le').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  document.getElementById('lp').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+  // Demo buttons
+  document.getElementById('d1').addEventListener('click', () => fillDemo('superadmin@invoiceflow.de','Admin2025!'));
+  document.getElementById('d2').addEventListener('click', () => fillDemo('gf@invoiceflow.de','GF2025!'));
+  document.getElementById('d3').addEventListener('click', () => fillDemo('max@invoiceflow.de','Max2025!'));
+  document.getElementById('d4').addEventListener('click', () => fillDemo('makler@partner.de','Makler2025!'));
+
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', doLogout);
+
+  // Nav buttons in topbar
+  document.getElementById('chat-nav-btn').addEventListener('click', () => showView('v-chatbot'));
+  document.getElementById('new-inv-btn').addEventListener('click', () => showView('v-invoices'));
+  document.getElementById('all-inv-btn').addEventListener('click', () => showView('v-invoices'));
+
+  // Invoice view
+  document.getElementById('abschlag-btn').addEventListener('click', () => openModal('m-abschlag'));
+
+  // Belege / OCR
+  const ocrDrop = document.getElementById('ocr-drop');
+  if(ocrDrop){
+    ocrDrop.addEventListener('click', () => document.getElementById('ocr-file').click());
+    ocrDrop.addEventListener('dragover', e => { e.preventDefault(); ocrDrop.classList.add('over'); });
+    ocrDrop.addEventListener('dragleave', () => ocrDrop.classList.remove('over'));
+    ocrDrop.addEventListener('drop', e => {
+      e.preventDefault(); ocrDrop.classList.remove('over');
+      if(e.dataTransfer.files.length) {
+        Array.from(e.dataTransfer.files).forEach((f,i) => setTimeout(()=>processOcr(f),i*500));
+      }
+    });
+  }
+  const ocrFile = document.getElementById('ocr-file');
+  if(ocrFile) ocrFile.addEventListener('change', e => {
+    if(e.target.files.length) Array.from(e.target.files).forEach((f,i)=>setTimeout(()=>processOcr(f),i*600));
+  });
+  const ocrSave = document.getElementById('ocr-save-btn');
+  if(ocrSave) ocrSave.addEventListener('click', saveOcrToDatabase);
+  const ocrDiscard = document.getElementById('ocr-discard-btn');
+  if(ocrDiscard) ocrDiscard.addEventListener('click', () => { document.getElementById('ocr-result-card').style.display='none'; });
+  const autoMatchBtn = document.getElementById('auto-match-btn');
+  if(autoMatchBtn) autoMatchBtn.addEventListener('click', autoMatchBelege);
+
+  // KI Engine selector
+  document.querySelectorAll('.ki-sel').forEach(el => {
+    el.addEventListener('click', () => {
+      currentEngine = el.dataset.engine;
+      document.querySelectorAll('.ki-sel').forEach(x => {
+        x.style.background='var(--s2)'; x.style.color='var(--t3)'; x.style.borderColor='var(--b1)';
+      });
+      el.style.background='var(--ambg2)'; el.style.color='var(--am)'; el.style.borderColor='rgba(245,158,11,.3)';
+    });
+  });
+
+  // Export / clear belege
+  const exportBtn = document.getElementById('export-belege-btn');
+  if(exportBtn) exportBtn.addEventListener('click', () => {
+    const data = JSON.stringify(getBelege(), null, 2);
+    const blob = new Blob([data], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'belege_' + new Date().toLocaleDateString('de-DE').replace(/\./g,'-') + '.json';
+    a.click(); toast('✓ Export gestartet','s');
+  });
+  const clearBtn = document.getElementById('clear-belege-btn');
+  if(clearBtn) clearBtn.addEventListener('click', () => {
+    if(confirm('Alle Belege aus der Datenbank löschen?')) {
+      saveBelege([]); renderBelegeTable(); updateBelegeStats(); toast('Datenbank geleert','w');
+    }
+  });
+
+  // Init beleg table
+  renderBelegeTable();
+  updateBelegeStats();
+
+  // Banking
+  document.getElementById('sync-bank-btn').addEventListener('click', () => { toast('⟳ Bankdaten werden synchronisiert...','i'); setTimeout(() => toast('✓ Bankdaten aktuell','s'), 1800); });
+  document.getElementById('match-all-btn').addEventListener('click', () => toast('✓ Alle Transaktionen zugeordnet','s'));
+
+  // Projekte
+  document.getElementById('nc-btn').addEventListener('click', () => openModal('m-nextcloud'));
+
+  // Chatbot
+  document.getElementById('chat-send-btn').addEventListener('click', sendChat);
+  document.getElementById('chat-inp').addEventListener('keydown', e => { if(e.key==='Enter') sendChat(); });
+  document.querySelectorAll('[data-q]').forEach(btn => {
+    btn.addEventListener('click', () => { document.getElementById('chat-inp').value = btn.dataset.q; sendChat(); });
+  });
+
+  // Zeit
+  document.getElementById('add-time-btn').addEventListener('click', () => {
+    const h = parseFloat(document.getElementById('zt-hrs').value);
+    if (!h||h<=0) { toast('Stunden eingeben','e'); return; }
+    toast('✓ ' + h + 'h erfasst','s');
+    document.getElementById('zt-hrs').value='';
+    document.getElementById('zt-desc').value='';
+  });
+  let timerInterval2=null,timerSecs2=0,timerOn2=false;
+  document.getElementById('timer-btn').addEventListener('click', () => {
+    if (!timerOn2) {
+      timerOn2=true; document.getElementById('timer-btn').textContent='⏹ Stoppen';
+      document.getElementById('timer-disp').style.display='inline';
+      timerInterval2=setInterval(()=>{timerSecs2++;const h=Math.floor(timerSecs2/3600).toString().padStart(2,'0');const m=Math.floor((timerSecs2%3600)/60).toString().padStart(2,'0');const s=(timerSecs2%60).toString().padStart(2,'0');document.getElementById('timer-disp').textContent=h+':'+m+':'+s;},1000);
+    } else {
+      timerOn2=false; clearInterval(timerInterval2);
+      document.getElementById('zt-hrs').value=(timerSecs2/3600).toFixed(2);
+      document.getElementById('timer-btn').textContent='⏱ Starten';
+      document.getElementById('timer-disp').style.display='none';
+      timerSecs2=0;
+    }
+  });
+
+  // Settings inputs — save on EVERY keystroke (input event)
+  const KEY_MAP = {'key-claude':'claude','key-openai':'openai','key-gocardless':'gocardless','wapi-tenant-set':'weclapp_tenant','wapi-token-set':'weclapp_token'};
+  ['key-claude','key-openai','key-gocardless','wapi-tenant-set','wapi-token-set'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Save on every keystroke AND on blur
+    const saveKey = () => {
+      const storageKey = 'key_' + KEY_MAP[id];
+      saveSettings({[storageKey]: el.value.trim()});
+    };
+    el.addEventListener('input', saveKey);
+    el.addEventListener('blur', saveKey);
+    el.addEventListener('change', saveKey);
+  });
+  ['nc-url','nc-path','nc-user','nc-pass','od-clientid','od-folder','gd-clientid','gd-folder','oc-url','oc-path','oc-user','oc-pass','win-path','win-tpl'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => saveSettings({[id.replace('-','_')]:el.value}));
+  });
+  const ncSave = document.getElementById('nc-save-btn');
+  if(ncSave) ncSave.addEventListener('click',()=>{document.getElementById('nc-badge').className='badge bg';document.getElementById('nc-badge').textContent='Konfiguriert';toast('✓ Nextcloud gespeichert','s');});
+  const ncTest = document.getElementById('nc-test-btn');
+  if(ncTest) ncTest.addEventListener('click',()=>{toast('⟳ Teste Verbindung...','i');setTimeout(()=>toast('✓ Nextcloud verbunden','s'),1500);});
+  const odAuth = document.getElementById('od-auth-btn');
+  if(odAuth) odAuth.addEventListener('click',()=>{toast('Microsoft OAuth-Fenster...','i');document.getElementById('od-badge').className='badge bc';document.getElementById('od-badge').textContent='Auth gestartet';});
+  const gdAuth = document.getElementById('gd-auth-btn');
+  if(gdAuth) gdAuth.addEventListener('click',()=>{toast('Google OAuth...','i');document.getElementById('gd-badge').className='badge bc';document.getElementById('gd-badge').textContent='Auth gestartet';});
+  const ocTest = document.getElementById('oc-test-btn');
+  if(ocTest) ocTest.addEventListener('click',()=>{toast('⟳ Teste ownCloud...','i');setTimeout(()=>toast('✓ ownCloud verbunden','s'),1500);});
+  const ocSave = document.getElementById('oc-save-btn');
+  if(ocSave) ocSave.addEventListener('click',()=>{document.getElementById('oc-badge').className='badge bg';document.getElementById('oc-badge').textContent='Konfiguriert';toast('✓ ownCloud gespeichert','s');});
+  const winSave = document.getElementById('win-save-btn');
+  if(winSave) winSave.addEventListener('click',()=>toast('✓ Windows-Pfad gespeichert','s'));
+  const notifySave = document.getElementById('notify-save-btn');
+  if(notifySave) notifySave.addEventListener('click',()=>toast('✓ Benachrichtigungen gespeichert','s'));
+
+  // Insurance portal
+  document.getElementById('copy-portal-btn').addEventListener('click', () => { navigator.clipboard?.writeText('https://invoiceflow.firma.de/insurance'); toast('🔗 Link kopiert','i'); });
+  document.getElementById('open-portal-btn').addEventListener('click', () => showView('v-ins-portal'));
+  document.getElementById('submit-ins-btn').addEventListener('click', () => toast('✓ Dokument eingereicht','s'));
+  document.getElementById('ins-drop').addEventListener('click', () => document.getElementById('ins-file').click());
+  document.getElementById('ins-file').addEventListener('change', e => { if(e.target.files[0]) toast('📎 '+e.target.files[0].name+' bereit','i'); });
+
+  // Modals: close on backdrop
+  document.querySelectorAll('.modal-ov').forEach(ov => {
+    ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('open'); });
+  });
+  const abClose = document.getElementById('ab-close-btn');
+  if(abClose) abClose.addEventListener('click',()=>closeModalById('m-abschlag'));
+  const abSave = document.getElementById('ab-save-btn');
+  if(abSave) abSave.addEventListener('click',()=>{closeModalById('m-abschlag');toast('✓ Abschlagsrechnungen erstellt','s');});
+  const abType = document.getElementById('ab-type');
+  if(abType) abType.addEventListener('change', renderAbschlag);
+  const abTotal = document.getElementById('ab-total');
+  if(abTotal) abTotal.addEventListener('input', renderAbschlag);
+  const ncClose = document.getElementById('nc-close-btn');
+  if(ncClose) ncClose.addEventListener('click',()=>closeModalById('m-nextcloud'));
+  const ncCreate = document.getElementById('nc-create-btn');
+  if(ncCreate) ncCreate.addEventListener('click',()=>{const name=document.getElementById('nc-proj-name').value||'Neues_Projekt';closeModalById('m-nextcloud');toast('📁 Ordner "'+name+'" auf Nextcloud & Server erstellt!','s');});
+
+  // Abschlag
+  renderAbschlag();
+
+  // Auto-restore session
+  const sess = getSession();
+  if (sess) {
+    const users = getUsers();
+    const u = users.find(x => x.id===sess.id && x.active);
+    if (u) {
+      CU = u;
+      if (u.role === 'ins_portal') { launchPortal(u); return; }
+      launchApp(u); return;
+    }
+  }
+
+  // Show login
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('app-page').style.display   = 'none';
+
+// ─── Stammdaten + Banking Wiring ─────────────────────
+// Kunden
   document.getElementById('new-k-btn').addEventListener('click', ()=>openKundeModal());
   document.getElementById('import-k-btn').addEventListener('click', ()=>{
     toast('Import: CSV-Datei hochladen (kommt in nächstem Update)','i');
@@ -3789,3 +3020,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 </script>
+</body>
+</html>
