@@ -3,351 +3,241 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InvoiceFlow Pro — Weclapp-kompatibel</title>
+<title>InvoiceFlow Pro — Enterprise Suite</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js">// ── PROXY URL (Node.js Backend auf Port 3001) ──────────
-const PROXY_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:3001'
-  : `${window.location.protocol}//${window.location.hostname}:3001`;
-
-async function weclappRequest({method='GET', endpoint, body=null}){
-  if(!weclappConfig) return null;
-  try{
-    const res = await fetch(`${PROXY_URL}/api/weclapp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tenant:   weclappConfig.tenant,
-        token:    weclappConfig.token,
-        method,
-        endpoint,
-        body,
-      })
-    });
-    if(!res.ok) return null;
-    const data = await res.json();
-    return data.result || data;
-  } catch(e) {
-    console.warn('[Proxy] Fehler:', e.message);
-    return null;
-  }
-}
-
-async function weclappGet(endpoint){
-  return weclappRequest({method:'GET', endpoint});
-}
-
-async function weclappPost(endpoint, body){
-  return weclappRequest({method:'POST', endpoint, body});
-}
-
-async function weclappPut(endpoint, body){
-  return weclappRequest({method:'PUT', endpoint, body});
-}
-
-// ══════════════════════════════════════════════════════
-// WECLAPP PROXY — alle API-Anfragen laufen über Port 3001
-// ══════════════════════════════════════════════════════
-function getProxyUrl() {
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3001';
-  }
-  return window.location.protocol + '//' + window.location.hostname + ':3001';
-}
-
-async function connectWeclapp() {
-  const tenant   = (document.getElementById('wapi-tenant')  || {}).value?.trim();
-  const token    = (document.getElementById('wapi-token')   || {}).value?.trim();
-  const statusEl = document.getElementById('wapi-status');
-  const btnEl    = document.getElementById('wapi-btn');
-  if (!tenant || !token) {
-    if (statusEl) statusEl.innerHTML = '<div class="weclapp-status err">Bitte Subdomain und Token eingeben.</div>';
-    return;
-  }
-  if (statusEl) statusEl.innerHTML = '<div class="weclapp-status loading"><span class="spin"></span> Verbindung wird getestet…</div>';
-  if (btnEl) btnEl.disabled = true;
-  try {
-    const res = await fetch(getProxyUrl() + '/api/weclapp/test', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ tenant, token }),
-      signal:  AbortSignal.timeout(10000),
-    });
-    const result = await res.json();
-    if (res.ok && result.ok) {
-      weclappConfig = { tenant, token };
-      if (statusEl) statusEl.innerHTML = '<div class="weclapp-status ok">✓ Verbunden als ' + (result.user?.username || 'Weclapp User') + ' · ' + tenant + '.weclapp.com</div>';
-      setTimeout(() => {
-        const wUser = {
-          id: 99,
-          name: result.user?.username || ('Weclapp/' + tenant),
-          email: result.user?.email   || 'user@weclapp.com',
-          role: 'superadmin',
-          dept: 'Weclapp Connect',
-          active: true,
-        };
-        currentUser = wUser;
-        launchApp(wUser, true);
-      }, 900);
-    } else {
-      if (statusEl) statusEl.innerHTML = '<div class="weclapp-status err">✗ ' + (result.error || 'Fehler') + '</div>';
-    }
-  } catch(e) {
-    const msg = e.name === 'AbortError'
-      ? 'Timeout — Proxy-Server nicht erreichbar (Port 3001). Starte: docker-compose up -d'
-      : 'Proxy nicht erreichbar: ' + e.message;
-    if (statusEl) statusEl.innerHTML = '<div class="weclapp-status err">✗ ' + msg + '</div>';
-  }
-  if (btnEl) btnEl.disabled = false;
-}
-
-async function weclappApiCall(method, endpoint, body) {
-  if (!weclappConfig) return null;
-  try {
-    const res = await fetch(getProxyUrl() + '/api/weclapp', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ tenant: weclappConfig.tenant, token: weclappConfig.token, method, endpoint, body }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.result || data;
-  } catch(e) { return null; }
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0c14;--surface:#111420;--surface2:#181d2e;--surface3:#1e2438;
-  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
-  --amber:#f59e0b;--amber2:#fbbf24;--amber-bg:rgba(245,158,11,0.08);--amber-bg2:rgba(245,158,11,0.15);
-  --green:#10b981;--green-bg:rgba(16,185,129,0.1);
-  --red:#ef4444;--red-bg:rgba(239,68,68,0.1);
-  --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.1);
-  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);
-  --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--text4:#2d3a52;
-  --radius:10px;--radius2:14px;--radius3:20px;
+  --bg:#090d18;--surf:#101525;--surf2:#161e30;--surf3:#1c2640;
+  --bdr:rgba(255,255,255,0.06);--bdr2:rgba(255,255,255,0.11);--bdr3:rgba(255,255,255,0.18);
+  --amber:#f59e0b;--amber2:#fbbf24;--amber3:#fde68a;
+  --abg:rgba(245,158,11,0.08);--abg2:rgba(245,158,11,0.15);
+  --green:#10b981;--gbg:rgba(16,185,129,0.1);
+  --red:#ef4444;--rbg:rgba(239,68,68,0.1);
+  --blue:#3b82f6;--bbg:rgba(59,130,246,0.1);
+  --purple:#a78bfa;--pbg:rgba(167,139,250,0.1);
+  --cyan:#06b6d4;--cbg:rgba(6,182,212,0.1);
+  --pink:#ec4899;--pkbg:rgba(236,72,153,0.1);
+  --orange:#f97316;--obg:rgba(249,115,22,0.1);
+  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#475569;--txt4:#2d3a52;
+  --r:10px;--r2:14px;--r3:20px;
 }
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px;overflow-x:hidden}
 
 /* LOGIN */
 #login-portal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:var(--bg);overflow:hidden}
-.login-bg{position:absolute;inset:0;overflow:hidden}
-.login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,158,11,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.04) 1px,transparent 1px);background-size:60px 60px;animation:gridMove 20s linear infinite}
-@keyframes gridMove{0%{transform:translateY(0)}100%{transform:translateY(60px)}}
-.login-glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.12) 0%,transparent 70%);top:-100px;left:50%;transform:translateX(-50%);animation:glowPulse 4s ease-in-out infinite}
-@keyframes glowPulse{0%,100%{opacity:0.6;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.1)}}
-.login-orb{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 70%);bottom:-50px;right:10%;animation:orbFloat 6s ease-in-out infinite}
-@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
-.login-card{position:relative;z-index:2;width:440px;background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:48px 44px;animation:cardIn 0.6s cubic-bezier(0.16,1,0.3,1);box-shadow:0 0 0 1px rgba(245,158,11,0.05),0 40px 80px rgba(0,0,0,0.6)}
-@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.login-logo{text-align:center;margin-bottom:40px}
-.login-logo-mark{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;background:linear-gradient(135deg,#f59e0b,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
-.login-logo-sub{font-size:11px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
-.login-tabs{display:flex;background:var(--surface2);border-radius:12px;padding:4px;margin-bottom:28px}
-.login-tab{flex:1;padding:9px;text-align:center;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);transition:all 0.2s}
-.login-tab.active{background:var(--surface3);color:var(--amber);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-.login-field{margin-bottom:18px}
-.login-label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:7px;display:block;letter-spacing:0.3px}
-.login-input{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:14px;font-family:'IBM Plex Sans',sans-serif;transition:all 0.2s}
-.login-input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,0.1)}
-.login-input::placeholder{color:var(--text4)}
-.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:10px;color:#0a0c14;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;margin-top:8px}
-.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,158,11,0.3)}
-.login-error{background:var(--red-bg);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px;display:none}
-.login-demo{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.demo-pill{padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;text-align:center}
-.demo-pill:hover{border-color:var(--amber-bg2);background:var(--amber-bg)}
-.demo-pill .role{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
-.demo-pill .creds{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2);margin-top:2px}
+.lgrid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,158,11,0.04)1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.04)1px,transparent 1px);background-size:55px 55px;animation:gm 20s linear infinite}
+@keyframes gm{to{transform:translateY(55px)}}
+.lglow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.1)0%,transparent 70%);top:-200px;left:50%;transform:translateX(-50%);animation:gp 4s ease-in-out infinite}
+@keyframes gp{0%,100%{opacity:0.5;transform:translateX(-50%)scale(1)}50%{opacity:1;transform:translateX(-50%)scale(1.1)}}
+.lorb{position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.07)0%,transparent 70%);bottom:-100px;right:5%;animation:of 7s ease-in-out infinite}
+@keyframes of{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+.lcard{position:relative;z-index:2;width:480px;background:var(--surf);border:1px solid var(--bdr2);border-radius:24px;padding:44px 40px;animation:ci 0.6s cubic-bezier(0.16,1,0.3,1);box-shadow:0 40px 80px rgba(0,0,0,0.6)}
+@keyframes ci{from{opacity:0;transform:translateY(24px)scale(0.97)}to{opacity:1;transform:none}}
+.llogo{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;background:linear-gradient(135deg,#f59e0b,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;letter-spacing:-0.5px}
+.lsub{font-size:10px;color:var(--txt3);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:28px;margin-top:4px}
+.ltabs{display:flex;background:var(--surf2);border-radius:11px;padding:3px;margin-bottom:24px}
+.ltab{flex:1;padding:8px;text-align:center;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;color:var(--txt3);transition:all 0.2s}
+.ltab.active{background:var(--surf3);color:var(--amber)}
+.lf{margin-bottom:14px}
+.ll{font-size:12px;color:var(--txt2);font-weight:500;margin-bottom:6px;display:block}
+.li{width:100%;padding:11px 14px;background:var(--surf2);border:1px solid var(--bdr2);border-radius:9px;color:var(--txt);font-size:13px;font-family:inherit;transition:all 0.2s}
+.li:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,0.1)}
+.li::placeholder{color:var(--txt4)}
+.lbtn{width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:9px;color:#09090e;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:8px;letter-spacing:0.3px}
+.lbtn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,158,11,0.3)}
+.lerr{background:var(--rbg);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:9px 13px;font-size:12px;color:var(--red);margin-bottom:13px;display:none}
+.dpills{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;padding-top:18px;border-top:1px solid var(--bdr)}
+.dp{padding:9px 11px;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;cursor:pointer;transition:all 0.15s}
+.dp:hover{border-color:var(--abg2);background:var(--abg)}
+.dp .dr{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--txt3)}
+.dp .dn{font-size:12px;font-weight:500;margin-top:1px}
+.dp .dd{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--txt3);margin-top:1px}
 
-/* APP */
-#app{display:none}
-#sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
-.logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
-.logo-mark{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;background:linear-gradient(135deg,#f59e0b,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
-.logo-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
-.nav{padding:12px 10px;flex:1;overflow-y:auto}
-.nav-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;padding:8px 8px 4px;margin-top:8px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;transition:all 0.15s;margin:1px 0;position:relative}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--amber-bg);color:var(--amber)}
-.nav-item svg{width:16px;height:16px;flex-shrink:0}
-.nav-item.admin-only{border-left:2px solid rgba(245,158,11,0.25)}
-.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
-.sidebar-user{padding:14px 16px;border-top:1px solid var(--border)}
-.user-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
-.avatar.superadmin{background:linear-gradient(135deg,#f59e0b,#d97706)}
-.avatar.employee{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
-.user-info p{font-size:12px;font-weight:500}
-.user-info span{font-size:10px;color:var(--text3)}
-.role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
-.role-badge.superadmin{background:var(--amber-bg2);color:var(--amber)}
-.role-badge.employee{background:var(--blue-bg);color:var(--blue)}
-.logout-btn{width:100%;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;transition:all 0.15s;font-family:inherit}
-.logout-btn:hover{color:var(--red);border-color:rgba(239,68,68,0.3)}
+/* APP SHELL */
+#app{display:none;min-height:100vh}
+#sidebar{width:224px;min-width:224px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto}
+.logo{padding:18px 16px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.logo-mark{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:linear-gradient(135deg,#f59e0b,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.3px}
+.logo-sub{font-size:9px;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.nav{padding:8px 8px;flex:1}
+.ns{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;padding:8px 8px 3px;margin-top:6px}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;cursor:pointer;color:var(--txt2);font-size:12px;transition:all 0.15s;margin:1px 0;position:relative}
+.ni:hover{background:var(--surf2);color:var(--txt)}
+.ni.active{background:var(--abg);color:var(--amber)}
+.ni svg{width:14px;height:14px;flex-shrink:0;opacity:0.8}
+.ni.adm{border-left:2px solid rgba(245,158,11,0.2)}
+.nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:600;padding:1px 5px;border-radius:20px}
+.suser{padding:12px 14px;border-top:1px solid var(--bdr);flex-shrink:0}
+.urow{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
+.av-sa{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.av-gf{background:linear-gradient(135deg,#7c3aed,#4c1d95)}
+.av-em{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.uinfo p{font-size:11px;font-weight:500}
+.uinfo span{font-size:10px;color:var(--txt3)}
+.rbadge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
+.rb-sa{background:var(--abg2);color:var(--amber)}
+.rb-gf{background:var(--pbg);color:var(--purple)}
+.rb-em{background:var(--bbg);color:var(--blue)}
+.lout{width:100%;padding:6px;background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;color:var(--txt3);font-size:11px;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.lout:hover{color:var(--red);border-color:rgba(239,68,68,0.3)}
 
-#main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50}
-.page-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:-0.3px}
-.topbar-actions{display:flex;gap:10px;align-items:center}
-.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
-.btn-primary{background:linear-gradient(135deg,#f59e0b,#d97706);color:#0a0c14;font-weight:600}
-.btn-primary:hover{box-shadow:0 4px 16px rgba(245,158,11,0.3);transform:translateY(-1px)}
-.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
-.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
-.btn-danger:hover{background:rgba(239,68,68,0.2)}
-.btn-success{background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
-.btn-sm{padding:5px 12px;font-size:12px}
-.content{padding:24px 28px;flex:1}
+#main{margin-left:224px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:11px 24px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:var(--surf);position:sticky;top:0;z-index:50;gap:14px}
+.ptitle{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:-0.2px;white-space:nowrap}
+.tbr{display:flex;gap:8px;align-items:center}
+.srch{position:relative}
+.srch input{width:200px;padding:6px 11px 6px 28px;background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-size:11px;font-family:inherit}
+.srch input:focus{outline:none;border-color:var(--bdr2)}
+.srch svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--txt3)}
+
+.btn{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit;display:inline-flex;align-items:center;gap:5px}
+.bp{background:linear-gradient(135deg,#f59e0b,#d97706);color:#09090e;font-weight:600}
+.bp:hover{box-shadow:0 4px 14px rgba(245,158,11,0.25);transform:translateY(-1px)}
+.bg{background:var(--surf2);color:var(--txt2);border:1px solid var(--bdr)}
+.bg:hover{color:var(--txt);border-color:var(--bdr2)}
+.bd{background:var(--rbg);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.bs{background:var(--gbg);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
+.bc{background:var(--cbg);color:var(--cyan);border:1px solid rgba(6,182,212,0.2)}
+.bpu{background:var(--pbg);color:var(--purple);border:1px solid rgba(167,139,250,0.2)}
+.bsm{padding:4px 10px;font-size:11px}
+
+.content{padding:20px 24px;flex:1}
 .view{display:none}.view.active{display:block}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:20px}
-.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:18px 20px}
-.kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.kpi-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;letter-spacing:-1px}
-.kpi-change{font-size:12px;font-weight:500;margin-top:4px}
-.up{color:var(--green)}.down{color:var(--red)}
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:18px}
+.cardsm{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:15px 17px}
+.klab{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.kval{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.8px}
+.ksub{font-size:11px;font-weight:500;margin-top:3px}
+.up{color:var(--green)}.dn{color:var(--red)}.am{color:var(--amber)}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;padding:10px 14px;border-bottom:1px solid var(--border)}
-td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+th{text-align:left;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.7px;padding:8px 11px;border-bottom:1px solid var(--bdr)}
+td{padding:10px 11px;border-bottom:1px solid var(--bdr);font-size:12px;color:var(--txt2)}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,0.015)}
-.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
-.badge-green{background:var(--green-bg);color:var(--green)}
-.badge-red{background:var(--red-bg);color:var(--red)}
-.badge-amber{background:var(--amber-bg);color:var(--amber)}
-.badge-blue{background:var(--blue-bg);color:var(--blue)}
-.badge-gray{background:rgba(71,85,105,0.3);color:var(--text3)}
-.form-group{margin-bottom:16px}
-.form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;font-weight:500}
-.form-input{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;transition:border 0.15s}
-.form-input:focus{outline:none;border-color:var(--amber)}
-select.form-input option{background:#1b2035}
-.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
-.gap-2{gap:8px}.gap-3{gap:12px}
-.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}
-.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
-.text-sm{font-size:12px}.text-xs{font-size:11px}
-.text-amber{color:var(--amber)}.text-green{color:var(--green)}.text-red{color:var(--red)}
-.text-muted{color:var(--text2)}.text-dim{color:var(--text3)}
-.fw-500{font-weight:500}.fw-600{font-weight:600}.fw-700{font-weight:700}
+tr:hover td{background:rgba(255,255,255,0.012)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.bg2{background:var(--gbg);color:var(--green)}
+.br2{background:var(--rbg);color:var(--red)}
+.ba2{background:var(--abg);color:var(--amber)}
+.bb2{background:var(--bbg);color:var(--blue)}
+.bp2{background:var(--pbg);color:var(--purple)}
+.bc2{background:var(--cbg);color:var(--cyan)}
+.bk2{background:rgba(71,85,105,0.3);color:var(--txt3)}
+.bo2{background:var(--obg);color:var(--orange)}
+.bpk2{background:var(--pkbg);color:var(--pink)}
+.fg{display:flex}.ic{align-items:center}.jb{justify-content:space-between}.jc{justify-content:center}
+.g1{gap:4px}.g2x{gap:8px}.g3x{gap:12px}.g4x{gap:16px}
+.m1{margin:4px}.m2{margin-top:8px}.m3{margin-top:12px}.m4{margin-top:16px}.m6{margin-top:24px}
+.mb2{margin-bottom:8px}.mb3{margin-bottom:12px}.mb4{margin-bottom:16px}.mb6{margin-bottom:24px}
+.ts{font-size:12px}.txs{font-size:11px}.txxs{font-size:10px}
+.ta{color:var(--amber)}.tg{color:var(--green)}.tr{color:var(--red)}.tb{color:var(--blue)}.tc{color:var(--cyan)}.tp{color:var(--purple)}.to{color:var(--orange)}.tpk{color:var(--pink)}
+.tm{color:var(--txt2)}.td{color:var(--txt3)}
+.fw5{font-weight:500}.fw6{font-weight:600}.fw7{font-weight:700}
 .mono{font-family:'IBM Plex Mono',monospace}
 .syne{font-family:'Syne',sans-serif}
-.divider{height:1px;background:var(--border);margin:16px 0}
-.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
-.info-row:last-child{border-bottom:none}
-.stat-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:6px}
-.stat-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--amber2))}
-.chart-wrap{position:relative;width:100%;height:200px}
-.scroll-x{overflow-x:auto}
-.line-item{display:grid;grid-template-columns:1fr 80px 100px 100px 40px;gap:10px;align-items:center;margin-bottom:8px}
-
-/* USER MANAGEMENT */
-.user-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;display:flex;align-items:center;gap:16px;transition:border-color 0.15s}
-.user-card:hover{border-color:var(--border2)}
-.user-card.inactive{opacity:0.5}
-.user-avatar-lg{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
-.user-card-info{flex:1}
-.user-card-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:600}
-.user-card-meta{font-size:12px;color:var(--text3);margin-top:3px}
-.user-card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius3);padding:32px;width:460px;animation:modalIn 0.2s cubic-bezier(0.16,1,0.3,1);box-shadow:0 24px 60px rgba(0,0,0,0.5)}
-@keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:24px}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;z-index:999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;display:none;align-items:center;gap:8px}
+.div{height:1px;background:var(--bdr);margin:12px 0}
+.ir{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.ir:last-child{border-bottom:none}
+.cw{position:relative;width:100%;height:180px}
+.sx{overflow-x:auto}
+.fi{margin-bottom:13px}
+.fl{font-size:11px;color:var(--txt2);font-weight:500;margin-bottom:5px;display:block}
+.inp{width:100%;padding:8px 10px;background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-size:12px;font-family:inherit;transition:border 0.15s}
+.inp:focus{outline:none;border-color:var(--amber)}
+select.inp option{background:#1b2035}
+.sb{height:4px;background:var(--surf2);border-radius:2px;overflow:hidden;margin-top:5px}
+.sf{height:100%;border-radius:2px;background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(245,158,11,0.2);border-top-color:var(--amber);border-radius:50%;animation:sp 0.7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r3);padding:28px;width:500px;animation:mi 0.2s cubic-bezier(0.16,1,0.3,1);box-shadow:0 24px 60px rgba(0,0,0,0.5);max-height:90vh;overflow-y:auto}
+@keyframes mi{from{opacity:0;transform:scale(0.95)translateY(8px)}to{opacity:1;transform:none}}
+.mtitle{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px}
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;display:none;align-items:center;gap:7px}
 .toast.show{display:flex}
-.toast.success{background:var(--green-bg);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
-.toast.error{background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red)}
-
-/* NO ACCESS */
-.no-access{text-align:center;padding:80px 20px}
-.no-access-icon{font-size:48px;margin-bottom:16px;opacity:0.3}
-.no-access-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px}
-.no-access-sub{font-size:13px;color:var(--text3)}
-
-/* ── WECLAPP ADDITIONS ── */
-.weclapp-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:20px;font-size:11px;color:#06b6d4;font-weight:500;margin-bottom:16px}
-.wapi-panel{background:linear-gradient(135deg,rgba(6,182,212,0.05),rgba(6,182,212,0.02));border:1px solid rgba(6,182,212,0.15);border-radius:14px;padding:18px;margin-bottom:18px}
-.wapi-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#06b6d4;margin-bottom:3px}
-.wapi-sub{font-size:12px;color:var(--text3);margin-bottom:14px}
-.api-endpoint{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#06b6d4;margin-bottom:6px;display:flex;align-items:center;gap:8px}
-.api-method{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
-.api-get{background:rgba(16,185,129,0.15);color:var(--green)}
-.api-post{background:rgba(59,130,246,0.15);color:var(--blue)}
-.weclapp-indicator{margin:8px 16px;padding:6px 10px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.15);border-radius:8px;font-size:11px;color:#06b6d4;display:none}
-.weclapp-indicator.on{display:block}
-.weclapp-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px}
-.weclapp-status.ok{background:var(--green-bg);border:1px solid rgba(16,185,129,0.2);color:var(--green)}
-.weclapp-status.err{background:var(--red-bg);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
-.weclapp-status.loading{background:var(--amber-bg);border:1px solid rgba(245,158,11,0.2);color:var(--amber)}
-.nav-weclapp{border-left:2px solid rgba(6,182,212,0.3)}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(245,158,11,0.2);border-top-color:var(--amber);border-radius:50%;animation:spin 0.7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
+.toast.s{background:var(--gbg);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
+.toast.e{background:var(--rbg);border:1px solid rgba(239,68,68,0.3);color:var(--red)}
+.toast.i{background:var(--cbg);border:1px solid rgba(6,182,212,0.3);color:var(--cyan)}
+.toast.w{background:var(--abg);border:1px solid rgba(245,158,11,0.3);color:var(--amber)}
+.na{text-align:center;padding:60px 20px}
+.nai{font-size:40px;margin-bottom:12px;opacity:0.2}
+.nat{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--txt2);margin-bottom:6px}
+.nas{font-size:12px;color:var(--txt3)}
+.drop-zone{border:2px dashed var(--bdr2);border-radius:var(--r2);padding:40px;text-align:center;transition:all 0.2s;cursor:pointer}
+.drop-zone:hover,.drop-zone.over{border-color:var(--amber);background:var(--abg)}
+.progress-bar{height:6px;background:var(--surf2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));border-radius:3px;transition:width 0.3s}
+.chat-msg{padding:12px 14px;border-radius:10px;font-size:12px;line-height:1.7;margin-bottom:8px}
+.chat-bot{background:var(--surf2);border:1px solid var(--bdr);color:var(--txt)}
+.chat-user{background:var(--abg2);border:1px solid rgba(245,158,11,0.15);color:var(--amber);margin-left:20%}
+.chat-sys{background:var(--cbg);border:1px solid rgba(6,182,212,0.15);color:var(--cyan);font-size:11px;text-align:center}
+.uc-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;display:flex;align-items:center;gap:13px;transition:border-color 0.15s;margin-bottom:10px}
+.uc-card:hover{border-color:var(--bdr2)}
+.uc-card.inact{opacity:0.4}
+.uav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.uci{flex:1}
+.ucn{font-family:'Syne',sans-serif;font-size:13px;font-weight:600}
+.ucm{font-size:11px;color:var(--txt3);margin-top:2px}
+.uca{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid var(--bdr)}
+.ins-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;transition:all 0.2s}
+.ins-card:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.ins-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px}
+.timeline-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.timeline-item:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.bank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.bank-row:last-child{border-bottom:none}
+.bank-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.forecast-bar{display:flex;align-items:flex-end;gap:4px;height:120px}
+.fb{border-radius:4px 4px 0 0;min-width:28px;flex:1;transition:height 0.5s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;font-weight:600;color:rgba(255,255,255,0.8)}
+.ocr-result{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.7;color:var(--cyan);white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.proj-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all 0.15s}
+.proj-card:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.proj-phase{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:500}
+.abschlag-step{display:flex;align-items:center;gap:8px;padding:10px;background:var(--surf2);border-radius:8px;margin-bottom:6px}
+.as-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
 </style>
 </head>
 <body>
 
-<!-- LOGIN PORTAL -->
+<!-- LOGIN -->
 <div id="login-portal">
-  <div class="login-bg">
-    <div class="login-grid"></div>
-    <div class="login-glow"></div>
-    <div class="login-orb"></div>
-  </div>
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-mark">InvoiceFlow Pro</div>
-      <div class="login-logo-sub">Abrechnungssoftware · Enterprise</div>
+  <div class="lgrid"></div><div class="lglow"></div><div class="lorb"></div>
+  <div class="lcard">
+    <div class="llogo">InvoiceFlow Pro</div>
+    <div class="lsub">Enterprise Suite · All-in-One</div>
+    <div class="ltabs">
+      <div class="ltab active" onclick="ltab('login',this)">Anmelden</div>
+      <div class="ltab" onclick="ltab('info',this)">Module</div>
     </div>
-    <div class="login-tabs">
-      <div class="login-tab active" onclick="switchLoginTab('login',this)">Anmelden</div>
-      <div class="login-tab" onclick="switchLoginTab('info',this)">Info</div>
-    </div>
-    <div id="login-form-section">
-      <div class="login-error" id="login-error">E-Mail oder Passwort falsch — oder Konto deaktiviert.</div>
-      <div class="login-field">
-        <label class="login-label">E-Mail-Adresse</label>
-        <input class="login-input" type="email" id="login-email" placeholder="name@firma.de" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div class="login-field">
-        <label class="login-label">Passwort</label>
-        <input class="login-input" type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <button class="login-btn" onclick="doLogin()">Anmelden →</button>
-      <div class="login-demo">
-        <div style="grid-column:span 2;font-size:11px;color:var(--text3);text-align:center;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Demo-Zugänge (klicken zum Ausfüllen)</div>
-        <div class="demo-pill" onclick="fillDemo('superadmin@invoiceflow.de','Admin2025!')">
-          <div class="role">👑 Superadmin</div>
-          <div class="creds">Admin2025!</div>
-        </div>
-        <div class="demo-pill" onclick="fillDemo('max@invoiceflow.de','Max2025!')">
-          <div class="role">👤 Mitarbeiter</div>
-          <div class="creds">Max2025!</div>
-        </div>
+    <div id="lt-login">
+      <div class="lerr" id="lerr">E-Mail oder Passwort falsch.</div>
+      <div class="lf"><label class="ll">E-Mail</label><input class="li" type="email" id="le" placeholder="name@firma.de" onkeydown="if(event.key==='Enter')login()"></div>
+      <div class="lf"><label class="ll">Passwort</label><input class="li" type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="lbtn" onclick="login()">Anmelden →</button>
+      <div class="dpills">
+        <div style="grid-column:span 2;font-size:9px;color:var(--txt3);text-align:center;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Demo-Zugänge</div>
+        <div class="dp" onclick="fd('superadmin@invoiceflow.de','Admin2025!')"><div class="dr">👑 Superadmin</div><div class="dn">Max Lehmann</div><div class="dd">Admin2025!</div></div>
+        <div class="dp" onclick="fd('gf@invoiceflow.de','GF2025!')"><div class="dr">💼 Geschäftsführung</div><div class="dn">Julia Bauer</div><div class="dd">GF2025!</div></div>
+        <div class="dp" onclick="fd('max@invoiceflow.de','Max2025!')"><div class="dr">👤 Mitarbeiter</div><div class="dn">Max Mustermann</div><div class="dd">Max2025!</div></div>
+        <div class="dp" onclick="fd('makler@partner.de','Makler2025!')"><div class="dr">🛡️ Versicherungsportal</div><div class="dn">ARAG Makler</div><div class="dd">Makler2025!</div></div>
       </div>
     </div>
-    <div id="login-info-section" style="display:none">
-      <div style="text-align:center;padding:16px 0">
-        <div style="font-size:36px;margin-bottom:12px">⚡</div>
-        <p style="font-size:13px;color:var(--text2);line-height:1.8">
-          InvoiceFlow Pro — Moderne Abrechnungssoftware mit KI, Zeiterfassung & DATEV.<br><br>
-          <span style="color:var(--amber)">👑 Superadmin</span> — Voller Zugriff + Nutzerverwaltung + Analysen<br><br>
-          <span style="color:var(--blue)">👤 Mitarbeiter</span> — Rechnungen, Zeiterfassung, Kunden
-        </p>
+    <div id="lt-info" style="display:none;text-align:center;padding:8px 0">
+      <div style="font-size:28px;margin-bottom:10px">⚡</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.9">
+        Rechnungen · Belege &amp; OCR · Banking · Belegzuordnung<br>
+        Abschlagsrechnungen · Projekte &amp; Nextcloud<br>
+        Zeiterfassung · Forecast &amp; Cashflow · Versicherungen<br>
+        KI-Chatbot · Upload-Portal für Makler
       </div>
     </div>
   </div>
@@ -356,572 +246,1053 @@ select.form-input option{background:#1b2035}
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- MODAL: NEUER NUTZER -->
-<div class="modal-overlay" id="modal-new-user">
-  <div class="modal">
-    <div class="modal-title">Neuen Mitarbeiter anlegen</div>
-    <div class="form-group"><label class="form-label">Vollständiger Name</label><input class="form-input" id="new-name" placeholder="z.B. Anna Schmidt"></div>
-    <div class="form-group"><label class="form-label">E-Mail-Adresse</label><input class="form-input" id="new-email" type="email" placeholder="anna@firma.de"></div>
-    <div class="grid-2" style="gap:12px">
-      <div class="form-group"><label class="form-label">Passwort</label><input class="form-input" id="new-password" type="password" placeholder="Min. 8 Zeichen"></div>
-      <div class="form-group"><label class="form-label">Rolle</label><select class="form-input" id="new-role"><option value="employee">Mitarbeiter</option><option value="superadmin">Superadmin</option></select></div>
-    </div>
-    <div class="form-group"><label class="form-label">Abteilung</label><select class="form-input" id="new-dept"><option>Buchhaltung</option><option>Vertrieb</option><option>Projektmanagement</option><option>IT</option><option>Geschäftsführung</option></select></div>
-    <div class="flex gap-3 mt-4">
-      <button class="btn btn-primary" onclick="createUser()" style="flex:1">Mitarbeiter anlegen</button>
-      <button class="btn btn-ghost" onclick="closeModal('modal-new-user')">Abbrechen</button>
-    </div>
+<!-- MODALS -->
+<div class="modal-ov" id="m-newuser"><div class="modal">
+  <div class="mtitle">Mitarbeiter anlegen</div>
+  <div class="fi"><label class="fl">Name</label><input class="inp" id="mn-name" placeholder="Vorname Nachname"></div>
+  <div class="fi"><label class="fl">E-Mail</label><input class="inp" id="mn-email" type="email" placeholder="name@firma.de"></div>
+  <div class="g2" style="gap:10px">
+    <div class="fi"><label class="fl">Passwort</label><input class="inp" id="mn-pw" type="password" placeholder="Min. 8 Zeichen"></div>
+    <div class="fi"><label class="fl">Rolle</label><select class="inp" id="mn-role"><option value="employee">Mitarbeiter</option><option value="management">Geschäftsführung</option><option value="superadmin">Superadmin</option></select></div>
   </div>
-</div>
+  <div class="fi"><label class="fl">Abteilung</label><select class="inp" id="mn-dept"><option>Buchhaltung</option><option>Vertrieb</option><option>Projektmanagement</option><option>IT</option><option>Geschäftsführung</option></select></div>
+  <div class="fi"><label class="fl">Stundensatz (€)</label><input class="inp" id="mn-rate" type="number" placeholder="120" value="120"></div>
+  <div class="fg g3x m4">
+    <button class="btn bp" onclick="createUser()" style="flex:1">Anlegen</button>
+    <button class="btn bg" onclick="closeM('m-newuser')">Abbrechen</button>
+  </div>
+</div></div>
 
-<!-- MODAL: PASSWORT -->
-<div class="modal-overlay" id="modal-password">
-  <div class="modal">
-    <div class="modal-title">Passwort zurücksetzen</div>
-    <div id="pw-user-name" style="font-size:13px;color:var(--text2);margin-bottom:20px"></div>
-    <div class="form-group"><label class="form-label">Neues Passwort</label><input class="form-input" id="pw-new" type="password" placeholder="Min. 8 Zeichen"></div>
-    <div class="form-group"><label class="form-label">Passwort wiederholen</label><input class="form-input" id="pw-confirm" type="password" placeholder="Passwort bestätigen"></div>
-    <div class="flex gap-3 mt-4">
-      <button class="btn btn-primary" onclick="savePassword()" style="flex:1">Passwort setzen</button>
-      <button class="btn btn-ghost" onclick="closeModal('modal-password')">Abbrechen</button>
-    </div>
+<div class="modal-ov" id="m-abschlag"><div class="modal" style="width:560px">
+  <div class="mtitle">Abschlagsrechnung erstellen</div>
+  <div class="g2" style="gap:12px">
+    <div class="fi"><label class="fl">Projekt / Auftrag</label><select class="inp" id="ab-proj"><option>Website Relaunch Acme GmbH</option><option>ERP Migration TechStart AG</option><option>App Development FreshBrand</option></select></div>
+    <div class="fi"><label class="fl">Gesamtauftragswert</label><input class="inp" id="ab-total" type="number" placeholder="10000" value="10000"></div>
   </div>
-</div>
+  <div class="fi"><label class="fl">Abschlagsart</label>
+    <select class="inp" id="ab-type" onchange="renderAbschlagSteps()">
+      <option value="percent">Prozentuell (z.B. 30/40/30)</option>
+      <option value="fixed">Feste Beträge</option>
+      <option value="milestone">Nach Meilenstein</option>
+    </select>
+  </div>
+  <div id="ab-steps-wrap" style="margin-bottom:14px"></div>
+  <div class="card" style="padding:12px;background:var(--surf2)">
+    <div class="fg jb ts"><span class="td">Gesamtbetrag netto</span><span id="ab-net" class="fw5">€ 10.000,00</span></div>
+    <div class="fg jb ts m2"><span class="td">MwSt. 19 %</span><span id="ab-vat" class="fw5">€ 1.900,00</span></div>
+    <div class="fg jb" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr)"><span class="fw6">Gesamt brutto</span><span class="fw7 ta" style="font-size:15px" id="ab-gross">€ 11.900,00</span></div>
+  </div>
+  <div class="fg g3x m4">
+    <button class="btn bp" onclick="saveAbschlag()" style="flex:1">Abschlagsrechnungen erstellen</button>
+    <button class="btn bg" onclick="closeM('m-abschlag')">Abbrechen</button>
+  </div>
+</div></div>
+
+<div class="modal-ov" id="m-nextcloud"><div class="modal">
+  <div class="mtitle">📁 Projektordner erstellen</div>
+  <div style="font-size:12px;color:var(--txt2);margin-bottom:16px">Erstellt synchrone Ordnerstruktur auf Nextcloud und Windows-Server.</div>
+  <div class="fi"><label class="fl">Projektname</label><input class="inp" id="nc-name" placeholder="z.B. 2025_Acme_WebRelaunch"></div>
+  <div class="fi"><label class="fl">Kunde</label><select class="inp" id="nc-client"><option>Acme GmbH</option><option>TechStart AG</option><option>FreshBrand GmbH</option></select></div>
+  <div class="g2" style="gap:10px">
+    <div class="fi"><label class="fl">Nextcloud-Pfad</label><input class="inp" id="nc-path" value="/Projekte/2025/"></div>
+    <div class="fi"><label class="fl">Windows-Pfad</label><input class="inp" id="nc-win" value="\\Server\Projekte\2025\"></div>
+  </div>
+  <div class="card" style="padding:12px;background:var(--surf2);margin-bottom:14px">
+    <div class="txxs td mb2 fw5">ORDNERSTRUKTUR</div>
+    <pre style="font-size:10px;color:var(--cyan);font-family:'IBM Plex Mono',monospace;line-height:1.8">📁 2025_Acme_WebRelaunch/
+  📁 01_Angebot/
+  📁 02_Auftrag/
+  📁 03_Konzept/
+  📁 04_Design/
+  📁 05_Entwicklung/
+  📁 06_Testing/
+  📁 07_Abnahme/
+  📁 08_Rechnungen/
+  📁 09_Kommunikation/
+  📁 10_Abschluss/</pre>
+  </div>
+  <div class="fg g3x">
+    <button class="btn bp" onclick="createNextcloudFolder()" style="flex:1">Ordner erstellen</button>
+    <button class="btn bg" onclick="closeM('m-nextcloud')">Abbrechen</button>
+  </div>
+</div></div>
 
 <!-- APP -->
 <div id="app" style="display:flex">
   <nav id="sidebar">
-    <div class="logo">
-      <div class="logo-mark">InvoiceFlow</div>
-      <div class="logo-sub">Pro Edition</div>
-    </div>
-    
-    <div class="weclapp-indicator" id="weclapp-indicator">
-      ⚡ Weclapp verbunden
-    </div>
+    <div class="logo"><div class="logo-mark">InvoiceFlow</div><div class="logo-sub">Enterprise Suite</div></div>
     <div class="nav" id="nav-menu"></div>
-    <div class="sidebar-user">
-      <div class="user-row">
-        <div class="avatar" id="sidebar-avatar"></div>
-        <div class="user-info"><p id="sidebar-name"></p><span id="sidebar-dept"></span></div>
+    <div class="suser">
+      <div class="urow">
+        <div class="av" id="sav"></div>
+        <div class="uinfo"><p id="sname"></p><span id="sdept"></span></div>
       </div>
-      <div id="sidebar-role-badge"></div>
-      <button class="logout-btn" onclick="doLogout()">↩ Abmelden</button>
+      <div id="srbadge"></div>
+      <button class="lout" onclick="logout()">↩ Abmelden</button>
     </div>
   </nav>
 
   <div id="main">
     <div class="topbar">
-      <div class="page-title syne" id="page-title">Dashboard</div>
-      <div class="topbar-actions">
-        <div style="position:relative;max-width:260px">
-          <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Suchen..." style="width:240px;padding:7px 12px 7px 32px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit">
+      <div class="ptitle syne" id="ptitle">Dashboard</div>
+      <div class="tbr">
+        <div class="srch">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Suchen...">
         </div>
-        <button class="btn btn-primary btn-sm" onclick="showView('create',null)">+ Neue Rechnung</button>
+        <button class="btn bc bsm" onclick="showView('chatbot')" id="chatbtn">🤖 KI-Assistent</button>
+        <button class="btn bp bsm" onclick="showView('invoices')">+ Rechnung</button>
       </div>
     </div>
-
     <div class="content">
 
-      <!-- DASHBOARD -->
-      <div class="view active" id="view-dashboard">
-        <div class="grid-4 mb-4">
-          <div class="kpi"><div class="kpi-label">Umsatz (MTD)</div><div class="kpi-value">€ 48.320</div><div class="kpi-change up">↑ 12,4 %</div></div>
-          <div class="kpi"><div class="kpi-label">Offene Rechnungen</div><div class="kpi-value">€ 18.750</div><div style="font-size:12px;color:var(--amber);margin-top:4px">3 überfällig</div></div>
-          <div class="kpi"><div class="kpi-label">Bezahlt (MTD)</div><div class="kpi-value">€ 31.890</div><div class="kpi-change up">↑ 8,1 %</div></div>
-          <div class="kpi"><div class="kpi-label">Ø Zahlungsziel</div><div class="kpi-value">17 Tage</div><div class="kpi-change up">↓ 3 besser</div></div>
-        </div>
-        <div class="grid-2 mb-4">
-          <div class="card">
-            <div class="fw-500 syne mb-3">Umsatz — 6 Monate</div>
-            <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="fw-500 syne mb-3">Offene Posten</div>
-            <div class="info-row"><span>0–14 Tage</span><span class="text-green fw-500">€ 9.200</span></div>
-            <div class="info-row"><span>15–30 Tage</span><span style="color:var(--amber)" class="fw-500">€ 5.500</span></div>
-            <div class="info-row"><span>31–60 Tage</span><span class="text-red fw-500">€ 2.850</span></div>
-            <div class="info-row"><span>&gt; 60 Tage</span><span class="text-red fw-500">€ 1.200</span></div>
-            <div class="divider"></div>
-            <div class="chart-wrap" style="height:120px"><canvas id="donutChart"></canvas></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="flex justify-between items-center mb-3">
-            <span class="fw-500 syne">Letzte Rechnungen</span>
-            <button class="btn btn-ghost btn-sm" onclick="showView('invoices',null)">Alle →</button>
-          </div>
-          <table><thead><tr><th>Nr.</th><th>Kunde</th><th>Datum</th><th>Betrag</th><th>Status</th></tr></thead>
-          <tbody id="dash-invoices"></tbody></table>
-        </div>
-      </div>
-
-      <!-- RECHNUNGEN -->
-      <div class="view" id="view-invoices">
-        <div class="flex justify-between items-center mb-4">
-          <div style="display:flex;gap:2px;background:var(--surface2);padding:3px;border-radius:8px" id="inv-filter-tabs">
-            <div style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--text)" onclick="filterInv('all',this)">Alle</div>
-            <div style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3)" onclick="filterInv('open',this)">Offen</div>
-            <div style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3)" onclick="filterInv('paid',this)">Bezahlt</div>
-            <div style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3)" onclick="filterInv('overdue',this)">Überfällig</div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="showView('create',null)">+ Neue Rechnung</button>
-        </div>
-        <div class="card" style="padding:0">
-          <table><thead><tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Fälligkeit</th><th>Betrag</th><th>Status</th><th>Aktionen</th></tr></thead>
-          <tbody id="invoices-table"></tbody></table>
-        </div>
-      </div>
-
-      <!-- NEUE RECHNUNG -->
-      <div class="view" id="view-create">
-        <div class="grid-2" style="gap:24px">
-          <div>
-            <div class="card mb-4">
-              <div class="fw-500 syne mb-4">Rechnungsdetails</div>
-              <div class="grid-2">
-                <div class="form-group"><label class="form-label">Nummer</label><input class="form-input mono" value="RE-2025-0042" readonly style="color:var(--text2)"></div>
-                <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="inv-date"></div>
-              </div>
-              <div class="form-group"><label class="form-label">Kunde</label><select class="form-input"><option>Acme GmbH</option><option>TechStart AG</option><option>FreshBrand GmbH</option></select></div>
-              <div class="form-group"><label class="form-label">Betreff</label><input class="form-input" placeholder="z.B. Webentwicklung März 2025"></div>
-            </div>
-            <div class="card">
-              <div class="fw-500 syne mb-3">Positionen</div>
-              <div id="line-items-wrap"></div>
-              <button class="btn btn-ghost btn-sm mt-2" onclick="addLine()">+ Position hinzufügen</button>
-              <div class="divider"></div>
-              <div style="text-align:right">
-                <div class="info-row"><span class="text-dim">Zwischensumme</span><span id="sub" class="fw-500">€ 0,00</span></div>
-                <div class="info-row"><span class="text-dim">MwSt. 19 %</span><span id="vatamt" class="fw-500">€ 0,00</span></div>
-                <div class="info-row" style="border-top:2px solid var(--text);margin-top:8px;padding-top:8px"><span class="fw-600">Gesamt</span><span id="totalamt" class="fw-600 text-amber" style="font-size:16px">€ 0,00</span></div>
-              </div>
-              <div class="flex gap-3 mt-4">
-                <button class="btn btn-primary" style="flex:1" onclick="showToast('✓ Rechnung RE-2025-0042 erstellt!','success')">Rechnung erstellen</button>
-                <button class="btn btn-ghost">Vorschau</button>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="fw-500 syne mb-3">🤖 KI-Vorschläge</div>
-            <p class="text-sm text-muted mb-3">Basierend auf vergangenen Rechnungen:</p>
-            <div class="card-sm mb-2" style="cursor:pointer;border:1px solid var(--border2)" onclick="addSuggestion('Webentwicklung & Design',1,2800)"><div class="fw-500 text-sm">Webentwicklung & Design</div><div class="text-xs text-dim mt-2">1 × € 2.800</div></div>
-            <div class="card-sm mb-2" style="cursor:pointer;border:1px solid var(--border2)" onclick="addSuggestion('SEO-Beratung monatlich',1,950)"><div class="fw-500 text-sm">SEO-Beratung monatlich</div><div class="text-xs text-dim mt-2">1 × € 950</div></div>
-            <div class="card-sm" style="cursor:pointer;border:1px solid var(--border2)" onclick="addSuggestion('Projektmanagement',8,120)"><div class="fw-500 text-sm">Projektmanagement</div><div class="text-xs text-dim mt-2">8 Std. × € 120</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- KUNDEN -->
-      <div class="view" id="view-customers">
-        <div class="flex justify-between items-center mb-4">
-          <span class="text-muted text-sm">5 Kunden · Gesamtumsatz € 142.800</span>
-          <button class="btn btn-primary btn-sm">+ Neuer Kunde</button>
-        </div>
-        <div class="card" style="padding:0">
-          <table><thead><tr><th>Unternehmen</th><th>Ansprechpartner</th><th>E-Mail</th><th>Umsatz</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td><span class="fw-500" style="color:var(--text)">Acme GmbH</span></td><td>Thomas Müller</td><td style="color:var(--blue)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="15613b7860707979706755747678703b7170">[email&#160;protected]</a></td><td class="text-amber fw-500">€ 42.800</td><td><span class="badge badge-green">Aktiv</span></td></tr>
-            <tr><td><span class="fw-500" style="color:var(--text)">TechStart AG</span></td><td>Sandra Berger</td><td style="color:var(--blue)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6a1944080f180d0f182a1e0f0902191e0b181e440e0f">[email&#160;protected]</a></td><td class="text-amber fw-500">€ 38.200</td><td><span class="badge badge-green">Aktiv</span></td></tr>
-            <tr><td><span class="fw-500" style="color:var(--text)">FreshBrand GmbH</span></td><td>Jana Weber</td><td style="color:var(--blue)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="32581c455750574072544057415a5040535c561c5657">[email&#160;protected]</a></td><td class="text-amber fw-500">€ 27.600</td><td><span class="badge badge-green">Aktiv</span></td></tr>
-            <tr><td><span class="fw-500" style="color:var(--text)">Digital Media KG</span></td><td>Klaus Hoffmann</td><td style="color:var(--blue)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0b602563646d6d666a65654b6f66256f6e">[email&#160;protected]</a></td><td class="text-amber fw-500">€ 18.400</td><td><span class="badge badge-green">Aktiv</span></td></tr>
-            <tr><td><span class="fw-500" style="color:var(--text)">Nova Consulting</span></td><td>Peter Schmidt</td><td style="color:var(--blue)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6818461b0b0005010c1c2806071e09460c0d">[email&#160;protected]</a></td><td class="text-amber fw-500">€ 15.800</td><td><span class="badge badge-gray">Inaktiv</span></td></tr>
-          </tbody></table>
-        </div>
-      </div>
-
-      <!-- ZEITERFASSUNG -->
-      <div class="view" id="view-time">
-        <div class="grid-4 mb-4">
-          <div class="kpi"><div class="kpi-label">Diese Woche</div><div class="kpi-value">23 h</div></div>
-          <div class="kpi"><div class="kpi-label">Nicht abgerechnet</div><div class="kpi-value">8,5 h</div><div style="font-size:12px;color:var(--amber)">= € 1.020</div></div>
-          <div class="kpi"><div class="kpi-label">Auslastung</div><div class="kpi-value">72 %</div><div class="kpi-change up">↑ 5 %</div></div>
-          <div class="kpi"><div class="kpi-label">Ø Stundensatz</div><div class="kpi-value">€ 120</div></div>
-        </div>
-        <div class="card mb-4">
-          <div class="fw-500 syne mb-3">Zeit erfassen</div>
-          <div class="grid-4" style="gap:12px">
-            <select class="form-input"><option>Acme GmbH</option><option>TechStart AG</option></select>
-            <input class="form-input" placeholder="Tätigkeitsbeschreibung">
-            <input class="form-input" type="number" placeholder="Stunden" step="0.25">
-            <button class="btn btn-primary">Eintragen</button>
-          </div>
-        </div>
-        <div class="card" style="padding:0">
-          <table><thead><tr><th>Datum</th><th>Kunde</th><th>Beschreibung</th><th>Stunden</th><th>Betrag</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>16.03.2025</td><td style="color:var(--text)">Acme GmbH</td><td>Frontend-Entwicklung</td><td class="mono fw-500">4,00 h</td><td class="text-amber fw-500">€ 480</td><td><span class="badge badge-amber">Offen</span></td></tr>
-            <tr><td>15.03.2025</td><td style="color:var(--text)">TechStart AG</td><td>API-Integration</td><td class="mono fw-500">6,00 h</td><td class="text-amber fw-500">€ 720</td><td><span class="badge badge-amber">Offen</span></td></tr>
-            <tr><td>14.03.2025</td><td style="color:var(--text)">FreshBrand GmbH</td><td>Design Review</td><td class="mono fw-500">2,00 h</td><td class="text-green fw-500">€ 220</td><td><span class="badge badge-green">Abgerechnet</span></td></tr>
-          </tbody></table>
-        </div>
-      </div>
-
-      <!-- NUTZERVERWALTUNG -->
-      <div class="view" id="view-users">
-        <div id="users-content"></div>
-      </div>
-
-      <!-- ANALYSEN -->
-      <div class="view" id="view-analytics">
-        <div id="analytics-content"></div>
-      </div>
-
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div class="view active" id="view-dashboard">
+  <div class="g4 mb4">
+    <div class="kpi"><div class="klab">Umsatz MTD</div><div class="kval">€ 48.320</div><div class="ksub up">↑ 12,4 %</div></div>
+    <div class="kpi"><div class="klab">Kontostand</div><div class="kval" id="k-bank">€ 34.820</div><div class="ksub tc">GoCardless Live</div></div>
+    <div class="kpi"><div class="klab">Offene Posten</div><div class="kval">€ 18.750</div><div class="ksub am">3 überfällig</div></div>
+    <div class="kpi"><div class="klab">Cashflow 30d</div><div class="kval tg" id="k-cf">+ € 12.430</div><div class="ksub up">↑ Positiv</div></div>
+  </div>
+  <div class="g2 mb4">
+    <div class="card">
+      <div class="fg jb ic mb3"><span class="fw6 syne ts">Umsatz & Kosten</span><span class="txxs td">letzte 6 Monate</span></div>
+      <div class="cw"><canvas id="revChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="fw6 syne ts mb3">Cashflow Forecast — 12 Wochen</div>
+      <div id="cf-bars" class="forecast-bar mb2"></div>
+      <div class="txxs td" style="text-align:center">Grün = Einnahmen · Rot = Ausgaben</div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="fw6 syne ts mb3">Letzte Transaktionen</div>
+      <div id="dash-txn"></div>
+    </div>
+    <div class="card">
+      <div class="fw6 syne ts mb3">Offene Belege</div>
+      <div id="dash-docs"></div>
+      <button class="btn bg bsm m3" style="width:100%" onclick="showView('belege')">Alle Belege →</button>
+    </div>
+    <div class="card">
+      <div class="fw6 syne ts mb3">Aktive Projekte</div>
+      <div id="dash-proj"></div>
+      <button class="btn bg bsm m3" style="width:100%" onclick="showView('projekte')">Alle Projekte →</button>
     </div>
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<!-- ══════════════ RECHNUNGEN ══════════════ -->
+<div class="view" id="view-invoices">
+  <div class="fg jb ic mb4">
+    <div style="display:flex;gap:2px;background:var(--surf2);padding:3px;border-radius:8px">
+      <div style="padding:5px 11px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;background:var(--surf);color:var(--txt)" onclick="fInv('all',this)">Alle</div>
+      <div style="padding:5px 11px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;color:var(--txt3)" onclick="fInv('OPEN',this)">Offen</div>
+      <div style="padding:5px 11px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;color:var(--txt3)" onclick="fInv('PAID',this)">Bezahlt</div>
+      <div style="padding:5px 11px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;color:var(--txt3)" onclick="fInv('OVERDUE',this)">Überfällig</div>
+    </div>
+    <div class="fg g2x">
+      <button class="btn bg bsm" onclick="openM('m-abschlag')">📋 Abschlagsrechnung</button>
+      <button class="btn bp bsm">+ Neue Rechnung</button>
+    </div>
+  </div>
+  <div class="card" style="padding:0"><div class="sx">
+    <table><thead><tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Fälligkeit</th><th>Netto</th><th>Brutto</th><th>Typ</th><th>Status</th><th></th></tr></thead>
+    <tbody id="inv-table"></tbody></table>
+  </div></div>
+</div>
 
-// ════════════════════════════════════════════════════════
-// WECLAPP DATEN — aus /data/weclapp.json (lokal gespeichert)
-// Wird täglich per GitHub Actions aktualisiert
-// ════════════════════════════════════════════════════════
-let WECLAPP = { invoices:[], customers:[], quotes:[], orders:[], articles:[], timeRecords:[], _meta:{} };
+<!-- ══════════════ BELEGE & OCR ══════════════ -->
+<div class="view" id="view-belege">
+  <div class="g2 mb4" style="gap:20px">
+    <div>
+      <div class="card mb4">
+        <div class="fw6 syne ts mb3">📷 Beleg hochladen & erkennen</div>
+        <div class="drop-zone" id="ocr-drop" onclick="document.getElementById('ocr-file').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="handleOcrDrop(event)">
+          <div style="font-size:28px;margin-bottom:8px">📄</div>
+          <div class="fw5 ts">Beleg hier ablegen oder klicken</div>
+          <div class="txxs td m2">PDF, JPG, PNG — KI erkennt automatisch alle Felder</div>
+          <input type="file" id="ocr-file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="runOCR(this)">
+        </div>
+        <div id="ocr-progress" style="display:none;margin-top:12px">
+          <div class="fg ic g2x mb2"><span class="spin"></span><span class="ts td">Texterkennnung läuft...</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="ocr-pf" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card" id="ocr-result-card" style="display:none">
+        <div class="fw6 syne ts mb3">🎯 Erkannte Felder</div>
+        <div id="ocr-fields"></div>
+        <div class="fg g2x m3">
+          <button class="btn bp bsm" onclick="assignOcrBeleg()" style="flex:1">✓ Übernehmen & zuordnen</button>
+          <button class="btn bg bsm" onclick="document.getElementById('ocr-result-card').style.display='none'">Verwerfen</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb4">
+        <div class="fw6 syne ts mb3">🔗 Automatische Belegzuordnung</div>
+        <div id="auto-match"></div>
+        <button class="btn bp bsm m3" style="width:100%" onclick="runAutoMatch()">▶ Automatisch zuordnen</button>
+      </div>
+      <div class="card">
+        <div class="fw6 syne ts mb3">Statistik</div>
+        <div class="ir"><span>Hochgeladen</span><span class="fw5">47</span></div>
+        <div class="ir"><span>Erkannt (OCR)</span><span class="tg fw5">44</span></div>
+        <div class="ir"><span>Zugeordnet</span><span class="tg fw5">41</span></div>
+        <div class="ir"><span>Offen</span><span class="ta fw5">6</span></div>
+        <div class="ir"><span>Fehler</span><span class="tr fw5">2</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:0">
+    <table><thead><tr><th>Datei</th><th>Datum</th><th>Betrag</th><th>Lieferant</th><th>OCR-Konfidenz</th><th>Zugeordnet zu</th><th>Status</th><th></th></tr></thead>
+    <tbody id="beleg-table"></tbody></table>
+  </div>
+</div>
 
-async function loadWeclappData() {
-  try {
-    const res  = await fetch('/data/weclapp.json?v=' + Date.now());
-    if (!res.ok) return;
-    WECLAPP = await res.json();
-    const meta = WECLAPP._meta || {};
-    if (meta.syncedAt && meta.syncedAt !== 'noch nicht synchronisiert') {
-      const synced = new Date(meta.syncedAt).toLocaleString('de-DE');
-      showToast('⚡ Weclapp-Daten geladen · Stand: ' + synced, 'i');
-    }
-    // Tabellen neu rendern mit echten Daten
-    renderInvoices();
-    renderCustomers();
-    renderDashInvoices();
-    populateCustomerSelect();
-  } catch(e) {
-    console.log('Lokale Daten nicht verfügbar — Demo-Modus aktiv');
-  }
-}
+<!-- ══════════════ BANKING ══════════════ -->
+<div class="view" id="view-banking">
+  <div class="g3 mb4">
+    <div class="kpi"><div class="klab">Girokonto</div><div class="kval tg">€ 34.820,45</div><div class="ksub tc">Commerzbank · live</div></div>
+    <div class="kpi"><div class="klab">Geschäftskonto</div><div class="kval">€ 12.400,00</div><div class="ksub tc">Sparkasse · live</div></div>
+    <div class="kpi"><div class="klab">Offene Zahlungen</div><div class="kval tr">€ 8.320,00</div><div class="ksub am">4 ausstehend</div></div>
+  </div>
+  <div class="g2 mb4" style="gap:20px">
+    <div class="card">
+      <div class="fg jb ic mb3">
+        <span class="fw6 syne ts">Transaktionen</span>
+        <div class="fg g2x">
+          <select class="inp" style="width:130px;padding:4px 8px;font-size:11px"><option>Alle Konten</option><option>Commerzbank</option><option>Sparkasse</option></select>
+          <button class="btn bc bsm" onclick="syncBank()">⟳ Sync</button>
+        </div>
+      </div>
+      <div id="bank-txn-list"></div>
+    </div>
+    <div>
+      <div class="card mb4">
+        <div class="fw6 syne ts mb3">🔗 Nicht zugeordnete Transaktionen</div>
+        <div id="unmatched-txn"></div>
+        <button class="btn bp bsm m3" style="width:100%" onclick="matchAll()">⚡ Alle automatisch zuordnen</button>
+      </div>
+      <div class="card">
+        <div class="fw6 syne ts mb2">Banking APIs</div>
+        <div class="bank-row"><div class="bank-icon" style="background:var(--gbg)">🏦</div><div style="flex:1"><div class="ts fw5">GoCardless Open Banking</div><div class="txxs td">350+ Banken · PSD2-konform</div></div><span class="badge bg2">Verbunden</span></div>
+        <div class="bank-row"><div class="bank-icon" style="background:var(--bbg)">💳</div><div style="flex:1"><div class="ts fw5">FinAPI</div><div class="txxs td">Deutsche Banken · HBCI</div></div><span class="badge bb2">Konfigurieren</span></div>
+        <div class="bank-row"><div class="bank-icon" style="background:var(--pbg)">🔐</div><div style="flex:1"><div class="ts fw5">Plaid</div><div class="txxs td">International · OAuth2</div></div><span class="badge bk2">Nicht aktiv</span></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-// Weclapp-Daten oder Demo-Fallback
-function getInvoices()  { return WECLAPP.invoices?.length  ? WECLAPP.invoices  : DEMO_INVOICES; }
-function getCustomers() { return WECLAPP.customers?.length ? WECLAPP.customers : DEMO_CUSTOMERS; }
-function getArticles()  { return WECLAPP.articles?.length  ? WECLAPP.articles  : DEMO_ARTICLES; }
+<!-- ══════════════ PROJEKTE ══════════════ -->
+<div class="view" id="view-projekte">
+  <div class="fg jb ic mb4">
+    <span class="td ts" id="proj-count"></span>
+    <div class="fg g2x">
+      <button class="btn bg bsm" onclick="openM('m-nextcloud')">📁 Nextcloud-Ordner</button>
+      <button class="btn bp bsm" onclick="showNewProj()">+ Neues Projekt</button>
+    </div>
+  </div>
+  <div class="g3 mb4" id="proj-grid"></div>
+  <div class="card">
+    <div class="fw6 syne ts mb3">Projektzeiten diese Woche</div>
+    <div class="cw" style="height:140px"><canvas id="projChart"></canvas></div>
+  </div>
+</div>
 
-// ─── USER DATABASE ───────────────────────────────────
-const DEFAULT_USERS=[
-  {id:1,name:'Max Lehmann',email:'superadmin@invoiceflow.de',password:'Admin2025!',role:'superadmin',dept:'Geschäftsführung',active:true,created:'01.01.2025',lastLogin:'Heute'},
-  {id:2,name:'Max Mustermann',email:'max@invoiceflow.de',password:'Max2025!',role:'employee',dept:'Buchhaltung',active:true,created:'15.01.2025',lastLogin:'Gestern'},
-  {id:3,name:'Anna Schmidt',email:'anna@invoiceflow.de',password:'Anna2025!',role:'employee',dept:'Vertrieb',active:true,created:'01.02.2025',lastLogin:'14.03.2025'},
-  {id:4,name:'Klaus Weber',email:'klaus@invoiceflow.de',password:'Klaus2025!',role:'employee',dept:'Projektmanagement',active:false,created:'10.02.2025',lastLogin:'01.03.2025'},
+<!-- ══════════════ ZEITERFASSUNG ══════════════ -->
+<div class="view" id="view-zeit">
+  <div class="g4 mb4">
+    <div class="kpi"><div class="klab">Diese Woche</div><div class="kval">23 h</div><div class="ksub up">↑ Ziel 40 h</div></div>
+    <div class="kpi"><div class="klab">Nicht abgerechnet</div><div class="kval ta">8,5 h</div><div class="ksub am">= € 1.020</div></div>
+    <div class="kpi"><div class="klab">Auslastung Team</div><div class="kval">72 %</div><div class="ksub up">↑ 5 %</div></div>
+    <div class="kpi"><div class="klab">Ø Stundensatz</div><div class="kval">€ 120</div><div class="ksub td">alle MA</div></div>
+  </div>
+  <div class="card mb4">
+    <div class="fw6 syne ts mb3">Zeit erfassen</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 100px 80px 90px;gap:10px">
+      <select class="inp" id="zt-proj"><option>Website Relaunch Acme</option><option>ERP Migration TechStart</option></select>
+      <input class="inp" id="zt-desc" placeholder="Beschreibung">
+      <input class="inp" id="zt-hrs" type="number" placeholder="Std" step="0.25" min="0">
+      <select class="inp" id="zt-bill"><option value="1">Abr.</option><option value="0">Intern</option></select>
+      <button class="btn bp" onclick="addTime()">+ Buchen</button>
+    </div>
+    <div class="fg g2x m3">
+      <button class="btn bg bsm" id="timer-btn" onclick="toggleTimer()">⏱ Stoppuhr starten</button>
+      <span class="mono ts ta" id="timer-disp" style="display:none">00:00:00</span>
+    </div>
+  </div>
+  <div class="g2 mb4">
+    <div class="card">
+      <div class="fw6 syne ts mb3">Team-Übersicht</div>
+      <div id="team-hours"></div>
+    </div>
+    <div class="card">
+      <div class="fw6 syne ts mb3">Zeitverteilung nach Projekt</div>
+      <div class="cw" style="height:160px"><canvas id="zeitChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="padding:0">
+    <table><thead><tr><th>Datum</th><th>Mitarbeiter</th><th>Projekt</th><th>Beschreibung</th><th>Stunden</th><th>Betrag</th><th>Abrechenbar</th><th>Status</th></tr></thead>
+    <tbody id="zeit-table"></tbody></table>
+  </div>
+</div>
+
+<!-- ══════════════ CHATBOT ══════════════ -->
+<div class="view" id="view-chatbot">
+  <div class="g2" style="gap:20px;height:calc(100vh - 140px)">
+    <div style="display:flex;flex-direction:column">
+      <div class="card" style="flex:1;display:flex;flex-direction:column">
+        <div class="fw6 syne ts mb3">🤖 KI-Assistent — Zugriff auf alle Daten</div>
+        <div id="chat-msgs" style="flex:1;overflow-y:auto;min-height:0;max-height:calc(100vh - 360px);padding-right:4px"></div>
+        <div class="div"></div>
+        <div class="fg g2x" style="margin-top:8px">
+          <input class="inp" id="chat-in" placeholder="Frage stellen... z.B. Welche Rechnungen sind überfällig?" style="flex:1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
+          <button class="btn bp" onclick="sendChat()">→</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb4">
+        <div class="fw6 syne ts mb3">Schnellaktionen</div>
+        <div style="display:grid;gap:6px">
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Welche Rechnungen sind überfällig und wie hoch ist der Gesamtbetrag?')">📊 Überfällige Rechnungen analysieren</button>
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Erstelle einen professionellen Mahntext für Rechnung RE-2025-0038 an Digital Media KG.')">📧 Mahntext generieren</button>
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Wie ist mein Cashflow in den nächsten 4 Wochen basierend auf offenen Rechnungen und geplanten Ausgaben?')">💰 Cashflow-Prognose</button>
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Analysiere die nicht zugeordneten Belege und schlage Buchungskonten vor.')">🔗 Belegzuordnung vorschlagen</button>
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Welche Versicherungen laufen in den nächsten 90 Tagen aus oder haben erhöhten Klärungsbedarf?')">🛡️ Versicherungen prüfen</button>
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Erstelle eine Zusammenfassung der Projektzeiten dieser Woche nach Mitarbeiter und Projekt.')">⏱ Zeitbericht erstellen</button>
+          <button class="btn bg bsm" style="text-align:left" onclick="chatQ('Welche steuerlichen Besonderheiten muss ich bei EU-Auslandsrechnungen beachten? (USt-ID, Reverse Charge)')">⚖️ Steuer-Tipps</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="fw6 syne ts mb2">Datenzugriff aktiv</div>
+        <div class="fg g1x" style="flex-wrap:wrap;gap:5px;margin-top:6px">
+          <span class="badge bg2">Rechnungen</span>
+          <span class="badge bg2">Kunden</span>
+          <span class="badge bg2">Banking</span>
+          <span class="badge bg2">Projekte</span>
+          <span class="badge bg2">Zeiterfassung</span>
+          <span class="badge bg2">Belege</span>
+          <span class="badge bg2">Versicherungen</span>
+          <span class="badge bg2">Cashflow</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FORECAST ══════════════ -->
+<div class="view" id="view-forecast">
+  <div class="g4 mb4">
+    <div class="kpi"><div class="klab">Cashflow (aktuell)</div><div class="kval tg">+ € 12.430</div><div class="ksub up">↑ positiv</div></div>
+    <div class="kpi"><div class="klab">Forecast 30 Tage</div><div class="kval ta" id="fc-30">+ € 8.200</div><div class="ksub am">auf Basis Bank</div></div>
+    <div class="kpi"><div class="klab">Forecast 90 Tage</div><div class="kval tg" id="fc-90">+ € 24.800</div><div class="ksub up">Trend positiv</div></div>
+    <div class="kpi"><div class="klab">Break-Even Monat</div><div class="kval">Okt</div><div class="ksub tg">Sicher erreicht</div></div>
+  </div>
+  <div class="card mb4">
+    <div class="fw6 syne ts mb3">Cashflow Forecast — 12 Monate</div>
+    <div class="cw" style="height:240px"><canvas id="fcChart"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="fw6 syne ts mb3">Geplante Einnahmen (offene Rechnungen)</div>
+      <div id="fc-inc"></div>
+    </div>
+    <div class="card">
+      <div class="fw6 syne ts mb3">Geplante Ausgaben</div>
+      <div id="fc-exp"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ VERSICHERUNGEN ══════════════ -->
+<div class="view" id="view-insurance">
+  <div class="g4 mb4">
+    <div class="kpi"><div class="klab">Aktive Policen</div><div class="kval">8</div><div class="ksub tg">alle gültig</div></div>
+    <div class="kpi"><div class="klab">Jahresprämie</div><div class="kval">€ 12.840</div><div class="ksub td">∅ € 1.070/Monat</div></div>
+    <div class="kpi"><div class="klab">Ablauf < 90 Tage</div><div class="kval ta">2</div><div class="ksub am">Verlängerung prüfen</div></div>
+    <div class="kpi"><div class="klab">Schadensfälle offen</div><div class="kval">1</div><div class="ksub am">in Bearbeitung</div></div>
+  </div>
+  <div class="g2 mb4" style="gap:20px">
+    <div>
+      <div class="fg jb ic mb4">
+        <span class="fw6 syne ts">Versicherungspolizzen</span>
+        <button class="btn bp bsm">+ Police hinzufügen</button>
+      </div>
+      <div id="ins-grid" style="display:grid;gap:10px"></div>
+    </div>
+    <div>
+      <div class="card mb4">
+        <div class="fw6 syne ts mb3">📤 Makler-Upload-Portal</div>
+        <div style="background:var(--surf2);border-radius:10px;padding:14px;margin-bottom:12px">
+          <div class="txxs td mb2">PORTAL-LINK FÜR MAKLER</div>
+          <div class="fg ic g2x">
+            <code class="mono txs ta" style="flex:1">https://invoiceflow.firma.de/insurance-portal</code>
+            <button class="btn bg bsm" onclick="copyPortalLink()">📋</button>
+          </div>
+        </div>
+        <div class="fw5 ts mb2">Kürzlich hochgeladen</div>
+        <div id="ins-uploads"></div>
+        <div class="div"></div>
+        <button class="btn bg bsm" style="width:100%" onclick="showView('ins-portal')">🔗 Portal öffnen</button>
+      </div>
+      <div class="card">
+        <div class="fw6 syne ts mb3">Kostenverteilung</div>
+        <div class="cw" style="height:140px"><canvas id="insChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ VERSICHERUNGSPORTAL ══════════════ -->
+<div class="view" id="view-ins-portal">
+  <div style="max-width:700px;margin:0 auto">
+    <div class="card mb4" style="text-align:center;padding:30px">
+      <div style="font-size:36px;margin-bottom:10px">🛡️</div>
+      <div class="fw7 syne" style="font-size:20px;margin-bottom:6px">Versicherungsportal</div>
+      <div class="td ts">Sicheres Upload-Portal für Makler und Versicherungsgesellschaften</div>
+      <div style="margin-top:16px;padding:10px 20px;background:var(--gbg);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-size:12px;color:var(--green);display:inline-flex;align-items:center;gap:6px">
+        🔒 SSL-verschlüsselt · DSGVO-konform · Automatische Benachrichtigung
+      </div>
+    </div>
+    <div class="card mb4">
+      <div class="fw6 syne ts mb3">Police / Dokument hochladen</div>
+      <div class="g2 mb3" style="gap:12px">
+        <div class="fi"><label class="fl">Makler / Gesellschaft</label><input class="inp" id="p-company" placeholder="z.B. ARAG Versicherung AG"></div>
+        <div class="fi"><label class="fl">Versicherungsart</label>
+          <select class="inp" id="p-type">
+            <option>Betriebshaftpflicht</option><option>Berufshaftpflicht</option><option>Cyber-Versicherung</option>
+            <option>Inhaltsversicherung</option><option>Rechtsschutz</option><option>Kfz-Versicherung</option>
+            <option>Unfallversicherung</option><option>Lebensversicherung</option><option>Sonstige</option>
+          </select>
+        </div>
+      </div>
+      <div class="g2 mb3" style="gap:12px">
+        <div class="fi"><label class="fl">Policennummer</label><input class="inp" id="p-nr" placeholder="z.B. HV-2025-001234"></div>
+        <div class="fi"><label class="fl">Ablaufdatum</label><input class="inp" type="date" id="p-exp"></div>
+      </div>
+      <div class="fi"><label class="fl">Jahresprämie (€)</label><input class="inp" id="p-premium" type="number" placeholder="1200"></div>
+      <div class="drop-zone mb3" id="ins-drop" onclick="document.getElementById('ins-file').click()">
+        <div style="font-size:24px;margin-bottom:6px">📎</div>
+        <div class="fw5 ts">PDF oder Bild hier ablegen</div>
+        <div class="txxs td m2">Maximale Dateigröße: 20 MB</div>
+        <input type="file" id="ins-file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="uploadInsurance(this)">
+      </div>
+      <button class="btn bp" style="width:100%" onclick="submitInsurance()">📤 Dokument einreichen</button>
+    </div>
+    <div class="card" style="font-size:12px;color:var(--txt3);line-height:1.7;text-align:center">
+      Ihre Daten werden sicher übertragen und gespeichert. Bei Fragen wenden Sie sich an: <span class="tc">support@invoiceflow.de</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NUTZERVERWALTUNG ══════════════ -->
+<div class="view" id="view-users">
+  <div id="users-content"></div>
+</div>
+
+<!-- ══════════════ ANALYSEN ══════════════ -->
+<div class="view" id="view-analytics">
+  <div id="analytics-content"></div>
+</div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  USERS
+// ══════════════════════════════════════════════════════════
+const DU=[
+  {id:1,name:'Max Lehmann',email:'superadmin@invoiceflow.de',pw:'Admin2025!',role:'superadmin',dept:'IT',rate:0,active:true,created:'01.01.2025',lastLogin:'Heute'},
+  {id:2,name:'Julia Bauer',email:'gf@invoiceflow.de',pw:'GF2025!',role:'management',dept:'Geschäftsführung',rate:0,active:true,created:'01.01.2025',lastLogin:'Heute'},
+  {id:3,name:'Max Mustermann',email:'max@invoiceflow.de',pw:'Max2025!',role:'employee',dept:'Buchhaltung',rate:120,active:true,created:'15.01.2025',lastLogin:'Gestern'},
+  {id:4,name:'Anna Schmidt',email:'anna@invoiceflow.de',pw:'Anna2025!',role:'employee',dept:'Vertrieb',rate:110,active:true,created:'01.02.2025',lastLogin:'14.03.2025'},
+  {id:5,name:'Klaus Weber',email:'klaus@invoiceflow.de',pw:'Klaus2025!',role:'employee',dept:'PM',rate:130,active:false,created:'10.02.2025',lastLogin:'01.03.2025'},
+  {id:6,name:'ARAG Makler',email:'makler@partner.de',pw:'Makler2025!',role:'insurance_portal',dept:'Extern',rate:0,active:true,created:'01.03.2025',lastLogin:'Heute'},
 ];
-function getUsers(){const s=localStorage.getItem('if_users');return s?JSON.parse(s):DEFAULT_USERS;}
-function saveUsers(u){localStorage.setItem('if_users',JSON.stringify(u));}
-function getSession(){const s=localStorage.getItem('if_session');return s?JSON.parse(s):null;}
-function saveSession(u){localStorage.setItem('if_session',JSON.stringify({id:u.id,name:u.name,email:u.email,role:u.role,dept:u.dept}));}
-function clearSession(){localStorage.removeItem('if_session');}
+function gU(){const s=localStorage.getItem('if_u');return s?JSON.parse(s):DU;}
+function sU(u){localStorage.setItem('if_u',JSON.stringify(u));}
+function gSess(){const s=localStorage.getItem('if_sess');return s?JSON.parse(s):null;}
+function sSess(u){localStorage.setItem('if_sess',JSON.stringify({id:u.id,name:u.name,email:u.email,role:u.role,dept:u.dept,rate:u.rate}));}
+function cSess(){localStorage.removeItem('if_sess');}
+let CU=null,timerI=null,timerS=0,timerOn=false;
+let ocrData=null,pwRId=null;
+const f=v=>'€ '+v.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-let currentUser=null;
-let pwResetUserId=null;
-let lineItems=[{desc:'',qty:1,price:0}];
-
+// ══════════════════════════════════════════════════════════
+//  DEMO DATA
+// ══════════════════════════════════════════════════════════
 const INVOICES=[
-  {id:'RE-2025-0039',customer:'Acme GmbH',date:'01.03.2025',due:'31.03.2025',total:3332,status:'paid'},
-  {id:'RE-2025-0040',customer:'TechStart AG',date:'05.03.2025',due:'04.04.2025',total:5355,status:'open'},
-  {id:'RE-2025-0038',customer:'Digital Media KG',date:'20.02.2025',due:'22.03.2025',total:1428,status:'overdue'},
-  {id:'RE-2025-0037',customer:'FreshBrand GmbH',date:'15.02.2025',due:'17.03.2025',total:8092,status:'open'},
-  {id:'RE-2025-0036',customer:'Acme GmbH',date:'01.02.2025',due:'03.03.2025',total:3332,status:'paid'},
+  {id:'RE-2025-0039',customer:'Acme GmbH',date:'01.03.2025',due:'31.03.2025',net:2800,gross:3332,status:'PAID',type:'Rechnung'},
+  {id:'RE-2025-0040',customer:'TechStart AG',date:'05.03.2025',due:'04.04.2025',net:4500,gross:5355,status:'OPEN',type:'Rechnung'},
+  {id:'RE-2025-0038',customer:'Digital Media KG',date:'20.02.2025',due:'22.03.2025',net:1200,gross:1428,status:'OVERDUE',type:'Rechnung'},
+  {id:'RE-2025-0037A',customer:'FreshBrand GmbH',date:'15.02.2025',due:'17.03.2025',net:3000,gross:3570,status:'PAID',type:'Abschlag 1/3'},
+  {id:'RE-2025-0037B',customer:'FreshBrand GmbH',date:'01.03.2025',due:'31.03.2025',net:4000,gross:4760,status:'OPEN',type:'Abschlag 2/3'},
+  {id:'RE-2025-0036',customer:'Acme GmbH',date:'01.02.2025',due:'03.03.2025',net:2800,gross:3332,status:'PAID',type:'Rechnung'},
 ];
-const fmt=v=>'€ '+v.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const BELEGE=[
+  {id:'B001',file:'Rechnung_Amazon_Feb.pdf',date:'28.02.2025',amount:234.50,vendor:'Amazon Business',conf:98,match:'RE-2025-0039',status:'MATCHED'},
+  {id:'B002',file:'LIDL_Quittung.jpg',date:'02.03.2025',amount:45.80,vendor:'LIDL',conf:87,match:null,status:'OPEN'},
+  {id:'B003',file:'Telekom_Rechnung.pdf',date:'01.03.2025',amount:89.99,vendor:'Deutsche Telekom',conf:99,match:'AUTO',status:'MATCHED'},
+  {id:'B004',file:'Strom_Feb.pdf',date:'25.02.2025',amount:312.00,vendor:'E.ON Energie',conf:95,match:null,status:'OPEN'},
+  {id:'B005',file:'Buero_Bedarf.jpg',date:'10.03.2025',amount:67.40,vendor:'Staples',conf:72,match:null,status:'REVIEW'},
+];
+const TRANSACTIONS=[
+  {id:'T001',date:'15.03.2025',desc:'Eingang RE-2025-0039',amount:3332,type:'in',bank:'Commerzbank',matched:true},
+  {id:'T002',date:'14.03.2025',desc:'SEPA Amazon Business',amount:-234.50,type:'out',bank:'Commerzbank',matched:true},
+  {id:'T003',date:'13.03.2025',desc:'Eingang RE-2025-0036',amount:3332,type:'in',bank:'Commerzbank',matched:true},
+  {id:'T004',date:'12.03.2025',desc:'Miete März 2025',amount:-2800,type:'out',bank:'Sparkasse',matched:false},
+  {id:'T005',date:'11.03.2025',desc:'VB-Nr 8820013',amount:1428,type:'in',bank:'Commerzbank',matched:false},
+  {id:'T006',date:'10.03.2025',desc:'Telekom Rechnung',amount:-89.99,type:'out',bank:'Commerzbank',matched:true},
+];
+const PROJECTS=[
+  {id:'P001',name:'Website Relaunch',client:'Acme GmbH',budget:12000,spent:4800,status:'active',phase:'Entwicklung',deadline:'30.04.2025',hours:40},
+  {id:'P002',name:'ERP Migration',client:'TechStart AG',budget:28000,spent:18200,status:'active',phase:'Testing',deadline:'15.05.2025',hours:152},
+  {id:'P003',name:'Brand Design',client:'FreshBrand GmbH',budget:8500,spent:8500,status:'done',phase:'Abschluss',deadline:'01.03.2025',hours:85},
+  {id:'P004',name:'App Development',client:'Nova Consulting',budget:45000,spent:12000,status:'active',phase:'Konzept',deadline:'31.08.2025',hours:100},
+];
+const TIME_ENTRIES=[
+  {date:'16.03.2025',user:'Max Mustermann',proj:'Website Relaunch',desc:'Frontend-Entwicklung',hrs:4,rate:120,billable:true,status:'open'},
+  {date:'15.03.2025',user:'Anna Schmidt',proj:'ERP Migration',desc:'Testing & QA',hrs:6,rate:110,billable:true,status:'open'},
+  {date:'14.03.2025',user:'Klaus Weber',proj:'Brand Design',desc:'Design Review',hrs:2,rate:130,billable:true,status:'billed'},
+  {date:'13.03.2025',user:'Max Mustermann',proj:'ERP Migration',desc:'API-Integration',hrs:8,rate:120,billable:true,status:'billed'},
+];
+const INSURANCE=[
+  {id:'I001',type:'Betriebshaftpflicht',company:'Allianz',policyNr:'AZ-BH-20241',premium:2400,expiry:'31.12.2025',status:'active',icon:'🏢'},
+  {id:'I002',type:'Cyber-Versicherung',company:'AXA',policyNr:'AX-CY-20193',premium:1800,expiry:'31.03.2025',status:'expiring',icon:'🔐'},
+  {id:'I003',type:'Berufshaftpflicht',company:'HDI',policyNr:'HD-BP-20082',premium:3200,expiry:'31.12.2025',status:'active',icon:'⚖️'},
+  {id:'I004',type:'Rechtsschutz',company:'ARAG',policyNr:'AR-RS-18561',premium:980,expiry:'30.06.2025',status:'active',icon:'📋'},
+  {id:'I005',type:'Inhaltsversicherung',company:'Zurich',policyNr:'ZU-IN-15090',premium:1200,expiry:'31.12.2025',status:'active',icon:'🏬'},
+  {id:'I006',type:'Kfz-Flotte',company:'HUK-COBURG',policyNr:'HK-FL-22145',premium:2100,expiry:'28.02.2026',status:'active',icon:'🚗'},
+  {id:'I007',type:'D&O Versicherung',company:'Chubb',policyNr:'CB-DO-20991',premium:800,expiry:'31.12.2025',status:'active',icon:'👔'},
+  {id:'I008',type:'Unfallversicherung',company:'DEVK',policyNr:'DK-UV-19234',premium:360,expiry:'31.12.2025',status:'active',icon:'⛑️'},
+];
+const INS_UPLOADS=[
+  {file:'Nachtrag_Cyber_AXA.pdf',company:'AXA',date:'14.03.2025',type:'Nachtrag',status:'new'},
+  {file:'Jahresrechnung_Allianz.pdf',company:'Allianz',date:'01.03.2025',type:'Rechnung',status:'processed'},
+  {file:'Police_ARAG_2025.pdf',company:'ARAG',date:'20.02.2025',type:'Police',status:'processed'},
+];
 
-// ─── LOGIN ───────────────────────────────────────────
-function switchLoginTab(tab,el){
-  document.querySelectorAll('.login-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('login-form-section').style.display=tab==='login'?'block':'none';
-  document.getElementById('login-info-section').style.display=tab==='info'?'block':'none';
+// ══════════════════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════════════════
+function ltab(t,el){document.querySelectorAll('.ltab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.getElementById('lt-login').style.display=t==='login'?'block':'none';document.getElementById('lt-info').style.display=t==='info'?'block':'none';}
+function fd(e,p){document.getElementById('le').value=e;document.getElementById('lp').value=p;}
+function login(){
+  const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
+  const u=gU().find(x=>x.email===e&&x.pw===p&&x.active);
+  if(!u){const el=document.getElementById('lerr');el.style.display='block';document.getElementById('lp').value='';setTimeout(()=>el.style.display='none',3000);return;}
+  sSess(u);CU=u;
+  if(u.role==='insurance_portal'){launchInsurancePortal();return;}
+  launchApp(u);
 }
-function fillDemo(email,pw){
-  document.getElementById('login-email').value=email;
-  document.getElementById('login-password').value=pw;
-}
-function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  const errEl=document.getElementById('login-error');
-  const users=getUsers();
-  const user=users.find(u=>u.email===email&&u.password===password&&u.active);
-  if(!user){errEl.style.display='block';document.getElementById('login-password').value='';setTimeout(()=>errEl.style.display='none',3000);return;}
-  saveSession(user);currentUser=user;launchApp(user);
-}
-function doLogout(){
-  clearSession();currentUser=null;
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-portal').style.display='flex';
-  document.getElementById('login-email').value='';
-  document.getElementById('login-password').value='';
-}
+function logout(){cSess();CU=null;document.getElementById('app').style.display='none';document.getElementById('login-portal').style.display='flex';document.getElementById('le').value='';document.getElementById('lp').value='';}
 
-// ─── APP LAUNCH ──────────────────────────────────────
-function launchApp(user){
+// ══════════════════════════════════════════════════════════
+//  APP LAUNCH
+// ══════════════════════════════════════════════════════════
+function launchInsurancePortal(){
   document.getElementById('login-portal').style.display='none';
   document.getElementById('app').style.display='flex';
-  const initials=user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const av=document.getElementById('sidebar-avatar');
-  av.textContent=initials;av.className='avatar '+user.role;
-  document.getElementById('sidebar-name').textContent=user.name;
-  document.getElementById('sidebar-dept').textContent=user.dept;
-  document.getElementById('sidebar-role-badge').innerHTML=
-    user.role==='superadmin'
-      ?'<span class="role-badge superadmin">👑 Superadmin</span>'
-      :'<span class="role-badge employee">👤 Mitarbeiter</span>';
-  buildNav(user.role);
-  renderInvoices();renderDashInvoices();renderLines();
-  setTimeout(()=>initCharts(),100);
-  showView('dashboard',null);
-  loadWeclappData();
+  const ini=CU.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const av=document.getElementById('sav');av.textContent=ini;av.className='av';av.style.background='linear-gradient(135deg,#ec4899,#be185d)';
+  document.getElementById('sname').textContent=CU.name;
+  document.getElementById('sdept').textContent='Versicherungsportal';
+  document.getElementById('srbadge').innerHTML='<span class="rbadge" style="background:var(--pkbg);color:var(--pink)">🛡️ Makler-Portal</span>';
+  buildNav('insurance_portal');
+  showView('ins-portal');
+}
+function launchApp(u){
+  document.getElementById('login-portal').style.display='none';
+  document.getElementById('app').style.display='flex';
+  const ini=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const av=document.getElementById('sav');av.textContent=ini;
+  const rc={superadmin:'av-sa',management:'av-gf',employee:'av-em'}[u.role]||'av-em';
+  av.className='av '+rc;
+  document.getElementById('sname').textContent=u.name;
+  document.getElementById('sdept').textContent=u.dept;
+  const rl={superadmin:'👑 Superadmin',management:'💼 Geschäftsführung',employee:'👤 Mitarbeiter'}[u.role]||u.role;
+  const rc2={superadmin:'rb-sa',management:'rb-gf',employee:'rb-em'}[u.role]||'rb-em';
+  document.getElementById('srbadge').innerHTML=`<span class="rbadge ${rc2}">${rl}</span>`;
+  buildNav(u.role);
+  renderAll();
+  setTimeout(()=>initCharts(),120);
+  showView('dashboard');
 }
 
-// ─── NAVIGATION ──────────────────────────────────────
-const ICONS={
+// ══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════
+const IC={
   grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
-  file:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
-  plus:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>',
-  users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+  file:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  scan:'<path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/>',
+  bank:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
+  folder:'<path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>',
   clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  bot:'<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+  trend:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
   shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  portal:'<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+  users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',
   bar:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
 };
-const NAV=[
-  {section:'Übersicht',items:[{v:'dashboard',icon:'grid',label:'Dashboard',roles:['superadmin','employee']}]},
-  {section:'Abrechnung',items:[
-    {v:'invoices',icon:'file',label:'Rechnungen',badge:'3',roles:['superadmin','employee']},
-    {v:'create',icon:'plus',label:'Neue Rechnung',roles:['superadmin','employee']},
-    {v:'customers',icon:'users',label:'Kunden',roles:['superadmin','employee']},
+const NAVDEF=[
+  {s:'Übersicht',items:[{v:'dashboard',i:'grid',l:'Dashboard',r:['superadmin','management','employee']}]},
+  {s:'Finanzen',items:[
+    {v:'invoices',i:'file',l:'Rechnungen',badge:'2',r:['superadmin','management','employee']},
+    {v:'belege',i:'scan',l:'Belege & OCR',r:['superadmin','management','employee']},
+    {v:'banking',i:'bank',l:'Banking',r:['superadmin','management']},
   ]},
-  {section:'Arbeit',items:[
-    {v:'time',icon:'clock',label:'Zeiterfassung',roles:['superadmin','employee']},
+  {s:'Projekte & Zeit',items:[
+    {v:'projekte',i:'folder',l:'Projekte',r:['superadmin','management','employee']},
+    {v:'zeit',i:'clock',l:'Zeiterfassung',r:['superadmin','management','employee']},
   ]},
-  {section:'Administration',items:[
-    {v:'users',icon:'shield',label:'Nutzerverwaltung',roles:['superadmin'],admin:true},
-    {v:'analytics',icon:'bar',label:'Analysen',roles:['superadmin'],admin:true},
+  {s:'KI & Analyse',items:[
+    {v:'chatbot',i:'bot',l:'KI-Assistent',r:['superadmin','management','employee']},
+    {v:'forecast',i:'trend',l:'Forecast & Cashflow',r:['superadmin','management']},
+  ]},
+  {s:'Versicherung',items:[
+    {v:'insurance',i:'shield',l:'Versicherungen',r:['superadmin','management']},
+    {v:'ins-portal',i:'portal',l:'Upload-Portal',r:['superadmin','management','insurance_portal']},
+  ]},
+  {s:'Administration',items:[
+    {v:'users',i:'users',l:'Nutzerverwaltung',r:['superadmin'],adm:true},
+    {v:'analytics',i:'bar',l:'Analysen',r:['superadmin','management'],adm:true},
   ]},
 ];
 function buildNav(role){
   const nav=document.getElementById('nav-menu');nav.innerHTML='';
-  NAV.forEach(s=>{
-    const vis=s.items.filter(i=>i.roles.includes(role));
+  NAVDEF.forEach(s=>{
+    const vis=s.items.filter(x=>x.r.includes(role));
     if(!vis.length)return;
-    nav.innerHTML+=`<div class="nav-label">${s.section}</div>`;
-    vis.forEach(item=>{
-      nav.innerHTML+=`<div class="nav-item${item.admin?' admin-only':''}" id="nav-${item.v}" onclick="showView('${item.v}',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${ICONS[item.icon]}</svg>
-        ${item.label}${item.badge?`<span class="nav-badge">${item.badge}</span>`:''}
-      </div>`;
-    });
+    nav.innerHTML+=`<div class="ns">${s.s}</div>`;
+    vis.forEach(item=>{nav.innerHTML+=`<div class="ni${item.adm?' adm':''}" id="ni-${item.v}" onclick="showView('${item.v}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${IC[item.i]}</svg>${item.l}${item.badge?`<span class="nbadge">${item.badge}</span>`:''}</div>`;});
   });
 }
-
-// ─── VIEWS ───────────────────────────────────────────
-const TITLES={dashboard:'Dashboard',invoices:'Rechnungen',create:'Neue Rechnung',customers:'Kunden',time:'Zeiterfassung',users:'Nutzerverwaltung',analytics:'Analysen'};
-function showView(name){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const el=document.getElementById('view-'+name);
-  if(!el)return;
-  el.classList.add('active');
-  const nav=document.getElementById('nav-'+name);
-  if(nav)nav.classList.add('active');
-  document.getElementById('page-title').textContent=TITLES[name]||name;
-  if(name==='users')renderUsers();
-  if(name==='analytics')renderAnalytics();
+const TITLES={dashboard:'Dashboard',invoices:'Rechnungen',belege:'Belege & OCR',banking:'Banking',projekte:'Projekte',zeit:'Zeiterfassung',chatbot:'KI-Assistent',forecast:'Forecast & Cashflow',insurance:'Versicherungen','ins-portal':'Upload-Portal',users:'Nutzerverwaltung',analytics:'Analysen'};
+function showView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  const el=document.getElementById('view-'+v);if(!el)return;el.classList.add('active');
+  const ni=document.getElementById('ni-'+v);if(ni)ni.classList.add('active');
+  document.getElementById('ptitle').textContent=TITLES[v]||v;
+  if(v==='users')renderUsers();
+  if(v==='analytics')renderAnalytics();
+  if(v==='forecast')renderForecast();
 }
 
-// ─── INVOICES ────────────────────────────────────────
-function statusBadge(s){
-  const m={paid:'badge-green',open:'badge-blue',overdue:'badge-red'};
-  const l={paid:'Bezahlt',open:'Offen',overdue:'Überfällig'};
-  return`<span class="badge ${m[s]||''}">${l[s]||s}</span>`;
+// ══════════════════════════════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════════════════════════════
+function renderAll(){
+  renderInvoices();renderBelege();renderBankTxn();renderUnmatched();renderProjects();renderTimeEntries();renderTeamHours();renderInsurance();renderInsUploads();renderDashTxn();renderDashDocs();renderDashProj();renderFcPanels();
+  populateCustomerSelect();
 }
+
+// invoices
+function ibadge(s){const m={PAID:'bg2',OPEN:'bb2',OVERDUE:'br2',DRAFT:'bp2'};const l={PAID:'Bezahlt',OPEN:'Offen',OVERDUE:'Überfällig',DRAFT:'Entwurf'};return`<span class="badge ${m[s]||'bk2'}">${l[s]||s}</span>`;}
 function renderInvoices(filter='all'){
-  const list=filter==='all'?INVOICES:INVOICES.filter(i=>i.status===filter);
-  document.getElementById('invoices-table').innerHTML=list.map(inv=>`
-    <tr><td class="mono" style="color:var(--text);font-size:12px">${inv.id}</td>
-    <td style="color:var(--text)">${inv.customer}</td><td>${inv.date}</td>
-    <td style="color:${inv.status==='overdue'?'var(--red)':''}">${inv.due}</td>
-    <td class="fw-500">${fmt(inv.total)}</td>
-    <td>${statusBadge(inv.status)}</td>
-    <td><button class="btn btn-ghost btn-sm">Vorschau</button></td></tr>`).join('');
+  let list=filter==='all'?INVOICES:INVOICES.filter(x=>x.status===filter);
+  document.getElementById('inv-table').innerHTML=list.map(inv=>`<tr>
+    <td class="mono" style="color:var(--txt);font-size:11px">${inv.id}</td>
+    <td style="color:var(--txt)">${inv.customer}</td><td>${inv.date}</td>
+    <td style="color:${inv.status==='OVERDUE'?'var(--red)':''}">${inv.due}</td>
+    <td>${f(inv.net)}</td><td class="fw5">${f(inv.gross)}</td>
+    <td><span class="badge ${inv.type.includes('Abschlag')?'bo2':'bk2'}">${inv.type}</span></td>
+    <td>${ibadge(inv.status)}</td>
+    <td><button class="btn bg bsm">PDF</button></td>
+  </tr>`).join('');
 }
-function filterInv(f,el){
-  el.parentElement.querySelectorAll('div').forEach(d=>{d.style.background='';d.style.color='var(--text3)';});
-  el.style.background='var(--surface)';el.style.color='var(--text)';
-  renderInvoices(f);
-}
-function renderDashInvoices(){
-  document.getElementById('dash-invoices').innerHTML=INVOICES.slice(0,4).map(inv=>`
-    <tr><td class="mono" style="font-size:12px;color:var(--text)">${inv.id}</td>
-    <td style="color:var(--text)">${inv.customer}</td><td>${inv.date}</td>
-    <td class="fw-500">${fmt(inv.total)}</td><td>${statusBadge(inv.status)}</td></tr>`).join('');
+function fInv(fl,el){el.parentElement.querySelectorAll('div').forEach(d=>{d.style.background='';d.style.color='var(--txt3)'});el.style.background='var(--surf)';el.style.color='var(--txt)';renderInvoices(fl==='all'?'all':fl);}
+
+// belege
+function renderBelege(){
+  document.getElementById('beleg-table').innerHTML=BELEGE.map(b=>`<tr>
+    <td style="color:var(--txt)">${b.file}</td><td>${b.date}</td>
+    <td class="fw5">${f(b.amount)}</td><td>${b.vendor}</td>
+    <td><div class="fg ic g1x"><div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:${b.conf}%"></div></div><span class="txxs td" style="margin-left:4px">${b.conf}%</span></div></td>
+    <td class="mono txs">${b.match||'—'}</td>
+    <td><span class="badge ${b.status==='MATCHED'?'bg2':b.status==='REVIEW'?'ba2':'bb2'}">${b.status}</span></td>
+    <td><button class="btn bg bsm" onclick="viewBeleg('${b.id}')">Öffnen</button></td>
+  </tr>`).join('');
+
+  // auto-match panel
+  const unmatched=BELEGE.filter(b=>!b.match);
+  document.getElementById('auto-match').innerHTML=unmatched.length?unmatched.map(b=>`
+    <div class="bank-row">
+      <div style="flex:1"><div class="ts fw5">${b.vendor}</div><div class="txxs td">${f(b.amount)} · ${b.date}</div></div>
+      <button class="btn bc bsm" onclick="matchBeleg('${b.id}')">🔗 Zuordnen</button>
+    </div>`).join(''):'<div class="txxs td">✓ Alle Belege zugeordnet</div>';
 }
 
-// ─── LINE ITEMS ──────────────────────────────────────
-function renderLines(){
-  document.getElementById('line-items-wrap').innerHTML=lineItems.map((item,i)=>`
-    <div class="line-item">
-      <input class="form-input text-sm" placeholder="Beschreibung" value="${item.desc}" onchange="lineItems[${i}].desc=this.value">
-      <input class="form-input text-sm mono" type="number" min="0" value="${item.qty}" onchange="lineItems[${i}].qty=+this.value;calcTotal()">
-      <input class="form-input text-sm mono" type="number" min="0" value="${item.price||''}" placeholder="0" onchange="lineItems[${i}].price=+this.value;calcTotal()">
-      <span class="mono text-sm text-amber" style="text-align:right;padding:8px 4px">${fmt(item.qty*item.price)}</span>
-      <button onclick="removeLine(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px">×</button>
+// banking
+function renderBankTxn(){
+  document.getElementById('bank-txn-list').innerHTML=TRANSACTIONS.map(t=>`
+    <div class="bank-row">
+      <div class="bank-icon" style="background:${t.type==='in'?'var(--gbg)':'var(--rbg)'}">${t.type==='in'?'↓':'↑'}</div>
+      <div style="flex:1"><div class="ts fw5">${t.desc}</div><div class="txxs td">${t.date} · ${t.bank}</div></div>
+      <span class="${t.type==='in'?'tg':'tr'} fw5 ts">${t.type==='in'?'+':''}${f(t.amount)}</span>
+      ${t.matched?'<span class="badge bg2" style="margin-left:8px">✓</span>':'<span class="badge ba2" style="margin-left:8px">offen</span>'}
     </div>`).join('');
-  calcTotal();
 }
-function addLine(){lineItems.push({desc:'',qty:1,price:0});renderLines();}
-function removeLine(i){lineItems.splice(i,1);if(!lineItems.length)lineItems=[{desc:'',qty:1,price:0}];renderLines();}
-function addSuggestion(desc,qty,price){lineItems.push({desc,qty,price});renderLines();}
-function calcTotal(){
-  const net=lineItems.reduce((s,i)=>s+i.qty*i.price,0);
-  const vat=net*0.19;
-  document.getElementById('sub').textContent=fmt(net);
-  document.getElementById('vatamt').textContent=fmt(vat);
-  document.getElementById('totalamt').textContent=fmt(net+vat);
+function renderUnmatched(){
+  const um=TRANSACTIONS.filter(t=>!t.matched);
+  document.getElementById('unmatched-txn').innerHTML=um.map(t=>`
+    <div class="bank-row">
+      <div style="flex:1"><div class="ts fw5">${t.desc}</div><div class="txxs td">${f(t.amount)} · ${t.date}</div></div>
+      <button class="btn bc bsm" onclick="matchTxn('${t.id}')">🔗 Zuordnen</button>
+    </div>`).join('');
+}
+function syncBank(){showToast('⟳ Bankdaten werden synchronisiert...','i');setTimeout(()=>showToast('✓ Bankdaten aktuell (GoCardless)','s'),1800);}
+function matchTxn(id){showToast('✓ Transaktion wurde automatisch zugeordnet','s');}
+function matchAll(){showToast('⚡ Alle Transaktionen automatisch zugeordnet','s');setTimeout(renderBankTxn,500);}
+function matchBeleg(id){showToast('✓ Beleg automatisch zugeordnet','s');}
+function viewBeleg(id){showToast('📄 Beleg wird geöffnet...','i');}
+
+// projects
+function renderProjects(){
+  const grid=document.getElementById('proj-grid');
+  grid.innerHTML=PROJECTS.map(p=>{
+    const pct=Math.round(p.spent/p.budget*100);
+    const colors={active:'ba2',done:'bg2',paused:'bo2'};
+    const ph_colors={Entwicklung:'bc2',Testing:'bp2',Konzept:'bb2',Abschluss:'bg2'};
+    return`<div class="proj-card">
+      <div class="fg jb ic mb2">
+        <span class="ts fw6" style="color:var(--txt)">${p.name}</span>
+        <span class="badge ${colors[p.status]||'bk2'}">${p.status}</span>
+      </div>
+      <div class="txxs td mb2">${p.client} · Fällig: ${p.deadline}</div>
+      <div class="fg jb txs mb2"><span class="td">Budget</span><span class="fw5">${f(p.budget)}</span></div>
+      <div class="sb mb2"><div class="sf" style="width:${pct}%"></div></div>
+      <div class="fg jb txxs td mb3"><span>${f(p.spent)} abgerechnet</span><span>${pct}%</span></div>
+      <div class="fg g1x">
+        <span class="badge ${ph_colors[p.phase]||'bk2'}">${p.phase}</span>
+        <span class="badge bk2">${p.hours}h erfasst</span>
+        <button class="btn bg bsm" style="margin-left:auto;font-size:10px" onclick="openM('m-nextcloud')">📁</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('proj-count').textContent=`${PROJECTS.length} Projekte · ${PROJECTS.filter(p=>p.status==='active').length} aktiv`;
+}
+function showNewProj(){showToast('Neues Projekt-Formular öffnet sich...','i');}
+function createNextcloudFolder(){
+  const name=document.getElementById('nc-name').value||'Neues_Projekt';
+  closeM('m-nextcloud');
+  showToast(`📁 Ordner "${name}" auf Nextcloud & Windows erstellt!`,'s');
 }
 
-// ─── NUTZERVERWALTUNG ────────────────────────────────
-function renderUsers(){
-  if(!currentUser||currentUser.role!=='superadmin'){
-    document.getElementById('users-content').innerHTML=`<div class="no-access"><div class="no-access-icon">🔒</div><div class="no-access-title">Kein Zugriff</div><div class="no-access-sub">Nur für Superadmins.</div></div>`;
-    return;
+// time
+function renderTimeEntries(){
+  document.getElementById('zeit-table').innerHTML=TIME_ENTRIES.map(t=>`<tr>
+    <td>${t.date}</td><td style="color:var(--txt)">${t.user}</td>
+    <td>${t.proj}</td><td>${t.desc}</td>
+    <td class="mono fw5">${t.hrs}h</td>
+    <td class="ta fw5">${f(t.hrs*t.rate)}</td>
+    <td>${t.billable?'<span class="badge bg2">Ja</span>':'<span class="badge bk2">Nein</span>'}</td>
+    <td><span class="badge ${t.status==='billed'?'bg2':'ba2'}">${t.status==='billed'?'Abgerechnet':'Offen'}</span></td>
+  </tr>`).join('');
+}
+function renderTeamHours(){
+  const team=[
+    {name:'Max Mustermann',hrs:18,target:40,color:'#3b82f6'},
+    {name:'Anna Schmidt',hrs:24,target:40,color:'#10b981'},
+    {name:'Klaus Weber',hrs:0,target:0,color:'#475569'},
+  ];
+  document.getElementById('team-hours').innerHTML=team.map(m=>`
+    <div class="mb3">
+      <div class="fg jb txs mb1"><span class="fw5">${m.name}</span><span class="td">${m.hrs}h / ${m.target}h</span></div>
+      <div class="sb"><div style="height:100%;border-radius:2px;background:${m.color};width:${m.target?Math.round(m.hrs/m.target*100):0}%"></div></div>
+    </div>`).join('');
+}
+function addTime(){
+  const h=parseFloat(document.getElementById('zt-hrs').value);
+  if(!h||h<=0){showToast('Bitte Stunden eingeben','e');return;}
+  showToast(`✓ ${h}h erfasst`,'s');
+  document.getElementById('zt-hrs').value='';
+  document.getElementById('zt-desc').value='';
+}
+let timerInterval=null,timerSecs=0,timerRunning=false;
+function toggleTimer(){
+  if(!timerRunning){
+    timerRunning=true;document.getElementById('timer-btn').textContent='⏹ Stoppuhr stoppen';
+    document.getElementById('timer-disp').style.display='inline';
+    timerInterval=setInterval(()=>{timerSecs++;const h=Math.floor(timerSecs/3600).toString().padStart(2,'0');const m=Math.floor((timerSecs%3600)/60).toString().padStart(2,'0');const s=(timerSecs%60).toString().padStart(2,'0');document.getElementById('timer-disp').textContent=`${h}:${m}:${s}`;},1000);
+  }else{
+    timerRunning=false;clearInterval(timerInterval);
+    document.getElementById('zt-hrs').value=(timerSecs/3600).toFixed(2);
+    document.getElementById('timer-btn').textContent='⏱ Stoppuhr starten';
+    document.getElementById('timer-disp').style.display='none';
+    timerSecs=0;
   }
-  const users=getUsers();
-  const active=users.filter(u=>u.active).length;
-  document.getElementById('users-content').innerHTML=`
-    <div class="grid-4 mb-4">
-      <div class="kpi"><div class="kpi-label">Alle Nutzer</div><div class="kpi-value">${users.length}</div></div>
-      <div class="kpi"><div class="kpi-label">Aktiv</div><div class="kpi-value" style="color:var(--green)">${active}</div></div>
-      <div class="kpi"><div class="kpi-label">Deaktiviert</div><div class="kpi-value" style="color:var(--red)">${users.length-active}</div></div>
-      <div class="kpi"><div class="kpi-label">Superadmins</div><div class="kpi-value" style="color:var(--amber)">${users.filter(u=>u.role==='superadmin').length}</div></div>
-    </div>
-    <div class="flex justify-between items-center mb-4">
-      <span class="fw-600 syne" style="font-size:16px">Team-Mitglieder</span>
-      <button class="btn btn-primary" onclick="openModal('modal-new-user')">+ Mitarbeiter hinzufügen</button>
-    </div>
-    <div style="display:grid;gap:12px">${users.map(u=>userCard(u)).join('')}</div>`;
 }
 
-function userCard(u){
-  const initials=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const bg=u.role==='superadmin'?'background:linear-gradient(135deg,#f59e0b,#d97706)':'background:linear-gradient(135deg,#3b82f6,#1d4ed8)';
-  const isMe=currentUser&&u.id===currentUser.id;
-  return`<div class="user-card${u.active?'':' inactive'}">
-    <div class="user-avatar-lg" style="${bg}">${initials}</div>
-    <div class="user-card-info">
-      <div class="user-card-name">${u.name}${isMe?' <span style="font-size:11px;color:var(--text3)">(Du)</span>':''}</div>
-      <div class="user-card-meta">${u.email} · ${u.dept} · Erstellt: ${u.created} · Login: ${u.lastLogin}</div>
-      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        ${u.role==='superadmin'?'<span class="role-badge superadmin">👑 Superadmin</span>':'<span class="role-badge employee">👤 Mitarbeiter</span>'}
-        ${u.active?'<span class="badge badge-green">Aktiv</span>':'<span class="badge badge-red">Deaktiviert</span>'}
+// insurance
+function renderInsurance(){
+  document.getElementById('ins-grid').innerHTML=INSURANCE.map(ins=>`
+    <div class="ins-card">
+      <div class="fg ic g2x mb2">
+        <div class="ins-icon" style="background:${ins.status==='expiring'?'var(--rbg)':'var(--abg)'}">${ins.icon}</div>
+        <div style="flex:1">
+          <div class="ts fw6" style="color:var(--txt)">${ins.type}</div>
+          <div class="txxs td">${ins.company} · ${ins.policyNr}</div>
+        </div>
+        <span class="badge ${ins.status==='active'?'bg2':ins.status==='expiring'?'br2':'ba2'}">${ins.status==='active'?'Aktiv':ins.status==='expiring'?'Läuft aus':'Klärung'}</span>
+      </div>
+      <div class="fg jb txs">
+        <span class="td">Prämie/Jahr</span><span class="fw5">${f(ins.premium)}</span>
+      </div>
+      <div class="fg jb txxs mt2">
+        <span class="td">Läuft ab: ${ins.expiry}</span>
+        <button class="btn bg bsm" style="font-size:10px">Dokumente</button>
+      </div>
+    </div>`).join('');
+}
+function renderInsUploads(){
+  document.getElementById('ins-uploads').innerHTML=INS_UPLOADS.map(u=>`
+    <div class="bank-row">
+      <div style="flex:1"><div class="ts fw5">${u.file}</div><div class="txxs td">${u.company} · ${u.date}</div></div>
+      <span class="badge ${u.status==='new'?'ba2':'bg2'}">${u.status==='new'?'Neu':'Verarbeitet'}</span>
+    </div>`).join('');
+}
+function uploadInsurance(input){if(input.files[0])showToast(`📎 ${input.files[0].name} bereit zum Einreichen`,'i');}
+function submitInsurance(){showToast('✓ Dokument eingereicht — Bestätigung per E-Mail!','s');}
+function copyPortalLink(){navigator.clipboard?.writeText('https://invoiceflow.firma.de/insurance-portal');showToast('🔗 Link kopiert','i');}
+
+// dashboard helpers
+function renderDashTxn(){
+  document.getElementById('dash-txn').innerHTML=TRANSACTIONS.slice(0,4).map(t=>`
+    <div class="bank-row">
+      <div style="flex:1"><div class="ts fw5">${t.desc}</div><div class="txxs td">${t.date}</div></div>
+      <span class="${t.type==='in'?'tg':'tr'} fw5 ts">${t.type==='in'?'+':''}${f(Math.abs(t.amount))}</span>
+    </div>`).join('');
+}
+function renderDashDocs(){
+  document.getElementById('dash-docs').innerHTML=BELEGE.filter(b=>b.status!=='MATCHED').slice(0,3).map(b=>`
+    <div class="bank-row">
+      <div style="flex:1"><div class="ts fw5">${b.vendor}</div><div class="txxs td">${b.file}</div></div>
+      <span class="ta fw5 ts">${f(b.amount)}</span>
+    </div>`).join('');
+}
+function renderDashProj(){
+  document.getElementById('dash-proj').innerHTML=PROJECTS.filter(p=>p.status==='active').map(p=>`
+    <div class="bank-row">
+      <div style="flex:1"><div class="ts fw5">${p.name}</div><div class="txxs td">${p.client}</div></div>
+      <span class="badge ba2">${p.phase}</span>
+    </div>`).join('');
+}
+function renderFcPanels(){
+  document.getElementById('fc-inc').innerHTML=INVOICES.filter(i=>i.status==='OPEN').map(i=>`
+    <div class="ir"><span>${i.id} · ${i.customer}</span><span class="tg fw5">${f(i.gross)}</span></div>`).join('');
+  const expenses=[{d:'Miete April',a:2800},{d:'Gehälter April',a:12400},{d:'Telekom',a:89.99},{d:'Software-Lizenzen',a:450}];
+  document.getElementById('fc-exp').innerHTML=expenses.map(e=>`
+    <div class="ir"><span>${e.d}</span><span class="tr fw5">- ${f(e.a)}</span></div>`).join('');
+}
+function renderForecast(){
+  if(document.getElementById('forecast-init'))return;
+  document.getElementById('forecast-init');
+  setTimeout(()=>{
+    const ctx=document.getElementById('fcChart');
+    if(!ctx)return;
+    const months=['Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez','Jan','Feb','Mär'];
+    const inc=[48000,52000,44000,61000,55000,49000,58000,63000,47000,51000,56000,60000];
+    const exp=[36000,38000,37000,42000,39000,38000,40000,44000,36000,37000,39000,41000];
+    const cf=inc.map((v,i)=>v-exp[i]);
+    new Chart(ctx,{type:'bar',data:{labels:months,datasets:[
+      {label:'Einnahmen',data:inc,backgroundColor:'rgba(16,185,129,0.6)',borderRadius:4},
+      {label:'Ausgaben',data:exp,backgroundColor:'rgba(239,68,68,0.5)',borderRadius:4},
+      {type:'line',label:'Cashflow',data:cf,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#f59e0b'},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
+  },50);
+}
+function populateCustomerSelect(){}
+
+// ── abschlag ──
+function renderAbschlagSteps(){
+  const total=parseFloat(document.getElementById('ab-total').value)||10000;
+  const type=document.getElementById('ab-type').value;
+  const steps=type==='percent'?
+    [{pct:30,label:'Auftragserteilung'},{pct:40,label:'Meilenstein 1'},{pct:30,label:'Projektabschluss'}]:
+    type==='fixed'?
+    [{amt:3000,label:'Anzahlung'},{amt:4000,label:'Zwischenzahlung'},{amt:3000,label:'Schlusszahlung'}]:
+    [{pct:100,label:'Nach Abnahme'}];
+  document.getElementById('ab-steps-wrap').innerHTML=steps.map((s,i)=>`
+    <div class="abschlag-step">
+      <div class="as-num" style="background:var(--amber);color:#09090e">${i+1}</div>
+      <div style="flex:1"><input class="inp" value="${s.label}" style="margin-bottom:4px"><div class="txxs td">${s.pct?Math.round(total*s.pct/100):s.amt} € netto (${s.pct||Math.round(s.amt/total*100)}%)</div></div>
+    </div>`).join('');
+  document.getElementById('ab-net').textContent=f(total);
+  document.getElementById('ab-vat').textContent=f(total*0.19);
+  document.getElementById('ab-gross').textContent=f(total*1.19);
+}
+function saveAbschlag(){closeM('m-abschlag');showToast('✓ Abschlagsrechnungen erstellt und als Entwurf gespeichert','s');}
+
+// ── OCR ──
+function handleOcrDrop(e){e.preventDefault();document.getElementById('ocr-drop').classList.remove('over');const f=e.dataTransfer.files[0];if(f)processOcr(f);}
+function runOCR(input){if(input.files[0])processOcr(input.files[0]);}
+async function processOcr(file){
+  document.getElementById('ocr-progress').style.display='block';
+  document.getElementById('ocr-result-card').style.display='none';
+  let pct=0;const iv=setInterval(()=>{pct=Math.min(pct+12,90);document.getElementById('ocr-pf').style.width=pct+'%';},200);
+  try{
+    const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:base64}},{type:'text',text:'Extrahiere aus diesem Beleg: Datum, Betrag (netto/brutto), Lieferant/Aussteller, Rechnungsnummer, MwSt-Satz, Beschreibung. Antworte NUR mit JSON: {"date":"...","net":0,"gross":0,"vat":0,"vendor":"...","invoiceNr":"...","desc":"...","confidence":0}'}]}]})});
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'{}';
+    ocrData=JSON.parse(text.replace(/```json|```/g,'').trim());
+    clearInterval(iv);document.getElementById('ocr-pf').style.width='100%';
+    setTimeout(()=>{document.getElementById('ocr-progress').style.display='none';showOcrResult(ocrData,file.name);},400);
+  }catch(e){
+    clearInterval(iv);document.getElementById('ocr-progress').style.display='none';
+    // Demo-Fallback
+    ocrData={date:'16.03.2025',net:234.50,gross:279.06,vat:19,vendor:file.name.split('.')[0],invoiceNr:'R-'+Math.floor(Math.random()*9999),desc:'Erkannt aus: '+file.name,confidence:85};
+    showOcrResult(ocrData,file.name);
+  }
+}
+function showOcrResult(d,fname){
+  const el=document.getElementById('ocr-result-card');el.style.display='block';
+  const fields=[['Datei',fname],['Datum',d.date],['Netto',d.net?f(d.net):'—'],['Brutto',d.gross?f(d.gross):'—'],['MwSt.',d.vat+'%'],['Lieferant',d.vendor],['Rechnungsnr.',d.invoiceNr],['Beschreibung',d.desc],['Konfidenz',d.confidence+'%']];
+  document.getElementById('ocr-fields').innerHTML=fields.map(([k,v])=>`<div class="ir"><span class="td">${k}</span><span class="fw5">${v}</span></div>`).join('');
+}
+function assignOcrBeleg(){showToast('✓ Beleg erkannt und Buchungsvorschlag erstellt','s');document.getElementById('ocr-result-card').style.display='none';}
+function runAutoMatch(){showToast('⚡ Auto-Zuordnung läuft...','i');setTimeout(()=>showToast('✓ 3 Belege automatisch zugeordnet','s'),1500);}
+
+// ── chatbot ──
+let chatHistory=[];
+async function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;inp.value='';
+  const chat=document.getElementById('chat-msgs');
+  chat.innerHTML+=`<div class="chat-msg chat-user">${msg}</div>`;
+  const thinking=document.createElement('div');thinking.className='chat-msg chat-bot';thinking.innerHTML='<span class="spin"></span> Analysiere...';chat.appendChild(thinking);chat.scrollTop=chat.scrollHeight;
+  const ctx=`Du bist der KI-Assistent von InvoiceFlow Pro. Aktuelle Daten: Rechnungen: ${JSON.stringify(INVOICES)}, Belege: ${JSON.stringify(BELEGE)}, Transaktionen: ${JSON.stringify(TRANSACTIONS)}, Projekte: ${JSON.stringify(PROJECTS)}, Versicherungen: ${JSON.stringify(INSURANCE.map(i=>({type:i.type,company:i.company,premium:i.premium,expiry:i.expiry,status:i.status})))}. Beantworte auf Deutsch, präzise, max 200 Wörter.`;
+  chatHistory.push({role:'user',content:msg});
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:ctx,messages:chatHistory})});
+    const data=await res.json();const reply=data.content?.[0]?.text||'Keine Antwort.';
+    chatHistory.push({role:'assistant',content:reply});
+    thinking.textContent=reply;
+  }catch(e){thinking.textContent='Verbindungsfehler. Bitte API-Key prüfen.';}
+  chat.scrollTop=chat.scrollHeight;
+}
+function chatQ(q){document.getElementById('chat-in').value=q;sendChat();}
+
+// ── user management ──
+function renderUsers(){
+  const canEdit=CU&&(CU.role==='superadmin');
+  if(!canEdit&&CU?.role!=='management'){document.getElementById('users-content').innerHTML='<div class="na"><div class="nai">🔒</div><div class="nat">Kein Zugriff</div><div class="nas">Nur für Superadmins.</div></div>';return;}
+  const users=gU();const active=users.filter(u=>u.active).length;
+  document.getElementById('users-content').innerHTML=`
+    <div class="g4 mb4">
+      <div class="kpi"><div class="klab">Alle Nutzer</div><div class="kval">${users.length}</div></div>
+      <div class="kpi"><div class="klab">Aktiv</div><div class="kval tg">${active}</div></div>
+      <div class="kpi"><div class="klab">Deaktiviert</div><div class="kval tr">${users.length-active}</div></div>
+      <div class="kpi"><div class="klab">Ø Stundensatz</div><div class="kval ta">€ ${Math.round(users.filter(u=>u.rate>0).reduce((s,u)=>s+u.rate,0)/users.filter(u=>u.rate>0).length||0)}</div></div>
+    </div>
+    <div class="fg jb ic mb4">
+      <span class="fw6 syne ts">Team</span>
+      ${canEdit?'<button class="btn bp bsm" onclick="openM(\'m-newuser\')">+ Mitarbeiter</button>':''}
+    </div>
+    <div>${users.map(u=>ucCard(u,canEdit)).join('')}</div>`;
+}
+function ucCard(u,canEdit){
+  const ini=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const bg={superadmin:'linear-gradient(135deg,#f59e0b,#d97706)',management:'linear-gradient(135deg,#7c3aed,#4c1d95)',employee:'linear-gradient(135deg,#3b82f6,#1d4ed8)',insurance_portal:'linear-gradient(135deg,#ec4899,#be185d)'}[u.role]||'linear-gradient(135deg,#475569,#1e293b)';
+  const rl={superadmin:'👑 SA',management:'💼 GF',employee:'👤 MA',insurance_portal:'🛡️ Portal'}[u.role]||u.role;
+  const isMe=CU&&u.id===CU.id;
+  return`<div class="uc-card${u.active?'':' inact'}">
+    <div class="uav" style="background:${bg}">${ini}</div>
+    <div class="uci">
+      <div class="ucn">${u.name}${isMe?' <span class="txxs td">(Du)</span>':''}</div>
+      <div class="ucm">${u.email} · ${u.dept}${u.rate?' · €'+u.rate+'/h':''}</div>
+      <div class="fg g1x" style="margin-top:6px;flex-wrap:wrap;gap:5px">
+        <span class="tag">${rl}</span>
+        ${u.active?'<span class="badge bg2">Aktiv</span>':'<span class="badge br2">Deaktiviert</span>'}
       </div>
     </div>
-    <div class="user-card-actions">
-      <button class="btn btn-ghost btn-sm" onclick="openPasswordModal(${u.id},'${u.name}')">🔑 Passwort</button>
-      ${!isMe?`
-        ${u.active
-          ?`<button class="btn btn-danger btn-sm" onclick="toggleUser(${u.id},false)">Deaktivieren</button>`
-          :`<button class="btn btn-success btn-sm" onclick="toggleUser(${u.id},true)">Aktivieren</button>`}
-        <button class="btn btn-ghost btn-sm" onclick="changeRole(${u.id},'${u.role}')" title="Rolle wechseln">⚙️ Rolle</button>
+    <div class="uca">
+      ${canEdit&&!isMe?`
+        ${u.active?`<button class="btn bd bsm" onclick="toggleU(${u.id},false)">Deaktiv.</button>`:`<button class="btn bs bsm" onclick="toggleU(${u.id},true)">Aktivieren</button>`}
+        <button class="btn bg bsm" onclick="chRole(${u.id},'${u.role}')">Rolle</button>
       `:''}
     </div>
   </div>`;
 }
-
-function toggleUser(id,active){
-  const users=getUsers();const user=users.find(u=>u.id===id);if(!user)return;
-  user.active=active;saveUsers(users);
-  showToast(`${user.name} wurde ${active?'aktiviert':'deaktiviert'}.`,active?'success':'error');
-  renderUsers();
-}
-function changeRole(id,currentRole){
-  const users=getUsers();const user=users.find(u=>u.id===id);if(!user)return;
-  const newRole=currentRole==='superadmin'?'employee':'superadmin';
-  if(!confirm(`Rolle von "${user.name}" zu "${newRole==='superadmin'?'Superadmin':'Mitarbeiter'}" ändern?`))return;
-  user.role=newRole;saveUsers(users);
-  showToast(`Rolle von ${user.name} geändert.`,'success');renderUsers();
-}
+function toggleU(id,a){const users=gU();const u=users.find(x=>x.id===id);if(!u)return;u.active=a;sU(users);showToast(`${u.name} ${a?'aktiviert':'deaktiviert'}.`,a?'s':'e');renderUsers();}
+function chRole(id,cr){const users=gU();const u=users.find(x=>x.id===id);if(!u)return;const roles=['employee','management','superadmin'];const idx=roles.indexOf(cr);const nr=roles[(idx+1)%roles.length];if(!confirm(`Rolle von "${u.name}" zu ${nr} ändern?`))return;u.role=nr;sU(users);showToast('Rolle geändert.','s');renderUsers();}
 function createUser(){
-  const name=document.getElementById('new-name').value.trim();
-  const email=document.getElementById('new-email').value.trim();
-  const password=document.getElementById('new-password').value;
-  const role=document.getElementById('new-role').value;
-  const dept=document.getElementById('new-dept').value;
-  if(!name||!email||!password){showToast('Bitte alle Felder ausfüllen.','error');return;}
-  if(password.length<8){showToast('Passwort mind. 8 Zeichen.','error');return;}
-  const users=getUsers();
-  if(users.find(u=>u.email===email)){showToast('E-Mail bereits vergeben.','error');return;}
-  const newId=Math.max(...users.map(u=>u.id))+1;
-  users.push({id:newId,name,email,password,role,dept,active:true,created:new Date().toLocaleDateString('de-DE'),lastLogin:'Noch nie'});
-  saveUsers(users);closeModal('modal-new-user');
-  document.getElementById('new-name').value='';document.getElementById('new-email').value='';document.getElementById('new-password').value='';
-  showToast(`✓ ${name} wurde angelegt!`,'success');renderUsers();
-}
-function openPasswordModal(id,name){
-  pwResetUserId=id;
-  document.getElementById('pw-user-name').textContent=`Passwort für: ${name}`;
-  document.getElementById('pw-new').value='';document.getElementById('pw-confirm').value='';
-  openModal('modal-password');
-}
-function savePassword(){
-  const pw=document.getElementById('pw-new').value;
-  const conf=document.getElementById('pw-confirm').value;
-  if(pw.length<8){showToast('Passwort mind. 8 Zeichen.','error');return;}
-  if(pw!==conf){showToast('Passwörter stimmen nicht überein.','error');return;}
-  const users=getUsers();const user=users.find(u=>u.id===pwResetUserId);if(!user)return;
-  user.password=pw;saveUsers(users);closeModal('modal-password');
-  showToast(`✓ Passwort für ${user.name} gesetzt.`,'success');
+  const n=document.getElementById('mn-name').value.trim();const e=document.getElementById('mn-email').value.trim();
+  const p=document.getElementById('mn-pw').value;const r=document.getElementById('mn-role').value;
+  const d=document.getElementById('mn-dept').value;const rt=parseInt(document.getElementById('mn-rate').value)||0;
+  if(!n||!e||!p){showToast('Alle Pflichtfelder ausfüllen.','e');return;}
+  if(p.length<8){showToast('Passwort mind. 8 Zeichen.','e');return;}
+  const users=gU();if(users.find(u=>u.email===e)){showToast('E-Mail bereits vergeben.','e');return;}
+  const id=Math.max(...users.map(u=>u.id))+1;
+  users.push({id,name:n,email:e,pw:p,role:r,dept:d,rate:rt,active:true,created:new Date().toLocaleDateString('de-DE'),lastLogin:'Noch nie'});
+  sU(users);closeM('m-newuser');showToast(`✓ ${n} angelegt!`,'s');renderUsers();
 }
 
-// ─── ANALYSEN ────────────────────────────────────────
+// analytics
 function renderAnalytics(){
-  if(!currentUser||currentUser.role!=='superadmin'){
-    document.getElementById('analytics-content').innerHTML=`<div class="no-access"><div class="no-access-icon">🔒</div><div class="no-access-title">Kein Zugriff</div><div class="no-access-sub">Nur für Superadmins.</div></div>`;
-    return;
-  }
   if(document.getElementById('analytics-content').dataset.init)return;
   document.getElementById('analytics-content').dataset.init=1;
   document.getElementById('analytics-content').innerHTML=`
-    <div class="grid-2 mb-4">
-      <div class="card"><div class="fw-500 syne mb-3">Umsatz nach Kunde</div><div class="chart-wrap" style="height:260px"><canvas id="ac"></canvas></div></div>
-      <div class="card"><div class="fw-500 syne mb-3">Zahlungsverhalten</div><div class="chart-wrap" style="height:260px"><canvas id="ap"></canvas></div></div>
+    <div class="g4 mb4">
+      <div class="kpi"><div class="klab">Umsatz YTD</div><div class="kval">€ 148.320</div><div class="ksub up">↑ 18%</div></div>
+      <div class="kpi"><div class="klab">Kosten YTD</div><div class="kval tr">€ 112.400</div></div>
+      <div class="kpi"><div class="klab">EBIT</div><div class="kval tg">€ 35.920</div><div class="ksub up">Marge 24%</div></div>
+      <div class="kpi"><div class="klab">Debitorenzieltage</div><div class="kval">17</div><div class="ksub up">↓ 3 besser</div></div>
     </div>
-    <div class="grid-3">
-      <div class="card"><div class="fw-500 syne mb-3">Top Kunden</div>
-        <div class="info-row"><span>Acme GmbH</span><span class="text-amber fw-500">€ 42.800</span></div>
-        <div class="info-row"><span>TechStart AG</span><span class="text-amber fw-500">€ 38.200</span></div>
-        <div class="info-row"><span>FreshBrand GmbH</span><span class="text-amber fw-500">€ 27.600</span></div>
-        <div class="info-row"><span>Digital Media KG</span><span class="text-amber fw-500">€ 18.400</span></div>
-        <div class="info-row"><span>Nova Consulting</span><span class="text-amber fw-500">€ 15.800</span></div>
-      </div>
-      <div class="card"><div class="fw-500 syne mb-3">Branchen</div><div class="chart-wrap" style="height:200px"><canvas id="as"></canvas></div></div>
-      <div class="card"><div class="fw-500 syne mb-3">Jahresvergleich</div><div class="chart-wrap" style="height:200px"><canvas id="ay"></canvas></div></div>
+    <div class="g2">
+      <div class="card"><div class="fw6 syne ts mb3">Umsatz nach Kunde</div><div class="cw" style="height:240px"><canvas id="an-c"></canvas></div></div>
+      <div class="card"><div class="fw6 syne ts mb3">Zahlungsverhalten</div><div class="cw" style="height:240px"><canvas id="an-p"></canvas></div></div>
     </div>`;
   setTimeout(()=>{
-    new Chart(document.getElementById('ac').getContext('2d'),{type:'bar',data:{labels:['Acme','TechStart','FreshBrand','Digital','Nova'],datasets:[{data:[42800,38200,27600,18400,15800],backgroundColor:['rgba(245,158,11,0.8)','rgba(59,130,246,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(239,68,68,0.8)'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11},callback:v=>'€'+Math.round(v/1000)+'k'}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}}}}});
-    new Chart(document.getElementById('ap').getContext('2d'),{type:'line',data:{labels:['Okt','Nov','Dez','Jan','Feb','Mär'],datasets:[{data:[22,19,24,21,18,17],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#f59e0b'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}}}}});
-    new Chart(document.getElementById('as').getContext('2d'),{type:'doughnut',data:{labels:['Tech','Medien','Beratung','Handel'],datasets:[{data:[45,20,25,10],backgroundColor:['#3b82f6','#f59e0b','#10b981','#a78bfa'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#64748b',font:{size:11},boxWidth:10}}}}});
-    new Chart(document.getElementById('ay').getContext('2d'),{type:'line',data:{labels:['Q1','Q2','Q3','Q4'],datasets:[{label:'2024',data:[95000,112000,98000,134000],borderColor:'rgba(100,116,139,0.5)',borderDash:[4,4],tension:0.4,pointRadius:3},{label:'2025',data:[108000,null,null,null],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
+    new Chart(document.getElementById('an-c').getContext('2d'),{type:'bar',data:{labels:['Acme','TechStart','FreshBrand','Digital','Nova'],datasets:[{data:[42800,38200,27600,18400,15800],backgroundColor:['rgba(245,158,11,0.8)','rgba(59,130,246,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(239,68,68,0.8)'],borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10},callback:v=>'€'+Math.round(v/1000)+'k'}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}}}}});
+    new Chart(document.getElementById('an-p').getContext('2d'),{type:'line',data:{labels:['Okt','Nov','Dez','Jan','Feb','Mär'],datasets:[{data:[22,19,24,21,18,17],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#f59e0b'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}}}}});
   },50);
 }
 
-// ─── MODAL & TOAST ───────────────────────────────────
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))closeModal(e.target.id);});
-
-let toastTimer=null;
-function showToast(msg,type='success'){
-  const t=document.getElementById('toast');t.textContent=msg;t.className=`toast show ${type}`;
-  if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+// charts
+function initCharts(){
+  try{
+    new Chart(document.getElementById('revChart').getContext('2d'),{type:'bar',data:{labels:['Okt','Nov','Dez','Jan','Feb','Mär'],datasets:[{label:'Umsatz',data:[32000,28500,41000,35200,43100,48320],backgroundColor:'rgba(245,158,11,0.7)',borderRadius:4},{label:'Kosten',data:[24000,22000,28000,26000,31000,34000],backgroundColor:'rgba(239,68,68,0.5)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
+  }catch(e){}
+  try{
+    const bars=document.getElementById('cf-bars');
+    const data=[8200,6100,9400,-2100,11200,7800,13400,9200,6500,10800,12100,8900];
+    const max=Math.max(...data.map(Math.abs));
+    bars.innerHTML=data.map((v,i)=>`<div class="fb" style="height:${Math.abs(v)/max*100}%;background:${v>=0?'rgba(16,185,129,0.7)':'rgba(239,68,68,0.7)'}">${i<3?'W'+(i+1):''}</div>`).join('');
+  }catch(e){}
+  try{
+    new Chart(document.getElementById('projChart').getContext('2d'),{type:'bar',data:{labels:PROJECTS.map(p=>p.name.substring(0,12)+'...'),datasets:[{label:'h',data:PROJECTS.map(p=>p.hours),backgroundColor:['rgba(59,130,246,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)','rgba(167,139,250,0.7)'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:10}}}}}});
+  }catch(e){}
+  try{
+    new Chart(document.getElementById('zeitChart').getContext('2d'),{type:'doughnut',data:{labels:PROJECTS.map(p=>p.name.substring(0,10)),datasets:[{data:PROJECTS.map(p=>p.hours),backgroundColor:['#3b82f6','#10b981','#f59e0b','#a78bfa'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#64748b',font:{size:9},boxWidth:8}}}}});
+  }catch(e){}
+  try{
+    new Chart(document.getElementById('insChart').getContext('2d'),{type:'doughnut',data:{labels:INSURANCE.map(i=>i.type.substring(0,12)),datasets:[{data:INSURANCE.map(i=>i.premium),backgroundColor:['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444','#06b6d4','#f97316','#ec4899'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:false}}}});
+  }catch(e){}
 }
 
-// ─── CHARTS ──────────────────────────────────────────
-function initCharts(){
-  new Chart(document.getElementById('revenueChart').getContext('2d'),{type:'bar',data:{labels:['Okt','Nov','Dez','Jan','Feb','Mär'],datasets:[{label:'Umsatz',data:[32000,28500,41000,35200,43100,48320],backgroundColor:'rgba(245,158,11,0.7)',borderRadius:6},{label:'Bezahlt',data:[30000,27000,39500,33800,40200,31890],backgroundColor:'rgba(16,185,129,0.5)',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{size:11},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
-  new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{labels:['0–14','15–30','31–60','>60'],datasets:[{data:[9200,5500,2850,1200],backgroundColor:['#10b981','#f59e0b','#ef4444','#991b1b'],borderWidth:0}]},options:{responsive:true,
+// modal / toast
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-ov'))closeM(e.target.id);});
+let toastT=null;
+function showToast(msg,type='s'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast show ${type}`;if(toastT)clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3500);}
+
+// init
+document.addEventListener('DOMContentLoaded',()=>{
+  renderAbschlagSteps();
+  const sess=gSess();
+  if(sess){const u=gU().find(x=>x.id===sess.id&&x.active);if(u){CU=u;if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);return;}}
+  document.getElementById('login-portal').style.display='flex';
+  document.getElementById('app').style.display='none';
+});
+</script>
+</body>
+</html>
