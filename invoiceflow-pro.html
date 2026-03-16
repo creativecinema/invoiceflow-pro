@@ -573,6 +573,38 @@ select.form-input option{background:#1b2035}
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+// ════════════════════════════════════════════════════════
+// WECLAPP DATEN — aus /data/weclapp.json (lokal gespeichert)
+// Wird täglich per GitHub Actions aktualisiert
+// ════════════════════════════════════════════════════════
+let WECLAPP = { invoices:[], customers:[], quotes:[], orders:[], articles:[], timeRecords:[], _meta:{} };
+
+async function loadWeclappData() {
+  try {
+    const res  = await fetch('/data/weclapp.json?v=' + Date.now());
+    if (!res.ok) return;
+    WECLAPP = await res.json();
+    const meta = WECLAPP._meta || {};
+    if (meta.syncedAt && meta.syncedAt !== 'noch nicht synchronisiert') {
+      const synced = new Date(meta.syncedAt).toLocaleString('de-DE');
+      showToast('⚡ Weclapp-Daten geladen · Stand: ' + synced, 'i');
+    }
+    // Tabellen neu rendern mit echten Daten
+    renderInvoices();
+    renderCustomers();
+    renderDashInvoices();
+    populateCustomerSelect();
+  } catch(e) {
+    console.log('Lokale Daten nicht verfügbar — Demo-Modus aktiv');
+  }
+}
+
+// Weclapp-Daten oder Demo-Fallback
+function getInvoices()  { return WECLAPP.invoices?.length  ? WECLAPP.invoices  : DEMO_INVOICES; }
+function getCustomers() { return WECLAPP.customers?.length ? WECLAPP.customers : DEMO_CUSTOMERS; }
+function getArticles()  { return WECLAPP.articles?.length  ? WECLAPP.articles  : DEMO_ARTICLES; }
+
 // ─── USER DATABASE ───────────────────────────────────
 const DEFAULT_USERS=[
   {id:1,name:'Max Lehmann',email:'superadmin@invoiceflow.de',password:'Admin2025!',role:'superadmin',dept:'Geschäftsführung',active:true,created:'01.01.2025',lastLogin:'Heute'},
@@ -644,6 +676,7 @@ function launchApp(user){
   renderInvoices();renderDashInvoices();renderLines();
   setTimeout(()=>initCharts(),100);
   showView('dashboard',null);
+  loadWeclappData();
 }
 
 // ─── NAVIGATION ──────────────────────────────────────
