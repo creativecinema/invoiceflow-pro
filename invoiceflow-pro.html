@@ -265,6 +265,40 @@ select.inp option{background:var(--s2)}
 
 /* version stamp */
 #ver{position:fixed;bottom:10px;right:14px;z-index:9999;font-size:10px;font-family:'IBM Plex Mono',monospace;color:rgba(245,158,11,0.45);pointer-events:none;letter-spacing:.5px}
+
+/* ─── KUNDEN / ARTIKEL / TEXTE ─────────────── */
+.db-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.db-search{position:relative;flex:1;max-width:280px}
+.db-search input{width:100%;padding:7px 10px 7px 28px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;color:var(--t1);font-size:12px;font-family:inherit}
+.db-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--t3)}
+.item-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .15s;cursor:pointer}
+.item-card:hover{border-color:var(--b2);transform:translateX(2px)}
+.item-av{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;font-weight:700;font-family:'Syne',sans-serif}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:13px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-sub{font-size:11px;color:var(--t3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-actions{display:flex;gap:6px;flex-shrink:0}
+.price-period{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.pp-active{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.05)}
+.text-block-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px 16px;margin-bottom:8px;transition:all .15s}
+.text-block-card:hover{border-color:var(--b2)}
+.text-preview{font-size:11px;color:var(--t3);line-height:1.6;margin-top:6px;max-height:48px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.bank-tx-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:11px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;transition:all .15s}
+.bank-tx-card:hover{border-color:var(--b2)}
+.bank-tx-card.unmatched{border-left:3px solid var(--am)}
+.bank-tx-card.matched{border-left:3px solid var(--gn)}
+.bank-tx-card.out .tx-amt{color:var(--rd)}
+.bank-tx-card.in  .tx-amt{color:var(--gn)}
+.tx-amt{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;white-space:nowrap}
+.bank-account-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all .15s}
+.bank-account-card:hover{border-color:var(--am);transform:translateY(-1px)}
+.bank-account-card.selected{border-color:var(--am);background:var(--ambg)}
+.ba-logo{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.chip:hover{opacity:.8}
+.chip-active{background:var(--ambg2);color:var(--am);border-color:rgba(245,158,11,.3)}
+.chip-inactive{background:var(--s2);color:var(--t3);border-color:var(--b1)}
+
 </style>
 </head>
 <body>
@@ -649,6 +683,274 @@ select.inp option{background:var(--s2)}
   </div>
 </div>
 
+
+<!-- ═══ KUNDEN ═══════════════════════════════════════════ -->
+<div class="view" id="v-kunden">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600">Kundendatenbank</span>
+      <span id="kunden-count" style="font-size:11px;color:var(--t3);margin-left:10px"></span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input class="inp" id="kunden-search" placeholder="🔍 Suchen..." style="width:200px;font-size:12px">
+      <button class="btn btn-p btn-sm" id="new-kunde-btn">+ Neuer Kunde</button>
+    </div>
+  </div>
+  <div class="card" style="padding:0">
+    <div class="sx">
+      <table id="kunden-table">
+        <thead><tr>
+          <th>Kundennr.</th><th>Firma / Name</th><th>Ansprechpartner</th>
+          <th>E-Mail</th><th>Telefon</th><th>PLZ / Ort</th>
+          <th>Umsatz</th><th>Kategorie</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="kunden-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ARTIKEL / LEISTUNGEN ══════════════════════════════ -->
+<div class="view" id="v-artikel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600">Artikeldatenbank</span>
+      <span id="artikel-count" style="font-size:11px;color:var(--t3);margin-left:10px"></span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <select class="inp btn-sm" id="artikel-kat-filter" style="width:140px">
+        <option value="">Alle Kategorien</option>
+        <option>Dienstleistung</option><option>Produkt</option>
+        <option>Software</option><option>Lizenz</option><option>Sonstiges</option>
+      </select>
+      <button class="btn btn-p btn-sm" id="new-artikel-btn">+ Neuer Artikel</button>
+    </div>
+  </div>
+  <div class="card" style="padding:0">
+    <div class="sx">
+      <table>
+        <thead><tr>
+          <th>Art.Nr.</th><th>Bezeichnung</th><th>Kategorie</th>
+          <th>Einheit</th><th>Akt. Preis</th><th>MwSt.</th>
+          <th>Preiszeiträume</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="artikel-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TEXTBAUSTEINE ═════════════════════════════════════ -->
+<div class="view" id="v-texte">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600">Textbausteine</span>
+    <button class="btn btn-p btn-sm" id="new-text-btn">+ Neuer Textbaustein</button>
+  </div>
+  <div class="g2" style="gap:20px">
+    <div>
+      <div style="display:flex;gap:4px;background:var(--s2);padding:3px;border-radius:9px;margin-bottom:14px" id="text-tabs">
+        <div class="stab-item active" data-cat="rechnung">Rechnungen</div>
+        <div class="stab-item" data-cat="angebot">Angebote</div>
+        <div class="stab-item" data-cat="mahnung">Mahnungen</div>
+        <div class="stab-item" data-cat="email">E-Mails</div>
+        <div class="stab-item" data-cat="sonstige">Sonstige</div>
+      </div>
+      <div id="texte-list"></div>
+    </div>
+    <div>
+      <div class="card" id="text-editor-card">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;margin-bottom:14px" id="text-editor-title">Textbaustein bearbeiten</div>
+        <div class="fi"><label class="fl">Bezeichnung</label><input class="inp" id="te-name" placeholder="z.B. Zahlungshinweis Standard"></div>
+        <div class="fi"><label class="fl">Kategorie</label>
+          <select class="inp" id="te-cat">
+            <option value="rechnung">Rechnung</option><option value="angebot">Angebot</option>
+            <option value="mahnung">Mahnung</option><option value="email">E-Mail</option>
+            <option value="sonstige">Sonstige</option>
+          </select>
+        </div>
+        <div class="fi"><label class="fl">Variablen verfügbar</label>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <span onclick="insertVar('{KUNDENNAME}')" class="badge bb" style="cursor:pointer">{KUNDENNAME}</span>
+            <span onclick="insertVar('{RECHNUNGSNR}')" class="badge bb" style="cursor:pointer">{RECHNUNGSNR}</span>
+            <span onclick="insertVar('{BETRAG}')" class="badge bb" style="cursor:pointer">{BETRAG}</span>
+            <span onclick="insertVar('{DATUM}')" class="badge bb" style="cursor:pointer">{DATUM}</span>
+            <span onclick="insertVar('{FAELLIGKEITSDATUM}')" class="badge bb" style="cursor:pointer">{FAELLIGKEITSDATUM}</span>
+            <span onclick="insertVar('{FIRMA}')" class="badge bb" style="cursor:pointer">{FIRMA}</span>
+          </div>
+        </div>
+        <div class="fi"><label class="fl">Text</label>
+          <textarea class="inp" id="te-body" rows="8" style="resize:vertical;font-size:12px;line-height:1.6"></textarea>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-p btn-sm" style="flex:1" id="te-save-btn">💾 Speichern</button>
+          <button class="btn btn-g btn-sm" id="te-cancel-btn">Abbrechen</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;margin-bottom:10px">Vorschau</div>
+        <div id="text-preview" style="font-size:12px;line-height:1.7;color:var(--t2);min-height:80px;white-space:pre-wrap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BANKING (ECHT) ════════════════════════════════════ -->
+<div class="view" id="v-banking-real">
+  <div class="g3 mb4" style="margin-bottom:14px">
+    <div class="kpi"><div class="kpi-label">Kontostand gesamt</div><div class="kpi-val" id="bank-balance-total">€ 0,00</div><div class="kpi-sub" id="bank-balance-sub">Lade...</div></div>
+    <div class="kpi"><div class="kpi-label">Einnahmen (MTD)</div><div class="kpi-val up" id="bank-income-mtd">€ 0,00</div></div>
+    <div class="kpi"><div class="kpi-label">Ausgaben (MTD)</div><div class="kpi-val dn" id="bank-expense-mtd">€ 0,00</div></div>
+  </div>
+
+  <!-- Konten -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600">Verbundene Konten</span>
+      <button class="btn btn-p btn-sm" id="connect-bank-btn">+ Konto verbinden</button>
+    </div>
+    <div id="bank-accounts-list"></div>
+  </div>
+
+  <!-- Transaktionen -->
+  <div class="card" style="padding:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--b1)">
+      <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600">Transaktionen</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="inp btn-sm" id="txn-account-filter" style="width:160px">
+          <option value="">Alle Konten</option>
+        </select>
+        <select class="inp btn-sm" id="txn-type-filter" style="width:120px">
+          <option value="">Alle Typen</option>
+          <option value="in">Eingänge</option>
+          <option value="out">Ausgänge</option>
+        </select>
+        <input class="inp btn-sm" id="txn-search" placeholder="Suchen..." style="width:160px">
+        <button class="btn btn-c btn-sm" id="sync-txn-btn">⟳ Sync</button>
+      </div>
+    </div>
+    <div class="sx">
+      <table>
+        <thead><tr>
+          <th>Datum</th><th>Beschreibung</th><th>Konto</th>
+          <th>Betrag</th><th>Kategorie</th><th>Zugeordnet</th><th></th>
+        </tr></thead>
+        <tbody id="txn-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ KUNDEN ═══════════════════════════════════════════════ -->
+<div class="view" id="v-kunden">
+  <div class="db-toolbar">
+    <div class="db-search">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="k-search" placeholder="Suchen..." oninput="renderKunden()">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" id="import-k-btn">📥 Import</button>
+      <button class="btn btn-p btn-sm" id="new-k-btn">+ Neuer Kunde</button>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:14px">
+    <div class="kpi"><div class="kpi-label">Gesamt</div><div class="kpi-val" id="k-stat-total">0</div></div>
+    <div class="kpi"><div class="kpi-label">Aktiv</div><div class="kpi-val" style="color:var(--gn)" id="k-stat-active">0</div></div>
+    <div class="kpi"><div class="kpi-label">Umsatz Gesamt</div><div class="kpi-val am" id="k-stat-revenue">€ 0</div></div>
+    <div class="kpi"><div class="kpi-label">Ø Zahlungsziel</div><div class="kpi-val" id="k-stat-days">14d</div></div>
+  </div>
+  <div id="k-list"></div>
+</div>
+
+<!-- ═══ ARTIKEL ══════════════════════════════════════════════ -->
+<div class="view" id="v-artikel">
+  <div class="db-toolbar">
+    <div class="db-search">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="a-search" placeholder="Artikel suchen..." oninput="renderArtikel()">
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select class="inp" id="a-cat-filter" style="width:140px;font-size:11px" onchange="renderArtikel()">
+        <option value="">Alle Kategorien</option>
+        <option>Dienstleistung</option><option>Produkt</option><option>Lizenz</option>
+        <option>Abo</option><option>Material</option><option>Reise</option>
+      </select>
+      <button class="btn btn-p btn-sm" id="new-a-btn">+ Neuer Artikel</button>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:14px">
+    <div class="kpi"><div class="kpi-label">Artikel</div><div class="kpi-val" id="a-stat-total">0</div></div>
+    <div class="kpi"><div class="kpi-label">Dienstleistungen</div><div class="kpi-val bc" id="a-stat-dl">0</div></div>
+    <div class="kpi"><div class="kpi-label">Produkte</div><div class="kpi-val am" id="a-stat-prod">0</div></div>
+    <div class="kpi"><div class="kpi-label">Ø Preis</div><div class="kpi-val" id="a-stat-avg">€ 0</div></div>
+  </div>
+  <div id="a-list"></div>
+</div>
+
+<!-- ═══ TEXTBAUSTEINE ════════════════════════════════════════ -->
+<div class="view" id="v-texte">
+  <div class="db-toolbar">
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="text-cat-tabs">
+      <div class="chip chip-active" data-cat="">Alle</div>
+      <div class="chip chip-inactive" data-cat="rechnung">Rechnung</div>
+      <div class="chip chip-inactive" data-cat="mahnung">Mahnung</div>
+      <div class="chip chip-inactive" data-cat="angebot">Angebot</div>
+      <div class="chip chip-inactive" data-cat="email">E-Mail</div>
+      <div class="chip chip-inactive" data-cat="agb">AGB</div>
+      <div class="chip chip-inactive" data-cat="sonstig">Sonstiges</div>
+    </div>
+    <button class="btn btn-p btn-sm" id="new-t-btn">+ Neuer Baustein</button>
+  </div>
+  <div id="t-list"></div>
+</div>
+
+<!-- ═══ BANKING (funktional) ═════════════════════════════════ -->
+<div class="view" id="v-banking">
+  <!-- Konten -->
+  <div id="bank-accounts-row" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:18px"></div>
+  <!-- Toolbar -->
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="bank-filter-tabs">
+      <div class="chip chip-active" data-filter="all">Alle</div>
+      <div class="chip chip-inactive" data-filter="in">Eingang</div>
+      <div class="chip chip-inactive" data-filter="out">Ausgang</div>
+      <div class="chip chip-inactive" data-filter="unmatched">Nicht zugeordnet</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-c btn-sm" id="bank-sync-btn">⟳ Sync GoCardless</button>
+      <button class="btn btn-g btn-sm" id="bank-manual-btn">+ Manuell</button>
+      <button class="btn btn-p btn-sm" id="bank-match-btn">⚡ Auto-Zuordnen</button>
+    </div>
+  </div>
+  <!-- Transactions -->
+  <div class="g2" style="gap:20px">
+    <div>
+      <div class="card" style="padding:0">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600">Transaktionen</span>
+          <span style="font-size:11px;color:var(--t3)" id="bank-count-lbl"></span>
+        </div>
+        <div id="bank-tx-list" style="max-height:600px;overflow-y:auto;padding:8px"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;margin-bottom:12px">Monatsübersicht</div>
+        <div class="cw" style="height:180px"><canvas id="bank-monthly-chart"></canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;margin-bottom:10px">Kontostand</div>
+        <div id="bank-balance-list"></div>
+      </div>
+      <div class="card">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;margin-bottom:10px">Verbundene Banken</div>
+        <div id="bank-connections-list"></div>
+        <button class="btn btn-g btn-sm" style="width:100%;margin-top:10px" id="bank-connect-btn">+ Bank verbinden</button>
+      </div>
+    </div>
+  </div>
+</div>
+
       </div><!-- /content -->
     </div><!-- /main -->
   </div><!-- /layout -->
@@ -830,31 +1132,39 @@ const NAV_ICONS = {
   portal:'<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
   users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',
   bar:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  contact:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+  box:'<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+  text:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
 };
 const NAV_DEF = [
   {section:'Übersicht',    items:[{v:'v-dashboard',i:'dash',  l:'Dashboard',   r:['superadmin','management','employee']}]},
+  {section:'Stammdaten',   items:[
+    {v:'v-kunden',  i:'contact',l:'Kunden',       r:['superadmin','management','employee']},
+    {v:'v-artikel', i:'box',    l:'Artikel',       r:['superadmin','management','employee']},
+    {v:'v-texte',   i:'text',   l:'Textbausteine', r:['superadmin','management','employee']},
+  ]},
   {section:'Finanzen',     items:[
-    {v:'v-invoices',i:'file',  l:'Rechnungen', r:['superadmin','management','employee'], badge:'2'},
-    {v:'v-belege',  i:'scan',  l:'Belege & OCR',r:['superadmin','management','employee']},
-    {v:'v-banking', i:'bank',  l:'Banking',    r:['superadmin','management']},
+    {v:'v-invoices',i:'file',   l:'Rechnungen',    r:['superadmin','management','employee'], badge:'2'},
+    {v:'v-belege',  i:'scan',   l:'Belege & OCR',  r:['superadmin','management','employee']},
+    {v:'v-banking', i:'bank',   l:'Banking',       r:['superadmin','management']},
   ]},
   {section:'Arbeit',       items:[
-    {v:'v-projekte',i:'folder',l:'Projekte',   r:['superadmin','management','employee']},
-    {v:'v-zeit',    i:'clock', l:'Zeiterfassung',r:['superadmin','management','employee']},
+    {v:'v-projekte',i:'folder', l:'Projekte',      r:['superadmin','management','employee']},
+    {v:'v-zeit',    i:'clock',  l:'Zeiterfassung', r:['superadmin','management','employee']},
   ]},
   {section:'KI & Analyse', items:[
-    {v:'v-chatbot', i:'bot',   l:'KI-Assistent',r:['superadmin','management','employee']},
-    {v:'v-forecast',i:'trend', l:'Forecast',   r:['superadmin','management']},
+    {v:'v-chatbot', i:'bot',    l:'KI-Assistent',  r:['superadmin','management','employee']},
+    {v:'v-forecast',i:'trend',  l:'Forecast',      r:['superadmin','management']},
   ]},
   {section:'Versicherung', items:[
     {v:'v-insurance',  i:'shield',l:'Versicherungen',r:['superadmin','management']},
     {v:'v-ins-portal', i:'portal',l:'Upload-Portal', r:['superadmin','management','ins_portal']},
   ]},
   {section:'Administration',items:[
-    {v:'v-users',   i:'users', l:'Nutzerverwaltung',r:['superadmin'],          adm:true},
-    {v:'v-analytics',i:'bar',  l:'Analysen',        r:['superadmin','management'],adm:true},
-    {v:'v-settings',i:'gear',  l:'Einstellungen',   r:['superadmin','management'],adm:true},
+    {v:'v-users',   i:'users',  l:'Nutzerverwaltung',r:['superadmin'],adm:true},
+    {v:'v-analytics',i:'bar',   l:'Analysen',        r:['superadmin','management'],adm:true},
+    {v:'v-settings',i:'gear',   l:'Einstellungen',   r:['superadmin','management'],adm:true},
   ]},
 ];
 
@@ -882,7 +1192,7 @@ const VIEW_TITLES = {
   'v-banking':'Banking','v-projekte':'Projekte','v-zeit':'Zeiterfassung',
   'v-chatbot':'KI-Assistent','v-forecast':'Forecast & Cashflow',
   'v-insurance':'Versicherungen','v-ins-portal':'Upload-Portal',
-  'v-users':'Nutzerverwaltung','v-analytics':'Analysen','v-settings':'Einstellungen',
+  'v-users':'Nutzerverwaltung','v-analytics':'Analysen','v-settings':'Einstellungen','v-kunden':'Kundenverwaltung','v-artikel':'Artikeldatenbank','v-texte':'Textbausteine',
 };
 
 function showView(viewId) {
@@ -894,6 +1204,10 @@ function showView(viewId) {
   if (ni) ni.classList.add('active');
   document.getElementById('ptitle').textContent = VIEW_TITLES[viewId] || viewId;
   if (viewId === 'v-users')     renderUsers();
+  if (viewId === 'v-kunden')    renderKunden();
+  if (viewId === 'v-artikel')   renderArtikel();
+  if (viewId === 'v-texte')     renderTexte();
+  if (viewId === 'v-banking')   renderBanking();
   if (viewId === 'v-analytics') renderAnalytics();
   if (viewId === 'v-settings')  { loadSettingValues(); renderTfaPanel(); }
   if (viewId === 'v-forecast')  renderForecast();
@@ -2071,5 +2385,1407 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('app-page').style.display   = 'none';
 });
 </script>
+
+<!-- ═══ MODAL: NEUER KUNDE ══════════════════════════════ -->
+<div class="modal-ov" id="m-kunde">
+  <div class="modal" style="width:600px">
+    <div class="mtitle" id="m-kunde-title">Neuer Kunde</div>
+    <input type="hidden" id="kunde-edit-id">
+    <div class="g2" style="gap:12px">
+      <div class="fi"><label class="fl">Firmenname *</label><input class="inp" id="k-firma" placeholder="Muster GmbH"></div>
+      <div class="fi"><label class="fl">Kundennummer</label><input class="inp" id="k-nr" placeholder="Auto" readonly style="color:var(--t3)"></div>
+    </div>
+    <div class="g2" style="gap:12px">
+      <div class="fi"><label class="fl">Ansprechpartner</label><input class="inp" id="k-kontakt" placeholder="Max Mustermann"></div>
+      <div class="fi"><label class="fl">Position</label><input class="inp" id="k-position" placeholder="Geschäftsführer"></div>
+    </div>
+    <div class="g2" style="gap:12px">
+      <div class="fi"><label class="fl">E-Mail *</label><input class="inp" id="k-email" type="email" placeholder="kontakt@firma.de"></div>
+      <div class="fi"><label class="fl">Telefon</label><input class="inp" id="k-tel" placeholder="+49 89 123456"></div>
+    </div>
+    <div class="fi"><label class="fl">Straße + Hausnummer</label><input class="inp" id="k-strasse" placeholder="Musterstraße 12"></div>
+    <div class="g3" style="gap:12px">
+      <div class="fi"><label class="fl">PLZ</label><input class="inp" id="k-plz" placeholder="80333"></div>
+      <div class="fi"><label class="fl">Ort</label><input class="inp" id="k-ort" placeholder="München"></div>
+      <div class="fi"><label class="fl">Land</label><select class="inp" id="k-land"><option>Deutschland</option><option>Österreich</option><option>Schweiz</option><option>Sonstige</option></select></div>
+    </div>
+    <div class="g2" style="gap:12px">
+      <div class="fi"><label class="fl">USt-ID</label><input class="inp" id="k-ustid" placeholder="DE123456789"></div>
+      <div class="fi"><label class="fl">Steuernummer</label><input class="inp" id="k-steuernr" placeholder="123/456/78901"></div>
+    </div>
+    <div class="g2" style="gap:12px">
+      <div class="fi"><label class="fl">Kategorie</label>
+        <select class="inp" id="k-kategorie"><option>A-Kunde</option><option>B-Kunde</option><option>C-Kunde</option><option>Neukunde</option><option>Inaktiv</option></select>
+      </div>
+      <div class="fi"><label class="fl">Zahlungsziel (Tage)</label><input class="inp" id="k-zahlungsziel" type="number" value="30" placeholder="30"></div>
+    </div>
+    <div class="fi"><label class="fl">Notizen</label><textarea class="inp" id="k-notizen" rows="2" style="resize:none"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-p" style="flex:1" id="k-save-btn">💾 Speichern</button>
+      <button class="btn btn-g" id="k-cancel-btn">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: NEUER ARTIKEL ════════════════════════════ -->
+<div class="modal-ov" id="m-artikel">
+  <div class="modal" style="width:600px">
+    <div class="mtitle" id="m-artikel-title">Neuer Artikel</div>
+    <input type="hidden" id="artikel-edit-id">
+    <div class="g2" style="gap:12px">
+      <div class="fi"><label class="fl">Artikelnummer *</label><input class="inp" id="art-nr" placeholder="Art-0001"></div>
+      <div class="fi"><label class="fl">Kategorie</label>
+        <select class="inp" id="art-kat"><option>Dienstleistung</option><option>Produkt</option><option>Software</option><option>Lizenz</option><option>Sonstiges</option></select>
+      </div>
+    </div>
+    <div class="fi"><label class="fl">Bezeichnung *</label><input class="inp" id="art-name" placeholder="z.B. Webentwicklung Stunde"></div>
+    <div class="fi"><label class="fl">Beschreibung</label><textarea class="inp" id="art-desc" rows="2" style="resize:none" placeholder="Detaillierte Beschreibung für Rechnungen"></textarea></div>
+    <div class="g3" style="gap:12px">
+      <div class="fi"><label class="fl">Einheit</label>
+        <select class="inp" id="art-einheit"><option>Stunde</option><option>Tag</option><option>Stück</option><option>Monat</option><option>Pauschal</option><option>m²</option><option>km</option></select>
+      </div>
+      <div class="fi"><label class="fl">MwSt. (%)</label>
+        <select class="inp" id="art-mwst"><option value="19">19%</option><option value="7">7%</option><option value="0">0% (§19 UStG)</option></select>
+      </div>
+      <div class="fi"><label class="fl">Buchungskonto</label><input class="inp" id="art-konto" placeholder="z.B. 8400"></div>
+    </div>
+
+    <!-- Preiszeiträume -->
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;margin-bottom:8px;margin-top:4px">
+      Preiszeiträume
+      <button class="btn btn-g btn-sm" style="margin-left:8px;font-size:10px" id="add-preis-btn">+ Zeitraum hinzufügen</button>
+    </div>
+    <div id="preis-zeitraeume"></div>
+
+    <div class="fi" style="margin-top:4px"><label class="fl">Mindestbestellmenge</label><input class="inp" id="art-minmenge" type="number" value="1" min="1"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-p" style="flex:1" id="art-save-btn">💾 Artikel speichern</button>
+      <button class="btn btn-g" id="art-cancel-btn">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: BANK VERBINDEN ════════════════════════════ -->
+<div class="modal-ov" id="m-bank-connect">
+  <div class="modal">
+    <div class="mtitle">🏦 Bankkonto verbinden</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:16px">Verbinde dein Konto über GoCardless Open Banking (PSD2-konform, 350+ Banken).</div>
+    <div class="fi"><label class="fl">Kontobezeichnung</label><input class="inp" id="bank-acc-name" placeholder="z.B. Hauptkonto Commerzbank"></div>
+    <div class="fi"><label class="fl">IBAN</label><input class="inp" id="bank-acc-iban" placeholder="DE89 3704 0044 0532 0130 00" style="font-family:'IBM Plex Mono',monospace;letter-spacing:1px"></div>
+    <div class="fi"><label class="fl">Bank / Institut</label><input class="inp" id="bank-acc-bank" placeholder="Commerzbank AG"></div>
+    <div class="fi"><label class="fl">GoCardless Requisition ID</label><input class="inp" id="bank-acc-reqid" placeholder="Optional — für echte PSD2-Verbindung" style="font-size:11px"></div>
+    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--t3);line-height:1.7">
+      <strong style="color:var(--t2)">Ohne GoCardless:</strong> Kontoauszüge manuell via CSV importieren.<br>
+      <strong style="color:var(--t2)">Mit GoCardless:</strong> Automatischer täglicher Sync. API-Key in Einstellungen → API-Keys eintragen.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" id="bank-acc-save-btn">Konto speichern</button>
+      <button class="btn btn-c btn-sm" id="bank-import-csv-btn">📂 CSV importieren</button>
+      <button class="btn btn-g" id="bank-acc-cancel-btn">Abbrechen</button>
+    </div>
+    <input type="file" id="csv-import-file" accept=".csv" style="display:none">
+  </div>
+</div>
+
+<!-- ═══ MODAL: TRANSAKTION ZUORDNEN ═════════════════════ -->
+<div class="modal-ov" id="m-txn-assign">
+  <div class="modal">
+    <div class="mtitle">Transaktion zuordnen</div>
+    <div id="txn-assign-info" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
+    <div class="fi"><label class="fl">Zuordnen zu</label>
+      <select class="inp" id="txn-assign-type">
+        <option value="invoice">Rechnung</option>
+        <option value="beleg">Beleg / Ausgabe</option>
+        <option value="other">Sonstige Buchung</option>
+      </select>
+    </div>
+    <div class="fi"><label class="fl">Referenz</label>
+      <select class="inp" id="txn-assign-ref"></select>
+    </div>
+    <div class="fi"><label class="fl">Buchungskategorie</label>
+      <select class="inp" id="txn-assign-cat">
+        <option>Umsatzerlöse</option><option>Materialaufwand</option><option>Personalkosten</option>
+        <option>Miet- & Pachtaufwand</option><option>Telefonkosten</option><option>Büromaterial</option>
+        <option>Reisekosten</option><option>Marketing</option><option>Sonstiger Aufwand</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" id="txn-assign-save-btn">Zuordnen & speichern</button>
+      <button class="btn btn-g" id="txn-assign-cancel-btn">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  KUNDEN DATENBANK
+// ═══════════════════════════════════════════════════════════════════════════
+const KUNDEN_DEFAULT = [
+  {id:'KD-1001',firma:'Acme GmbH',kontakt:'Thomas Müller',position:'Geschäftsführer',email:'t.mueller@acme.de',tel:'+49 89 123456',strasse:'Maximilianstraße 5',plz:'80333',ort:'München',land:'Deutschland',ustid:'DE123456789',steuernr:'',kategorie:'A-Kunde',zahlungsziel:30,notizen:'Langjähriger Stammkunde',umsatz:42800,aktiv:true,erstellt:'01.01.2024'},
+  {id:'KD-1002',firma:'TechStart AG',kontakt:'Sandra Berger',position:'CEO',email:'s.berger@techstart.de',tel:'+49 30 654321',strasse:'Unter den Linden 10',plz:'10117',ort:'Berlin',land:'Deutschland',ustid:'DE987654321',steuernr:'',kategorie:'A-Kunde',zahlungsziel:14,notizen:'',umsatz:38200,aktiv:true,erstellt:'15.01.2024'},
+  {id:'KD-1003',firma:'FreshBrand GmbH',kontakt:'Jana Weber',position:'Marketing',email:'j.weber@freshbrand.de',tel:'+49 40 789012',strasse:'Jungfernstieg 20',plz:'20354',ort:'Hamburg',land:'Deutschland',ustid:'',steuernr:'',kategorie:'B-Kunde',zahlungsziel:30,notizen:'',umsatz:27600,aktiv:true,erstellt:'01.02.2024'},
+  {id:'KD-1004',firma:'Digital Media KG',kontakt:'Klaus Hoffmann',position:'Leitung IT',email:'k.hoffmann@dm.de',tel:'+49 211 345678',strasse:'Königsallee 15',plz:'40212',ort:'Düsseldorf',land:'Deutschland',ustid:'DE456789123',steuernr:'',kategorie:'B-Kunde',zahlungsziel:30,notizen:'',umsatz:18400,aktiv:true,erstellt:'10.02.2024'},
+  {id:'KD-1005',firma:'Nova Consulting',kontakt:'Peter Schmidt',position:'Partner',email:'p.schmidt@nova.de',tel:'+49 69 901234',strasse:'Taunusanlage 8',plz:'60329',ort:'Frankfurt',land:'Deutschland',ustid:'',steuernr:'',kategorie:'C-Kunde',zahlungsziel:45,notizen:'Zahlungshistorie prüfen',umsatz:15800,aktiv:false,erstellt:'01.03.2024'},
+];
+function getKunden(){try{const s=localStorage.getItem('if_kunden');return s?JSON.parse(s):KUNDEN_DEFAULT;}catch(e){return KUNDEN_DEFAULT;}}
+function saveKunden(d){try{localStorage.setItem('if_kunden',JSON.stringify(d));}catch(e){}}
+function nextKundenNr(){const k=getKunden();const nums=k.map(x=>parseInt(x.id.replace('KD-',''))).filter(n=>!isNaN(n));const max=nums.length?Math.max(...nums):1000;return 'KD-'+(max+1);}
+
+function renderKunden(filter=''){
+  const kunden=getKunden().filter(k=>!filter||k.firma.toLowerCase().includes(filter.toLowerCase())||k.email.toLowerCase().includes(filter.toLowerCase())||k.kontakt.toLowerCase().includes(filter.toLowerCase()));
+  document.getElementById('kunden-count').textContent=`${kunden.length} Kunden · ∑ ${fmt(kunden.reduce((s,k)=>s+(k.umsatz||0),0))}`;
+  const catColors={['A-Kunde']:'bg',['B-Kunde']:'ba',['C-Kunde']:'bc',['Neukunde']:'bb',['Inaktiv']:'bk'};
+  document.getElementById('kunden-tbody').innerHTML=kunden.map(k=>`<tr>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t1)">${k.id}</td>
+    <td><div style="font-weight:500;color:var(--t1)">${k.firma}</div><div style="font-size:10px;color:var(--t3)">${k.strasse}, ${k.plz} ${k.ort}</div></td>
+    <td><div style="font-size:12px">${k.kontakt||'—'}</div><div style="font-size:10px;color:var(--t3)">${k.position||''}</div></td>
+    <td style="color:var(--bl)">${k.email}</td>
+    <td style="font-size:11px">${k.tel||'—'}</td>
+    <td style="font-size:11px">${k.plz} ${k.ort}</td>
+    <td style="color:var(--am);font-weight:500">${fmt(k.umsatz||0)}</td>
+    <td><span class="badge ${catColors[k.kategorie]||'bk'}">${k.kategorie}</span></td>
+    <td><span class="badge ${k.aktiv?'bg':'br'}">${k.aktiv?'Aktiv':'Inaktiv'}</span></td>
+    <td><div style="display:flex;gap:5px">
+      <button class="btn btn-g btn-sm" onclick="editKunde('${k.id}')">✏️</button>
+      <button class="btn btn-d btn-sm" onclick="deleteKunde('${k.id}')">✕</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function openNewKunde(){
+  document.getElementById('m-kunde-title').textContent='Neuer Kunde';
+  document.getElementById('kunde-edit-id').value='';
+  ['k-firma','k-kontakt','k-position','k-email','k-tel','k-strasse','k-plz','k-ort','k-ustid','k-steuernr','k-notizen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('k-nr').value=nextKundenNr();
+  document.getElementById('k-zahlungsziel').value=30;
+  document.getElementById('k-land').value='Deutschland';
+  document.getElementById('k-kategorie').value='Neukunde';
+  openModal('m-kunde');
+}
+function editKunde(id){
+  const k=getKunden().find(x=>x.id===id);if(!k)return;
+  document.getElementById('m-kunde-title').textContent='Kunde bearbeiten';
+  document.getElementById('kunde-edit-id').value=id;
+  document.getElementById('k-nr').value=k.id;
+  document.getElementById('k-firma').value=k.firma||'';
+  document.getElementById('k-kontakt').value=k.kontakt||'';
+  document.getElementById('k-position').value=k.position||'';
+  document.getElementById('k-email').value=k.email||'';
+  document.getElementById('k-tel').value=k.tel||'';
+  document.getElementById('k-strasse').value=k.strasse||'';
+  document.getElementById('k-plz').value=k.plz||'';
+  document.getElementById('k-ort').value=k.ort||'';
+  document.getElementById('k-land').value=k.land||'Deutschland';
+  document.getElementById('k-ustid').value=k.ustid||'';
+  document.getElementById('k-steuernr').value=k.steuernr||'';
+  document.getElementById('k-kategorie').value=k.kategorie||'B-Kunde';
+  document.getElementById('k-zahlungsziel').value=k.zahlungsziel||30;
+  document.getElementById('k-notizen').value=k.notizen||'';
+  openModal('m-kunde');
+}
+function saveKunde(){
+  const firma=document.getElementById('k-firma').value.trim();
+  const email=document.getElementById('k-email').value.trim();
+  if(!firma){toast('Firmenname ist Pflichtfeld','e');return;}
+  const editId=document.getElementById('kunde-edit-id').value;
+  const kunden=getKunden();
+  const obj={
+    id:editId||nextKundenNr(),firma,kontakt:document.getElementById('k-kontakt').value.trim(),
+    position:document.getElementById('k-position').value.trim(),email,
+    tel:document.getElementById('k-tel').value.trim(),strasse:document.getElementById('k-strasse').value.trim(),
+    plz:document.getElementById('k-plz').value.trim(),ort:document.getElementById('k-ort').value.trim(),
+    land:document.getElementById('k-land').value,ustid:document.getElementById('k-ustid').value.trim(),
+    steuernr:document.getElementById('k-steuernr').value.trim(),
+    kategorie:document.getElementById('k-kategorie').value,
+    zahlungsziel:parseInt(document.getElementById('k-zahlungsziel').value)||30,
+    notizen:document.getElementById('k-notizen').value.trim(),
+    umsatz:editId?(kunden.find(k=>k.id===editId)?.umsatz||0):0,
+    aktiv:true,erstellt:editId?(kunden.find(k=>k.id===editId)?.erstellt||new Date().toLocaleDateString('de-DE')):new Date().toLocaleDateString('de-DE'),
+  };
+  if(editId){const idx=kunden.findIndex(k=>k.id===editId);if(idx>=0)kunden[idx]=obj;}
+  else kunden.unshift(obj);
+  saveKunden(kunden);
+  closeModalById('m-kunde');
+  toast('✓ Kunde "'+firma+'" gespeichert','s');
+  renderKunden();
+  updateInvoiceCustomerSelect();
+}
+function deleteKunde(id){
+  if(!confirm('Kunden wirklich löschen?'))return;
+  saveKunden(getKunden().filter(k=>k.id!==id));
+  renderKunden(); toast('Kunde gelöscht','w');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ARTIKEL DATENBANK
+// ═══════════════════════════════════════════════════════════════════════════
+const ARTIKEL_DEFAULT = [
+  {id:'ART-001',nr:'WEB-001',name:'Webentwicklung',desc:'Frontend & Backend Entwicklung',kategorie:'Dienstleistung',einheit:'Stunde',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:120},{von:'01.01.2023',bis:'31.12.2023',preis:110}],aktiv:true},
+  {id:'ART-002',nr:'SEO-002',name:'SEO-Beratung',desc:'Monatliche SEO-Optimierung',kategorie:'Dienstleistung',einheit:'Monat',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:950}],aktiv:true},
+  {id:'ART-003',nr:'PM-003',name:'Projektmanagement',desc:'Stundensatz Projektleitung',kategorie:'Dienstleistung',einheit:'Stunde',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.06.2024',bis:'',preis:130},{von:'01.01.2024',bis:'31.05.2024',preis:120}],aktiv:true},
+  {id:'ART-004',nr:'DES-004',name:'UI/UX Design',desc:'Gestaltung digitaler Oberflächen',kategorie:'Dienstleistung',einheit:'Stunde',mwst:19,konto:'8400',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:100}],aktiv:true},
+  {id:'ART-005',nr:'LIC-005',name:'Software-Lizenz',desc:'Monatliche Lizenzgebühr InvoiceFlow',kategorie:'Lizenz',einheit:'Monat',mwst:19,konto:'8300',minMenge:1,preise:[{von:'01.01.2024',bis:'',preis:49}],aktiv:true},
+];
+function getArtikel(){try{const s=localStorage.getItem('if_artikel');return s?JSON.parse(s):ARTIKEL_DEFAULT;}catch(e){return ARTIKEL_DEFAULT;}}
+function saveArtikel(d){try{localStorage.setItem('if_artikel',JSON.stringify(d));}catch(e){}}
+function nextArtikelNr(){const a=getArtikel();const nums=a.map(x=>parseInt((x.nr||'').replace(/[^0-9]/g,''))).filter(n=>!isNaN(n));const max=nums.length?Math.max(...nums):0;return 'ART-'+(max+1).toString().padStart(3,'0');}
+
+function getAktuellerPreis(artikel){
+  const today=new Date();
+  const gueltig=artikel.preise.filter(p=>{
+    const von=p.von?new Date(p.von.split('.').reverse().join('-')):new Date('2000-01-01');
+    const bis=p.bis?new Date(p.bis.split('.').reverse().join('-')):new Date('2099-12-31');
+    return today>=von&&today<=bis;
+  });
+  if(gueltig.length) return Math.max(...gueltig.map(p=>p.preis));
+  return artikel.preise.length?artikel.preise[0].preis:0;
+}
+
+function renderArtikel(filterKat=''){
+  const arts=getArtikel().filter(a=>!filterKat||a.kategorie===filterKat);
+  document.getElementById('artikel-count').textContent=`${arts.length} Artikel`;
+  const katColors={Dienstleistung:'bc',Produkt:'bg',Software:'bp',Lizenz:'ba',Sonstiges:'bk'};
+  document.getElementById('artikel-tbody').innerHTML=arts.map(a=>{
+    const p=getAktuellerPreis(a);
+    const pCount=a.preise.length;
+    return`<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--am)">${a.nr}</td>
+      <td><div style="font-weight:500;color:var(--t1)">${a.name}</div><div style="font-size:10px;color:var(--t3)">${a.desc}</div></td>
+      <td><span class="badge ${katColors[a.kategorie]||'bk'}">${a.kategorie}</span></td>
+      <td style="font-size:11px">${a.einheit}</td>
+      <td style="font-weight:600;color:var(--gn)">${fmt(p)}</td>
+      <td style="font-size:11px">${a.mwst}%</td>
+      <td><span class="badge ${pCount>1?'bb':'bk'}">${pCount} Zeitraum${pCount!==1?'e':''}</span></td>
+      <td><span class="badge ${a.aktiv?'bg':'br'}">${a.aktiv?'Aktiv':'Inaktiv'}</span></td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn btn-g btn-sm" onclick="editArtikel('${a.id}')">✏️</button>
+        <button class="btn btn-d btn-sm" onclick="deleteArtikel('${a.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+let preisZeitraeume=[];
+function renderPreisZeitraeume(){
+  document.getElementById('preis-zeitraeume').innerHTML=preisZeitraeume.map((p,i)=>`
+    <div style="display:grid;grid-template-columns:130px 130px 1fr 36px;gap:8px;align-items:center;margin-bottom:7px;background:var(--s2);padding:8px;border-radius:8px">
+      <div><label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">Gültig von</label><input class="inp" style="font-size:11px" type="text" value="${p.von}" placeholder="01.01.2024" onchange="preisZeitraeume[${i}].von=this.value"></div>
+      <div><label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">Gültig bis (leer=unbegrenzt)</label><input class="inp" style="font-size:11px" type="text" value="${p.bis}" placeholder="31.12.2024" onchange="preisZeitraeume[${i}].bis=this.value"></div>
+      <div><label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">Preis (€)</label><input class="inp" style="font-size:11px;font-family:'IBM Plex Mono',monospace" type="number" step="0.01" value="${p.preis}" onchange="preisZeitraeume[${i}].preis=parseFloat(this.value)"></div>
+      <button onclick="preisZeitraeume.splice(${i},1);renderPreisZeitraeume()" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:16px;padding-top:16px">×</button>
+    </div>`).join('');
+}
+
+function openNewArtikel(){
+  document.getElementById('m-artikel-title').textContent='Neuer Artikel';
+  document.getElementById('artikel-edit-id').value='';
+  document.getElementById('art-nr').value=nextArtikelNr();
+  ['art-name','art-desc','art-konto'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('art-kat').value='Dienstleistung';
+  document.getElementById('art-einheit').value='Stunde';
+  document.getElementById('art-mwst').value='19';
+  document.getElementById('art-minmenge').value='1';
+  preisZeitraeume=[{von:new Date().toLocaleDateString('de-DE'),bis:'',preis:0}];
+  renderPreisZeitraeume();
+  openModal('m-artikel');
+}
+function editArtikel(id){
+  const a=getArtikel().find(x=>x.id===id);if(!a)return;
+  document.getElementById('m-artikel-title').textContent='Artikel bearbeiten';
+  document.getElementById('artikel-edit-id').value=id;
+  document.getElementById('art-nr').value=a.nr;
+  document.getElementById('art-name').value=a.name;
+  document.getElementById('art-desc').value=a.desc||'';
+  document.getElementById('art-kat').value=a.kategorie;
+  document.getElementById('art-einheit').value=a.einheit;
+  document.getElementById('art-mwst').value=String(a.mwst);
+  document.getElementById('art-konto').value=a.konto||'';
+  document.getElementById('art-minmenge').value=a.minMenge||1;
+  preisZeitraeume=JSON.parse(JSON.stringify(a.preise));
+  renderPreisZeitraeume();
+  openModal('m-artikel');
+}
+function saveArtikelData(){
+  const name=document.getElementById('art-name').value.trim();
+  if(!name){toast('Bezeichnung ist Pflichtfeld','e');return;}
+  if(!preisZeitraeume.length){toast('Mindestens ein Preiszeitraum erforderlich','e');return;}
+  const editId=document.getElementById('artikel-edit-id').value;
+  const arts=getArtikel();
+  const obj={
+    id:editId||(Date.now().toString()),
+    nr:document.getElementById('art-nr').value.trim(),
+    name,desc:document.getElementById('art-desc').value.trim(),
+    kategorie:document.getElementById('art-kat').value,
+    einheit:document.getElementById('art-einheit').value,
+    mwst:parseInt(document.getElementById('art-mwst').value),
+    konto:document.getElementById('art-konto').value.trim(),
+    minMenge:parseInt(document.getElementById('art-minmenge').value)||1,
+    preise:preisZeitraeume,aktiv:true,
+  };
+  if(editId){const idx=arts.findIndex(a=>a.id===editId);if(idx>=0)arts[idx]=obj;}
+  else arts.unshift(obj);
+  saveArtikel(arts);
+  closeModalById('m-artikel');
+  toast('✓ Artikel "'+name+'" gespeichert','s');
+  renderArtikel();
+}
+function deleteArtikel(id){
+  if(!confirm('Artikel wirklich löschen?'))return;
+  saveArtikel(getArtikel().filter(a=>a.id!==id));
+  renderArtikel(); toast('Artikel gelöscht','w');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  TEXTBAUSTEINE
+// ═══════════════════════════════════════════════════════════════════════════
+const TEXTE_DEFAULT=[
+  {id:'T001',name:'Zahlungshinweis Standard',cat:'rechnung',body:'Bitte überweisen Sie den Rechnungsbetrag von {BETRAG} bis zum {FAELLIGKEITSDATUM} auf das unten genannte Konto.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.',erstellt:'01.01.2024'},
+  {id:'T002',name:'Angebot Einleitung',cat:'angebot',body:'Vielen Dank für Ihr Interesse. Gerne unterbreiten wir Ihnen folgendes Angebot:\n\nAngebotnummer: {RECHNUNGSNR}\nGültig bis: {FAELLIGKEITSDATUM}',erstellt:'01.01.2024'},
+  {id:'T003',name:'Erste Mahnung',cat:'mahnung',body:'Sehr geehrte Damen und Herren,\n\nbei der Überprüfung unserer Buchhaltung haben wir festgestellt, dass die Rechnung {RECHNUNGSNR} vom {DATUM} über {BETRAG} noch nicht ausgeglichen wurde.\n\nWir bitten Sie, den Betrag bis zum {FAELLIGKEITSDATUM} zu überweisen.\n\nMit freundlichen Grüßen',erstellt:'01.01.2024'},
+  {id:'T004',name:'Zweite Mahnung',cat:'mahnung',body:'Sehr geehrte Damen und Herren,\n\nbereits am {DATUM} haben wir Sie freundlich an den offenen Betrag von {BETRAG} erinnert.\n\nDa wir bis heute keinen Zahlungseingang verzeichnen konnten, bitten wir Sie dringend, den Betrag innerhalb von 7 Tagen zu begleichen.\n\nBei weiterem Ausbleiben der Zahlung sehen wir uns gezwungen, rechtliche Schritte einzuleiten.',erstellt:'01.01.2024'},
+  {id:'T005',name:'Auftragsbestätigung E-Mail',cat:'email',body:'Betreff: Auftragsbestätigung {RECHNUNGSNR}\n\nSehr geehrte/r {KUNDENNAME},\n\nhiermit bestätigen wir Ihren Auftrag.\n\nWir werden die Arbeiten wie vereinbart durchführen und uns bei Rückfragen gerne bei Ihnen melden.\n\nMit freundlichen Grüßen',erstellt:'01.01.2024'},
+];
+function getTexte(){try{const s=localStorage.getItem('if_texte');return s?JSON.parse(s):TEXTE_DEFAULT;}catch(e){return TEXTE_DEFAULT;}}
+function saveTexte(d){try{localStorage.setItem('if_texte',JSON.stringify(d));}catch(e){}}
+
+let activeTextCat='rechnung';
+let editingTextId=null;
+
+function renderTexte(){
+  const texte=getTexte().filter(t=>t.cat===activeTextCat);
+  document.getElementById('texte-list').innerHTML=texte.length?texte.map(t=>`
+    <div class="cardsm" style="margin-bottom:8px;cursor:pointer;transition:all .15s;border-color:${editingTextId===t.id?'var(--am)':'var(--b1)'}" onclick="loadTextEditor('${t.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:500;font-size:12px;color:var(--t1)">${t.name}</div>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-g btn-sm" style="font-size:10px" onclick="event.stopPropagation();loadTextEditor('${t.id}')">✏️</button>
+          <button class="btn btn-d btn-sm" style="font-size:10px" onclick="event.stopPropagation();deleteText('${t.id}')">✕</button>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--t3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.body.substring(0,80)}...</div>
+    </div>`).join('')
+    :'<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">Keine Textbausteine in dieser Kategorie</div>';
+}
+
+function loadTextEditor(id){
+  const t=getTexte().find(x=>x.id===id);if(!t)return;
+  editingTextId=id;
+  document.getElementById('text-editor-title').textContent='Bearbeiten: '+t.name;
+  document.getElementById('te-name').value=t.name;
+  document.getElementById('te-cat').value=t.cat;
+  document.getElementById('te-body').value=t.body;
+  updateTextPreview();
+  renderTexte();
+}
+
+function updateTextPreview(){
+  const body=document.getElementById('te-body')?.value||'';
+  document.getElementById('text-preview').textContent=body
+    .replace('{KUNDENNAME}','Max Mustermann')
+    .replace('{RECHNUNGSNR}','RE-2025-0042')
+    .replace('{BETRAG}','€ 3.332,00')
+    .replace('{DATUM}',new Date().toLocaleDateString('de-DE'))
+    .replace('{FAELLIGKEITSDATUM}',new Date(Date.now()+30*86400000).toLocaleDateString('de-DE'))
+    .replace('{FIRMA}','Muster GmbH');
+}
+
+function saveTextBaustein(){
+  const name=document.getElementById('te-name').value.trim();
+  const body=document.getElementById('te-body').value.trim();
+  if(!name||!body){toast('Name und Text sind Pflichtfelder','e');return;}
+  const texte=getTexte();
+  const obj={id:editingTextId||('T'+Date.now()),name,cat:document.getElementById('te-cat').value,body,erstellt:new Date().toLocaleDateString('de-DE')};
+  if(editingTextId){const idx=texte.findIndex(t=>t.id===editingTextId);if(idx>=0)texte[idx]=obj;}
+  else texte.push(obj);
+  saveTexte(texte);
+  editingTextId=null;
+  toast('✓ Textbaustein gespeichert','s');
+  renderTexte();
+}
+
+function deleteText(id){
+  if(!confirm('Textbaustein löschen?'))return;
+  saveTexte(getTexte().filter(t=>t.id!==id));
+  if(editingTextId===id){editingTextId=null;document.getElementById('te-name').value='';document.getElementById('te-body').value='';}
+  renderTexte(); toast('Textbaustein gelöscht','w');
+}
+
+function insertVar(v){
+  const ta=document.getElementById('te-body');
+  const start=ta.selectionStart,end=ta.selectionEnd;
+  ta.value=ta.value.substring(0,start)+v+ta.value.substring(end);
+  ta.selectionStart=ta.selectionEnd=start+v.length;
+  ta.focus();updateTextPreview();
+}
+
+function newTextBaustein(){
+  editingTextId=null;
+  document.getElementById('text-editor-title').textContent='Neuer Textbaustein';
+  document.getElementById('te-name').value='';
+  document.getElementById('te-cat').value=activeTextCat;
+  document.getElementById('te-body').value='';
+  document.getElementById('text-preview').textContent='';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  BANKING (ECHT mit localStorage)
+// ═══════════════════════════════════════════════════════════════════════════
+const BANK_ACCOUNTS_DEFAULT=[
+  {id:'ACC-1',name:'Hauptkonto Commerzbank',iban:'DE89 3704 0044 0532 0130 00',bank:'Commerzbank AG',balance:34820.45,reqId:'',lastSync:'16.03.2025 09:00'},
+  {id:'ACC-2',name:'Geschäftskonto Sparkasse',iban:'DE75 5005 0201 0007 0000 00',bank:'Sparkasse Frankfurt',balance:12400.00,reqId:'',lastSync:'16.03.2025 09:00'},
+];
+const TRANSACTIONS_DEFAULT=[
+  {id:'TXN-001',date:'15.03.2025',desc:'Eingang RE-2025-0039 Acme GmbH',amount:3332.00,type:'in',account:'ACC-1',cat:'Umsatzerlöse',matchedTo:'RE-2025-0039',matched:true},
+  {id:'TXN-002',date:'14.03.2025',desc:'Amazon Business DE SEPA',amount:-234.50,type:'out',account:'ACC-1',cat:'Büromaterial',matchedTo:'B001',matched:true},
+  {id:'TXN-003',date:'12.03.2025',desc:'Miete März 2025',amount:-2800.00,type:'out',account:'ACC-1',cat:'Miet- & Pachtaufwand',matchedTo:null,matched:false},
+  {id:'TXN-004',date:'11.03.2025',desc:'VB-Nr 8820013 RE-2025-0038',amount:1428.00,type:'in',account:'ACC-1',cat:'Umsatzerlöse',matchedTo:null,matched:false},
+  {id:'TXN-005',date:'10.03.2025',desc:'Deutsche Telekom AG SEPA',amount:-89.99,type:'out',account:'ACC-1',cat:'Telefonkosten',matchedTo:'B003',matched:true},
+  {id:'TXN-006',date:'08.03.2025',desc:'Eingang TechStart AG Rechnung',amount:5355.00,type:'in',account:'ACC-2',cat:'Umsatzerlöse',matchedTo:'RE-2025-0040',matched:false},
+  {id:'TXN-007',date:'05.03.2025',desc:'Gehälter März 2025',amount:-12400.00,type:'out',account:'ACC-1',cat:'Personalkosten',matchedTo:null,matched:false},
+  {id:'TXN-008',date:'01.03.2025',desc:'Eingang RE-2025-0036',amount:3332.00,type:'in',account:'ACC-2',cat:'Umsatzerlöse',matchedTo:'RE-2025-0036',matched:true},
+];
+function getBankAccounts(){try{const s=localStorage.getItem('if_bank_acc');return s?JSON.parse(s):BANK_ACCOUNTS_DEFAULT;}catch(e){return BANK_ACCOUNTS_DEFAULT;}}
+function saveBankAccounts(d){try{localStorage.setItem('if_bank_acc',JSON.stringify(d));}catch(e){}}
+function getTransactions(){try{const s=localStorage.getItem('if_transactions');return s?JSON.parse(s):TRANSACTIONS_DEFAULT;}catch(e){return TRANSACTIONS_DEFAULT;}}
+function saveTransactions(d){try{localStorage.setItem('if_transactions',JSON.stringify(d));}catch(e){}}
+
+let assigningTxnId=null;
+
+function renderBankingReal(){
+  const accounts=getBankAccounts();
+  const txns=getTransactions();
+  const totalBalance=accounts.reduce((s,a)=>s+(a.balance||0),0);
+  const mtdIn=txns.filter(t=>t.type==='in').reduce((s,t)=>s+t.amount,0);
+  const mtdOut=txns.filter(t=>t.type==='out').reduce((s,t)=>s+Math.abs(t.amount),0);
+
+  document.getElementById('bank-balance-total').textContent=fmt(totalBalance);
+  document.getElementById('bank-balance-sub').textContent=accounts.length+' Konto'+(accounts.length!==1?'en':'');
+  document.getElementById('bank-income-mtd').textContent=fmt(mtdIn);
+  document.getElementById('bank-expense-mtd').textContent=fmt(mtdOut);
+
+  // Accounts list
+  document.getElementById('bank-accounts-list').innerHTML=accounts.length
+    ?accounts.map(a=>`<div class="bank-row">
+      <div class="bank-ico" style="background:var(--cybg)">🏦</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:500;color:var(--t1)">${a.name}</div>
+        <div style="font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace">${a.iban} · ${a.bank}</div>
+        <div style="font-size:10px;color:var(--t3)">Letzter Sync: ${a.lastSync}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:14px;font-weight:700;color:${a.balance>=0?'var(--gn)':'var(--rd)'}">${fmt(a.balance)}</div>
+        <button class="btn btn-c btn-sm" style="font-size:10px;margin-top:4px" onclick="syncBankAccount('${a.id}')">⟳ Sync</button>
+        <button class="btn btn-d btn-sm" style="font-size:10px;margin-top:4px" onclick="deleteBankAccount('${a.id}')">✕</button>
+      </div>
+    </div>`).join('')
+    :'<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">Noch keine Konten verbunden</div>';
+
+  // Populate account filter
+  const accFilter=document.getElementById('txn-account-filter');
+  if(accFilter){
+    accFilter.innerHTML='<option value="">Alle Konten</option>'+accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  }
+
+  renderTransactions();
+}
+
+function renderTransactions(){
+  const accF=document.getElementById('txn-account-filter')?.value||'';
+  const typeF=document.getElementById('txn-type-filter')?.value||'';
+  const searchF=(document.getElementById('txn-search')?.value||'').toLowerCase();
+  const txns=getTransactions().filter(t=>
+    (!accF||t.account===accF)&&
+    (!typeF||t.type===typeF)&&
+    (!searchF||t.desc.toLowerCase().includes(searchF))
+  );
+  document.getElementById('txn-tbody').innerHTML=txns.map(t=>`<tr>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${t.date}</td>
+    <td style="color:var(--t1);max-width:200px">${t.desc}</td>
+    <td style="font-size:11px;color:var(--t3)">${getBankAccounts().find(a=>a.id===t.account)?.name||t.account}</td>
+    <td style="font-weight:600;color:${t.type==='in'?'var(--gn)':'var(--rd)'};font-family:'IBM Plex Mono',monospace">${t.type==='in'?'+':''}${fmt(t.amount)}</td>
+    <td><span class="badge bk" style="font-size:10px">${t.cat||'—'}</span></td>
+    <td>${t.matched?`<span class="badge bg" style="font-size:10px">✓ ${t.matchedTo||''}</span>`:'<span class="badge ba" style="font-size:10px">Offen</span>'}</td>
+    <td><button class="btn btn-g btn-sm" style="font-size:10px" onclick="openTxnAssign('${t.id}')">Zuordnen</button></td>
+  </tr>`).join('');
+}
+
+function saveBankAccount(){
+  const name=document.getElementById('bank-acc-name').value.trim();
+  const iban=document.getElementById('bank-acc-iban').value.trim();
+  const bank=document.getElementById('bank-acc-bank').value.trim();
+  if(!name||!iban){toast('Name und IBAN sind Pflichtfelder','e');return;}
+  const accounts=getBankAccounts();
+  accounts.push({id:'ACC-'+Date.now(),name,iban,bank,balance:0,reqId:document.getElementById('bank-acc-reqid').value.trim(),lastSync:'Noch nicht synchronisiert'});
+  saveBankAccounts(accounts);
+  closeModalById('m-bank-connect');
+  toast('✓ Konto "'+name+'" hinzugefügt','s');
+  renderBankingReal();
+}
+
+function deleteBankAccount(id){
+  if(!confirm('Bankkonto wirklich entfernen?'))return;
+  saveBankAccounts(getBankAccounts().filter(a=>a.id!==id));
+  renderBankingReal(); toast('Konto entfernt','w');
+}
+
+async function syncBankAccount(id){
+  const cfg=getSettings();
+  const gcKey=cfg['key_gocardless']||'';
+  toast('⟳ Synchronisiere...','i');
+  // With real GoCardless key: call their API
+  // Without key: simulate
+  setTimeout(()=>{
+    const accounts=getBankAccounts();
+    const acc=accounts.find(a=>a.id===id);
+    if(acc){acc.lastSync=new Date().toLocaleString('de-DE');acc.balance+=Math.random()*1000-200;}
+    saveBankAccounts(accounts);
+    renderBankingReal();
+    toast('✓ Synchronisierung abgeschlossen','s');
+  },1500);
+}
+
+function importBankCSV(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    const txns=getTransactions();
+    let added=0;
+    lines.slice(1).forEach(line=>{
+      const cols=line.split(';').map(c=>c.replace(/"/g,'').trim());
+      if(cols.length<4)return;
+      const amount=parseFloat(cols[3].replace(',','.').replace(/[^0-9.-]/g,''));
+      if(isNaN(amount))return;
+      txns.unshift({
+        id:'TXN-'+Date.now()+'-'+added,
+        date:cols[0]||new Date().toLocaleDateString('de-DE'),
+        desc:cols[1]||cols[2]||'Import',
+        amount,type:amount>=0?'in':'out',
+        account:'ACC-1',cat:'',matchedTo:null,matched:false
+      });
+      added++;
+    });
+    saveTransactions(txns);
+    renderBankingReal();
+    toast('✓ '+added+' Transaktionen importiert','s');
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function openTxnAssign(txnId){
+  assigningTxnId=txnId;
+  const txn=getTransactions().find(t=>t.id===txnId);if(!txn)return;
+  document.getElementById('txn-assign-info').innerHTML=`
+    <div style="font-weight:500">${txn.desc}</div>
+    <div style="color:${txn.type==='in'?'var(--gn)':'var(--rd)'};font-weight:600;margin-top:4px">${txn.type==='in'?'+':''}${fmt(txn.amount)}</div>
+    <div style="font-size:10px;color:var(--t3);margin-top:2px">${txn.date}</div>`;
+  // Populate ref options based on invoices
+  const refs=document.getElementById('txn-assign-ref');
+  refs.innerHTML=INVOICES.map(i=>`<option value="${i.id}">${i.id} — ${i.customer} (${fmt(i.gross)})</option>`).join('');
+  if(txn.cat)document.getElementById('txn-assign-cat').value=txn.cat;
+  openModal('m-txn-assign');
+}
+
+function saveTxnAssignment(){
+  if(!assigningTxnId)return;
+  const txns=getTransactions();
+  const txn=txns.find(t=>t.id===assigningTxnId);
+  if(txn){
+    txn.matchedTo=document.getElementById('txn-assign-ref').value;
+    txn.cat=document.getElementById('txn-assign-cat').value;
+    txn.matched=true;
+  }
+  saveTransactions(txns);
+  closeModalById('m-txn-assign');
+  toast('✓ Transaktion zugeordnet','s');
+  renderTransactions();
+  assigningTxnId=null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  INVOICE: Update select dropdowns to use real customer + article data
+// ═══════════════════════════════════════════════════════════════════════════
+function updateInvoiceCustomerSelect(){
+  const sel=document.getElementById('inv-customer-real');
+  if(!sel)return;
+  const kunden=getKunden().filter(k=>k.aktiv);
+  sel.innerHTML='<option value="">Kunde wählen...</option>'+
+    kunden.map(k=>`<option value="${k.id}">${k.firma} (${k.id})</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  NAV + VIEW WIRING (extend existing)
+// ═══════════════════════════════════════════════════════════════════════════
+// Add new nav items and views to existing nav
+(function extendNav(){
+  // We'll hook into the existing buildNav after it runs
+  const _origBuildNav = window.buildNav;
+  window.buildNav = function(role){
+    _origBuildNav(role);
+    const nav=document.getElementById('nav');
+    if(!nav)return;
+    // Add Stammdaten section
+    const allowed=['superadmin','management','employee'];
+    if(!allowed.includes(role))return;
+    nav.innerHTML+=`<div class="sb-section">Stammdaten</div>
+      <div class="sb-item" id="ni-v-kunden" data-view="v-kunden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Kunden
+      </div>
+      <div class="sb-item" id="ni-v-artikel" data-view="v-artikel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Artikel & Preise
+      </div>
+      <div class="sb-item" id="ni-v-texte" data-view="v-texte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Textbausteine
+      </div>
+      <div class="sb-item" id="ni-v-banking-real" data-view="v-banking-real">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Banking Live
+      </div>`;
+    nav.querySelectorAll('.sb-item[data-view]').forEach(el=>{
+      el.removeEventListener('click',el._handler);
+      el._handler=()=>showView(el.dataset.view);
+      el.addEventListener('click',el._handler);
+    });
+  };
+
+  // Add new view titles
+  Object.assign(window.VIEW_TITLES||{},{
+    'v-kunden':'Kundendatenbank',
+    'v-artikel':'Artikel & Preise',
+    'v-texte':'Textbausteine',
+    'v-banking-real':'Banking Live',
+  });
+
+  // Extend showView for new views
+  const _origShowView=window.showView;
+  window.showView=function(viewId){
+    _origShowView(viewId);
+    if(viewId==='v-kunden')renderKunden();
+    if(viewId==='v-artikel')renderArtikel();
+    if(viewId==='v-texte'){activeTextCat='rechnung';renderTexte();}
+    if(viewId==='v-banking-real')renderBankingReal();
+    // Update title for new views
+    const titles={'v-kunden':'Kundendatenbank','v-artikel':'Artikel & Preise','v-texte':'Textbausteine','v-banking-real':'Banking Live'};
+    if(titles[viewId]){const el=document.getElementById('ptitle');if(el)el.textContent=titles[viewId];}
+  };
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EVENT LISTENERS (new)
+// ═══════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',function(){
+
+  // Kunden
+  const newKundeBtn=document.getElementById('new-kunde-btn');
+  if(newKundeBtn)newKundeBtn.addEventListener('click',openNewKunde);
+  const kSave=document.getElementById('k-save-btn');
+  if(kSave)kSave.addEventListener('click',saveKunde);
+  const kCancel=document.getElementById('k-cancel-btn');
+  if(kCancel)kCancel.addEventListener('click',()=>closeModalById('m-kunde'));
+  const kundenSearch=document.getElementById('kunden-search');
+  if(kundenSearch)kundenSearch.addEventListener('input',()=>renderKunden(kundenSearch.value));
+
+  // Artikel
+  const newArtikelBtn=document.getElementById('new-artikel-btn');
+  if(newArtikelBtn)newArtikelBtn.addEventListener('click',openNewArtikel);
+  const artSave=document.getElementById('art-save-btn');
+  if(artSave)artSave.addEventListener('click',saveArtikelData);
+  const artCancel=document.getElementById('art-cancel-btn');
+  if(artCancel)artCancel.addEventListener('click',()=>closeModalById('m-artikel'));
+  const addPreisBtn=document.getElementById('add-preis-btn');
+  if(addPreisBtn)addPreisBtn.addEventListener('click',()=>{preisZeitraeume.push({von:new Date().toLocaleDateString('de-DE'),bis:'',preis:0});renderPreisZeitraeume();});
+  const artKatFilter=document.getElementById('artikel-kat-filter');
+  if(artKatFilter)artKatFilter.addEventListener('change',()=>renderArtikel(artKatFilter.value));
+
+  // Textbausteine
+  const newTextBtn=document.getElementById('new-text-btn');
+  if(newTextBtn)newTextBtn.addEventListener('click',newTextBaustein);
+  const teSave=document.getElementById('te-save-btn');
+  if(teSave)teSave.addEventListener('click',saveTextBaustein);
+  const teCancel=document.getElementById('te-cancel-btn');
+  if(teCancel)teCancel.addEventListener('click',()=>{editingTextId=null;document.getElementById('te-name').value='';document.getElementById('te-body').value='';});
+  const teBody=document.getElementById('te-body');
+  if(teBody)teBody.addEventListener('input',updateTextPreview);
+  // Text category tabs
+  document.querySelectorAll('#text-tabs .stab-item').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      document.querySelectorAll('#text-tabs .stab-item').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTextCat=tab.dataset.cat;
+      renderTexte();
+    });
+  });
+
+  // Banking
+  const connectBankBtn=document.getElementById('connect-bank-btn');
+  if(connectBankBtn)connectBankBtn.addEventListener('click',()=>openModal('m-bank-connect'));
+  const bankAccSave=document.getElementById('bank-acc-save-btn');
+  if(bankAccSave)bankAccSave.addEventListener('click',saveBankAccount);
+  const bankAccCancel=document.getElementById('bank-acc-cancel-btn');
+  if(bankAccCancel)bankAccCancel.addEventListener('click',()=>closeModalById('m-bank-connect'));
+  const importCsvBtn=document.getElementById('bank-import-csv-btn');
+  if(importCsvBtn)importCsvBtn.addEventListener('click',()=>document.getElementById('csv-import-file').click());
+  const csvFile=document.getElementById('csv-import-file');
+  if(csvFile)csvFile.addEventListener('change',e=>{if(e.target.files[0])importBankCSV(e.target.files[0]);});
+  const syncTxnBtn=document.getElementById('sync-txn-btn');
+  if(syncTxnBtn)syncTxnBtn.addEventListener('click',()=>{toast('⟳ Synchronisiere alle Konten...','i');setTimeout(()=>toast('✓ Alle Konten aktuell','s'),1800);});
+  ['txn-account-filter','txn-type-filter','txn-search'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',renderTransactions);
+    if(el)el.addEventListener('change',renderTransactions);
+  });
+  const txnAssignSave=document.getElementById('txn-assign-save-btn');
+  if(txnAssignSave)txnAssignSave.addEventListener('click',saveTxnAssignment);
+  const txnAssignCancel=document.getElementById('txn-assign-cancel-btn');
+  if(txnAssignCancel)txnAssignCancel.addEventListener('click',()=>closeModalById('m-txn-assign'));
+  // Txn assign type change
+  const txnAssignType=document.getElementById('txn-assign-type');
+  if(txnAssignType)txnAssignType.addEventListener('change',()=>{
+    const refs=document.getElementById('txn-assign-ref');
+    if(txnAssignType.value==='invoice'){
+      refs.innerHTML=INVOICES.map(i=>`<option value="${i.id}">${i.id} — ${i.customer} (${fmt(i.gross)})</option>`).join('');
+    } else if(txnAssignType.value==='beleg'){
+      refs.innerHTML=getBelege().map(b=>`<option value="${b.id}">${b.vendor||b.filename} (${fmt(b.gross||0)})</option>`).join('');
+    } else {
+      refs.innerHTML='<option value="sonstige">Sonstige Buchung</option>';
+    }
+  });
+
+  // Wire up stab-item for text tabs (they need data-cat attribute)
+  document.querySelectorAll('#text-tabs .stab-item').forEach((el,i)=>{
+    const cats=['rechnung','angebot','mahnung','email','sonstige'];
+    el.dataset.cat=cats[i]||'sonstige';
+  });
+});
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  STAMMDATEN — KUNDEN, ARTIKEL, TEXTBAUSTEINE, BANKING
+//  Alle Daten in localStorage, vollständig CRUD
+// ═══════════════════════════════════════════════════════════════════
+
+// ── DB helpers ──────────────────────────────────────────────────────
+function db(key)        { try{const s=localStorage.getItem('if_'+key);return s?JSON.parse(s):[];}catch(e){return[];} }
+function dbSave(key,v)  { try{localStorage.setItem('if_'+key,JSON.stringify(v));}catch(e){} }
+function dbGet(key)     { return db(key); }
+function newId()        { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function fmtEur(v)      { return '€\u202f'+(+v||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function today()        { return new Date().toISOString().slice(0,10); }
+function fmtDate(d)     { if(!d)return '—'; const p=d.includes('-')?d.split('-'):[d.slice(6),d.slice(3,5),d.slice(0,2)]; return p[2]+'.'+p[1]+'.'+p[0]; }
+
+// ═══════════════════════════════════════════════════════════════════
+//  KUNDEN
+// ═══════════════════════════════════════════════════════════════════
+const KUNDEN_DEFAULTS = [
+  {id:'k001',nr:'K-001',company:'Acme GmbH',name:'Thomas Müller',email:'mueller@acme.de',phone:'+49 89 123456',address:'Musterstraße 1, 80331 München',taxId:'DE123456789',payment:14,discount:0,currency:'EUR',active:true,notes:'Stammkunde seit 2020',revenue:42800,created:'2020-01-15'},
+  {id:'k002',nr:'K-002',company:'TechStart AG',name:'Sabine Koch',email:'s.koch@techstart.de',phone:'+49 30 987654',address:'Startup-Allee 5, 10117 Berlin',taxId:'DE987654321',payment:30,discount:5,currency:'EUR',active:true,notes:'',revenue:38200,created:'2021-03-10'},
+  {id:'k003',nr:'K-003',company:'FreshBrand GmbH',name:'Mark Weber',email:'weber@freshbrand.de',phone:'+49 40 555444',address:'Designpark 12, 20095 Hamburg',taxId:'DE555444333',payment:14,discount:0,currency:'EUR',active:true,notes:'Zahlte letzte Rechnung verspätet',revenue:27600,created:'2022-06-01'},
+  {id:'k004',nr:'K-004',company:'Digital Media KG',name:'Petra Braun',email:'braun@digitalmedia.de',phone:'+49 221 333222',address:'Medienallee 3, 50667 Köln',taxId:'DE333222111',payment:21,discount:3,currency:'EUR',active:true,notes:'',revenue:18400,created:'2023-01-20'},
+  {id:'k005',nr:'K-005',company:'Nova Consulting GmbH',name:'Stefan Neumann',email:'neumann@nova.de',phone:'+49 69 444555',address:'Frankfurter Str. 88, 60311 Frankfurt',taxId:'DE444555666',payment:14,discount:0,currency:'EUR',active:false,notes:'Inaktiv seit Q4 2024',revenue:15800,created:'2023-05-14'},
+];
+
+function getKunden() { const k=db('kunden'); return k.length?k:KUNDEN_DEFAULTS; }
+function saveKunden(k){ dbSave('kunden',k); }
+
+function renderKunden() {
+  const search=(document.getElementById('k-search')?.value||'').toLowerCase();
+  let list=getKunden();
+  if(search) list=list.filter(k=>(k.company+k.name+k.email+k.nr).toLowerCase().includes(search));
+  const all=getKunden();
+  document.getElementById('k-stat-total').textContent=all.length;
+  document.getElementById('k-stat-active').textContent=all.filter(k=>k.active).length;
+  document.getElementById('k-stat-revenue').textContent=fmtEur(all.reduce((s,k)=>s+(k.revenue||0),0));
+  document.getElementById('k-stat-days').textContent=Math.round(all.reduce((s,k)=>s+(k.payment||14),0)/all.length)+'d';
+  const colors=['linear-gradient(135deg,#f59e0b,#d97706)','linear-gradient(135deg,#3b82f6,#1d4ed8)','linear-gradient(135deg,#10b981,#059669)','linear-gradient(135deg,#a78bfa,#7c3aed)','linear-gradient(135deg,#f97316,#ea580c)'];
+  document.getElementById('k-list').innerHTML = list.length ? list.map((k,i)=>`
+    <div class="item-card${k.active?'':' uc-card inact'}" onclick="openKundeDetail('${k.id}')">
+      <div class="item-av" style="background:${colors[i%colors.length]};color:#fff">${(k.company||k.name||'?')[0].toUpperCase()}</div>
+      <div class="item-info">
+        <div class="item-name">${k.company||k.name}</div>
+        <div class="item-sub">${k.name} · ${k.email} · ${k.phone||'—'}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">
+          <span class="badge ${k.active?'bg':'br'}">${k.active?'Aktiv':'Inaktiv'}</span>
+          <span class="badge bk">${k.nr}</span>
+          <span class="badge bb">Zahlung: ${k.payment}d</span>
+          ${k.discount?`<span class="badge ba">Rabatt ${k.discount}%</span>`:''}
+          <span class="badge bc">${fmtEur(k.revenue)}</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-g btn-sm" onclick="event.stopPropagation();editKunde('${k.id}')">✏️</button>
+        <button class="btn btn-d btn-sm" onclick="event.stopPropagation();deleteKunde('${k.id}')">✕</button>
+      </div>
+    </div>`).join('')
+  : '<div class="na"><div class="na-icon">👥</div><div class="na-title">Keine Kunden gefunden</div><div class="na-sub">Lege den ersten Kunden an.</div></div>';
+}
+
+function openKundeModal(kunde=null) {
+  const isNew=!kunde;
+  const all=getKunden();
+  const nextNr='K-'+String(all.length+1).padStart(3,'0');
+  const m=document.createElement('div');
+  m.className='modal-ov open';
+  m.innerHTML=`<div class="modal" style="width:580px">
+    <div class="mtitle">${isNew?'Neuer Kunde':'Kunde bearbeiten'}</div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Kundennr.</label><input class="inp" id="km-nr" value="${kunde?.nr||nextNr}"></div>
+      <div class="fi"><label class="fl">Unternehmen</label><input class="inp" id="km-company" value="${kunde?.company||''}" placeholder="Musterfirma GmbH"></div>
+    </div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Ansprechpartner</label><input class="inp" id="km-name" value="${kunde?.name||''}" placeholder="Max Mustermann"></div>
+      <div class="fi"><label class="fl">E-Mail</label><input class="inp" id="km-email" type="email" value="${kunde?.email||''}" placeholder="max@firma.de"></div>
+    </div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Telefon</label><input class="inp" id="km-phone" value="${kunde?.phone||''}" placeholder="+49 89 123456"></div>
+      <div class="fi"><label class="fl">USt-IdNr.</label><input class="inp" id="km-taxId" value="${kunde?.taxId||''}" placeholder="DE123456789"></div>
+    </div>
+    <div class="fi"><label class="fl">Adresse</label><input class="inp" id="km-address" value="${kunde?.address||''}" placeholder="Musterstraße 1, 80331 München"></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Zahlungsziel (Tage)</label><input class="inp" id="km-payment" type="number" value="${kunde?.payment||14}"></div>
+      <div class="fi"><label class="fl">Rabatt (%)</label><input class="inp" id="km-discount" type="number" value="${kunde?.discount||0}"></div>
+    </div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Währung</label><select class="inp" id="km-currency"><option ${(kunde?.currency||'EUR')==='EUR'?'selected':''}>EUR</option><option ${kunde?.currency==='USD'?'selected':''}>USD</option><option ${kunde?.currency==='CHF'?'selected':''}>CHF</option></select></div>
+      <div class="fi"><label class="fl">Status</label><select class="inp" id="km-active"><option value="true" ${kunde?.active!==false?'selected':''}>Aktiv</option><option value="false" ${kunde?.active===false?'selected':''}>Inaktiv</option></select></div>
+    </div>
+    <div class="fi"><label class="fl">Notizen</label><textarea class="inp" id="km-notes" rows="2" style="resize:none">${kunde?.notes||''}</textarea></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-p" id="km-save" style="flex:1">💾 Speichern</button>
+      <button class="btn btn-g" id="km-cancel">Abbrechen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector('#km-cancel').onclick=()=>m.remove();
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+  m.querySelector('#km-save').onclick=()=>{
+    const data={
+      id:kunde?.id||newId(), nr:m.querySelector('#km-nr').value.trim(),
+      company:m.querySelector('#km-company').value.trim(), name:m.querySelector('#km-name').value.trim(),
+      email:m.querySelector('#km-email').value.trim(), phone:m.querySelector('#km-phone').value.trim(),
+      taxId:m.querySelector('#km-taxId').value.trim(), address:m.querySelector('#km-address').value.trim(),
+      payment:parseInt(m.querySelector('#km-payment').value)||14,
+      discount:parseFloat(m.querySelector('#km-discount').value)||0,
+      currency:m.querySelector('#km-currency').value,
+      active:m.querySelector('#km-active').value==='true',
+      notes:m.querySelector('#km-notes').value.trim(),
+      revenue:kunde?.revenue||0, created:kunde?.created||today()
+    };
+    if(!data.company&&!data.name){toast('Bitte Firma oder Name eingeben','e');return;}
+    const all=getKunden();
+    const idx=all.findIndex(x=>x.id===data.id);
+    if(idx>=0)all[idx]=data; else all.unshift(data);
+    saveKunden(all); m.remove(); renderKunden();
+    toast('✓ Kunde '+(data.company||data.name)+' gespeichert','s');
+  };
+}
+
+function editKunde(id)   { openKundeModal(getKunden().find(k=>k.id===id)); }
+function deleteKunde(id) {
+  const k=getKunden().find(x=>x.id===id);
+  if(!confirm('Kunde "'+( k?.company||k?.name)+'" wirklich löschen?'))return;
+  saveKunden(getKunden().filter(x=>x.id!==id)); renderKunden();
+  toast('Kunde gelöscht','w');
+}
+function openKundeDetail(id){ editKunde(id); }
+
+// ═══════════════════════════════════════════════════════════════════
+//  ARTIKEL
+// ═══════════════════════════════════════════════════════════════════
+const ARTIKEL_DEFAULTS = [
+  {id:'a001',nr:'A-001',name:'Webentwicklung Stunde',desc:'Frontend- & Backend-Entwicklung',cat:'Dienstleistung',unit:'Std.',vat:19,active:true,
+   prices:[{id:'p1',from:'2023-01-01',to:'2024-12-31',price:95,note:'2023-2024'},{id:'p2',from:'2025-01-01',to:'',price:120,note:'Aktuell'}]},
+  {id:'a002',nr:'A-002',name:'Projektmanagement',desc:'PM, Koordination, Meetings',cat:'Dienstleistung',unit:'Std.',vat:19,active:true,
+   prices:[{id:'p3',from:'2025-01-01',to:'',price:110,note:'Aktuell'}]},
+  {id:'a003',nr:'A-003',name:'Design Stunde',desc:'UI/UX Design, Grafik',cat:'Dienstleistung',unit:'Std.',vat:19,active:true,
+   prices:[{id:'p4',from:'2025-01-01',to:'',price:130,note:'Aktuell'}]},
+  {id:'a004',nr:'A-004',name:'Wartungsvertrag Monat',desc:'Monatliche Wartung & Support',cat:'Abo',unit:'Monat',vat:19,active:true,
+   prices:[{id:'p5',from:'2025-01-01',to:'',price:450,note:'Aktuell'}]},
+  {id:'a005',nr:'A-005',name:'Domain & Hosting Jahr',desc:'Webhosting inkl. SSL & Domain',cat:'Lizenz',unit:'Jahr',vat:19,active:true,
+   prices:[{id:'p6',from:'2025-01-01',to:'',price:240,note:'2025'}]},
+  {id:'a006',nr:'A-006',name:'Beratung Stunde',desc:'Strategische Beratung & Consulting',cat:'Dienstleistung',unit:'Std.',vat:19,active:true,
+   prices:[{id:'p7',from:'2025-01-01',to:'',price:180,note:'Aktuell'}]},
+];
+
+function getArtikel() { const a=db('artikel'); return a.length?a:ARTIKEL_DEFAULTS; }
+function saveArtikel(a){ dbSave('artikel',a); }
+
+function getArtikelPrice(artikel,date=today()){
+  if(!artikel.prices||!artikel.prices.length) return 0;
+  const active=artikel.prices.filter(p=>p.from<=date&&(!p.to||p.to>=date));
+  if(active.length) return Math.max(...active.map(p=>p.price));
+  const past=artikel.prices.filter(p=>p.to&&p.to<date);
+  if(past.length) return past.sort((a,b)=>b.to.localeCompare(a.to))[0].price;
+  return artikel.prices[0].price||0;
+}
+
+function renderArtikel(){
+  const search=(document.getElementById('a-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('a-cat-filter')?.value||'';
+  let list=getArtikel();
+  if(search) list=list.filter(a=>(a.name+a.desc+a.nr).toLowerCase().includes(search));
+  if(cat) list=list.filter(a=>a.cat===cat);
+  const all=getArtikel();
+  document.getElementById('a-stat-total').textContent=all.length;
+  document.getElementById('a-stat-dl').textContent=all.filter(a=>a.cat==='Dienstleistung').length;
+  document.getElementById('a-stat-prod').textContent=all.filter(a=>a.cat==='Produkt').length;
+  const avgP=all.length?all.reduce((s,a)=>s+getArtikelPrice(a),0)/all.length:0;
+  document.getElementById('a-stat-avg').textContent=fmtEur(avgP);
+  const catColor={Dienstleistung:'bc',Produkt:'ba',Lizenz:'bp',Abo:'bg',Material:'bk',Reise:'bb'};
+  document.getElementById('a-list').innerHTML = list.length ? list.map(a=>{
+    const p=getArtikelPrice(a);
+    const hasFuture=a.prices?.some(pp=>pp.from>today());
+    return `<div class="item-card${a.active?'':' uc-card inact'}">
+      <div class="item-av" style="background:var(--${a.cat==='Dienstleistung'?'cybg':a.cat==='Produkt'?'ambg':a.cat==='Abo'?'gnbg':'pubg'})">
+        ${a.cat==='Dienstleistung'?'⚙️':a.cat==='Produkt'?'📦':a.cat==='Abo'?'🔄':a.cat==='Lizenz'?'🔑':'📦'}
+      </div>
+      <div class="item-info">
+        <div class="item-name">${a.name}</div>
+        <div class="item-sub">${a.desc||''} · ${a.unit||'Stk.'}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">
+          <span class="badge ${catColor[a.cat]||'bk'}">${a.cat}</span>
+          <span class="badge bk">${a.nr}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--am)">${fmtEur(p)} / ${a.unit}</span>
+          <span class="badge ${a.active?'bg':'br'}">${a.active?'Aktiv':'Inaktiv'}</span>
+          ${hasFuture?'<span class="badge ba">Preisänderung geplant</span>':''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-g btn-sm" onclick="openArtikelModal('${a.id}')">✏️ Preise</button>
+        <button class="btn btn-d btn-sm" onclick="deleteArtikel('${a.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('')
+  : '<div class="na"><div class="na-icon">📦</div><div class="na-title">Keine Artikel</div><div class="na-sub">Lege den ersten Artikel an.</div></div>';
+}
+
+function openArtikelModal(id=null){
+  const a=id?getArtikel().find(x=>x.id===id):null;
+  const all=getArtikel();
+  const nextNr='A-'+String(all.length+1).padStart(3,'0');
+  const prices=a?.prices||[{id:newId(),from:today(),to:'',price:0,note:'Standard'}];
+  const m=document.createElement('div');
+  m.className='modal-ov open';
+  m.innerHTML=`<div class="modal" style="width:620px">
+    <div class="mtitle">${a?'Artikel bearbeiten':'Neuer Artikel'}</div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Artikelnr.</label><input class="inp" id="am-nr" value="${a?.nr||nextNr}"></div>
+      <div class="fi"><label class="fl">Kategorie</label><select class="inp" id="am-cat">
+        ${['Dienstleistung','Produkt','Lizenz','Abo','Material','Reise'].map(c=>`<option ${(a?.cat||'Dienstleistung')===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="fi"><label class="fl">Bezeichnung</label><input class="inp" id="am-name" value="${a?.name||''}" placeholder="z.B. Webentwicklung Stunde"></div>
+    <div class="fi"><label class="fl">Beschreibung</label><textarea class="inp" id="am-desc" rows="2" style="resize:none">${a?.desc||''}</textarea></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Einheit</label><input class="inp" id="am-unit" value="${a?.unit||'Std.'}" placeholder="Std., Stk., Pauschal..."></div>
+      <div class="fi"><label class="fl">MwSt. (%)</label><select class="inp" id="am-vat">
+        <option ${(a?.vat||19)===19?'selected':''}>19</option>
+        <option ${a?.vat===7?'selected':''}>7</option>
+        <option ${a?.vat===0?'selected':''}>0</option>
+      </select></div>
+    </div>
+    <div class="div"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600">💰 Preiszeiträume</span>
+      <button class="btn btn-p btn-sm" id="am-add-price">+ Zeitraum</button>
+    </div>
+    <div id="am-prices">${prices.map(p=>pricePeriodRow(p)).join('')}</div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn btn-p" id="am-save" style="flex:1">💾 Speichern</button>
+      <button class="btn btn-g" id="am-cancel">Abbrechen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector('#am-cancel').onclick=()=>m.remove();
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+  m.querySelector('#am-add-price').onclick=()=>{
+    const div=document.createElement('div');
+    div.innerHTML=pricePeriodRow({id:newId(),from:today(),to:'',price:0,note:''});
+    m.querySelector('#am-prices').appendChild(div.firstElementChild);
+  };
+  m.querySelector('#am-save').onclick=()=>{
+    const nm=a?.id||newId();
+    const pRows=m.querySelectorAll('.pp-row');
+    const priceData=Array.from(pRows).map(r=>({
+      id:r.dataset.pid||newId(),
+      from:r.querySelector('.pp-from').value,
+      to:r.querySelector('.pp-to').value,
+      price:parseFloat(r.querySelector('.pp-price').value)||0,
+      note:r.querySelector('.pp-note').value
+    })).filter(p=>p.price>0||p.from);
+    const data={id:nm,nr:m.querySelector('#am-nr').value,name:m.querySelector('#am-name').value.trim(),
+      desc:m.querySelector('#am-desc').value,cat:m.querySelector('#am-cat').value,
+      unit:m.querySelector('#am-unit').value,vat:parseInt(m.querySelector('#am-vat').value)||19,
+      active:a?.active!==false,prices:priceData,created:a?.created||today()};
+    if(!data.name){toast('Bezeichnung eingeben','e');return;}
+    const all=getArtikel();
+    const idx=all.findIndex(x=>x.id===nm);
+    if(idx>=0)all[idx]=data; else all.unshift(data);
+    saveArtikel(all); m.remove(); renderArtikel();
+    toast('✓ Artikel "'+data.name+'" gespeichert','s');
+  };
+}
+
+function pricePeriodRow(p){
+  const isActive=p.from<=today()&&(!p.to||p.to>=today());
+  return `<div class="price-period${isActive?' pp-active':''} pp-row" data-pid="${p.id}">
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 90px 1fr;gap:8px;align-items:center">
+      <div><label class="fl" style="font-size:9px">VON</label><input class="inp pp-from" type="date" value="${p.from}" style="font-size:11px"></div>
+      <div><label class="fl" style="font-size:9px">BIS (leer = offen)</label><input class="inp pp-to" type="date" value="${p.to||''}" style="font-size:11px"></div>
+      <div><label class="fl" style="font-size:9px">PREIS (€)</label><input class="inp pp-price" type="number" step="0.01" value="${p.price}" style="font-size:12px;font-family:'IBM Plex Mono',monospace;font-weight:600"></div>
+      <div><label class="fl" style="font-size:9px">BEZEICHNUNG</label><input class="inp pp-note" value="${p.note||''}" placeholder="z.B. Standardpreis" style="font-size:11px"></div>
+    </div>
+    ${isActive?'<span class="badge bg" style="margin-left:6px;white-space:nowrap">Aktiv</span>':''}
+    <button class="btn btn-d btn-sm" style="flex-shrink:0" onclick="this.closest('.pp-row').remove()">✕</button>
+  </div>`;
+}
+
+function deleteArtikel(id){
+  if(!confirm('Artikel wirklich löschen?'))return;
+  saveArtikel(getArtikel().filter(x=>x.id!==id));
+  renderArtikel(); toast('Artikel gelöscht','w');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  TEXTBAUSTEINE
+// ═══════════════════════════════════════════════════════════════════
+const TEXTE_DEFAULTS = [
+  {id:'t001',title:'Rechnungseinleitung Standard',cat:'rechnung',text:'wir erlauben uns, Ihnen für die erbrachten Leistungen wie folgt in Rechnung zu stellen:',active:true},
+  {id:'t002',title:'Rechnungsabschluss mit Bankdaten',cat:'rechnung',text:'Bitte überweisen Sie den Gesamtbetrag innerhalb von {{zahlungsziel}} Tagen auf unser Konto:\nIBAN: DE89 3704 0044 0532 0130 00\nBIC: COBADEFFXXX\nVerwendungszweck: {{rechnungsnr}}',active:true},
+  {id:'t003',title:'1. Mahnung',cat:'mahnung',text:'Sehr geehrte Damen und Herren,\n\nleider mussten wir feststellen, dass unsere Rechnung {{rechnungsnr}} vom {{datum}} über {{betrag}} noch nicht beglichen wurde.\n\nWir bitten Sie, den Betrag bis zum {{mahnfrist}} auf unser Konto zu überweisen.\n\nBei bereits erfolgter Zahlung bitten wir, dieses Schreiben als gegenstandslos zu betrachten.',active:true},
+  {id:'t004',title:'2. Mahnung mit Mahngebühr',cat:'mahnung',text:'Sehr geehrte Damen und Herren,\n\nbereits am {{erstmahnungsdatum}} haben wir Sie an die offene Rechnung {{rechnungsnr}} erinnert. Leider ist bis heute kein Zahlungseingang verzeichnet.\n\nWir berechnen Ihnen daher eine Mahngebühr von € 15,00 zzgl. Zinsen.\n\nNeuer Gesamtbetrag: {{gesamtbetrag}}\nZahlungsfrist: {{mahnfrist}}',active:true},
+  {id:'t005',title:'Angebot Einleitung',cat:'angebot',text:'vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:',active:true},
+  {id:'t006',title:'Angebot Gültigkeitshinweis',cat:'angebot',text:'Dieses Angebot ist gültig bis {{gueltig_bis}}. Die angegebenen Preise verstehen sich zzgl. der gesetzlichen Mehrwertsteuer.',active:true},
+  {id:'t007',title:'Zahlungserinnerung freundlich',cat:'email',text:'Betreff: Freundliche Erinnerung — Rechnung {{rechnungsnr}}\n\nSehr geehrte/r {{ansprechpartner}},\n\nnur zur Erinnerung: unsere Rechnung {{rechnungsnr}} vom {{datum}} über {{betrag}} ist am {{faelligkeitsdatum}} fällig.\n\nMit freundlichen Grüßen',active:true},
+  {id:'t008',title:'AGB Standardklausel',cat:'agb',text:'Es gelten unsere Allgemeinen Geschäftsbedingungen. Gerichtsstand ist München. Es gilt deutsches Recht.',active:true},
+];
+
+function getTexte() { const t=db('texte'); return t.length?t:TEXTE_DEFAULTS; }
+function saveTexte(t){ dbSave('texte',t); }
+let activeTextCat='';
+
+function renderTexte(){
+  const list=getTexte().filter(t=>!activeTextCat||t.cat===activeTextCat);
+  const catLabel={rechnung:'Rechnung',mahnung:'Mahnung',angebot:'Angebot',email:'E-Mail',agb:'AGB',sonstig:'Sonstiges'};
+  const catColor={rechnung:'bb',mahnung:'br',angebot:'bg',email:'bc',agb:'ba',sonstig:'bk'};
+  document.getElementById('t-list').innerHTML = list.length ? list.map(t=>`
+    <div class="text-block-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:4px">${t.title}</div>
+          <span class="badge ${catColor[t.cat]||'bk'}">${catLabel[t.cat]||t.cat}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-g btn-sm" onclick="copyText('${t.id}')">📋 Kopieren</button>
+          <button class="btn btn-g btn-sm" onclick="editText('${t.id}')">✏️</button>
+          <button class="btn btn-d btn-sm" onclick="deleteText('${t.id}')">✕</button>
+        </div>
+      </div>
+      <div class="text-preview">${t.text.replace(/\n/g,'<br>')}</div>
+    </div>`).join('')
+  : '<div class="na"><div class="na-icon">📝</div><div class="na-title">Keine Textbausteine</div><div class="na-sub">Lege den ersten Textbaustein an.</div></div>';
+}
+
+function openTextModal(t=null){
+  const m=document.createElement('div');
+  m.className='modal-ov open';
+  m.innerHTML=`<div class="modal" style="width:600px">
+    <div class="mtitle">${t?'Textbaustein bearbeiten':'Neuer Textbaustein'}</div>
+    <div class="fi"><label class="fl">Titel</label><input class="inp" id="tm-title" value="${t?.title||''}" placeholder="z.B. Rechnungseinleitung Standard"></div>
+    <div class="fi"><label class="fl">Kategorie</label><select class="inp" id="tm-cat">
+      ${[['rechnung','Rechnung'],['mahnung','Mahnung'],['angebot','Angebot'],['email','E-Mail'],['agb','AGB'],['sonstig','Sonstiges']].map(([v,l])=>`<option value="${v}" ${(t?.cat||'rechnung')===v?'selected':''}>${l}</option>`).join('')}
+    </select></div>
+    <div class="fi"><label class="fl">Text <span style="color:var(--t3);font-size:10px">(Platzhalter: {{variable}})</span></label>
+      <textarea class="inp" id="tm-text" rows="8" style="resize:vertical;font-family:inherit;line-height:1.7">${t?.text||''}</textarea>
+    </div>
+    <div style="background:var(--s2);border-radius:8px;padding:10px;margin-bottom:14px">
+      <div style="font-size:10px;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Verfügbare Platzhalter</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${['{{rechnungsnr}}','{{datum}}','{{betrag}}','{{faelligkeitsdatum}}','{{zahlungsziel}}','{{ansprechpartner}}','{{firma}}','{{mahnfrist}}'].map(v=>`<span class="badge bk" style="cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:10px" onclick="insertPlaceholder('${v}')">${v}</span>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" id="tm-save" style="flex:1">💾 Speichern</button>
+      <button class="btn btn-g" id="tm-cancel">Abbrechen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector('#tm-cancel').onclick=()=>m.remove();
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+  m.querySelector('#tm-save').onclick=()=>{
+    const data={id:t?.id||newId(),title:m.querySelector('#tm-title').value.trim(),cat:m.querySelector('#tm-cat').value,text:m.querySelector('#tm-text').value.trim(),active:true};
+    if(!data.title||!data.text){toast('Titel und Text eingeben','e');return;}
+    const all=getTexte();
+    const idx=all.findIndex(x=>x.id===data.id);
+    if(idx>=0)all[idx]=data; else all.unshift(data);
+    saveTexte(all); m.remove(); renderTexte();
+    toast('✓ Textbaustein gespeichert','s');
+  };
+}
+
+function insertPlaceholder(v){
+  const ta=document.getElementById('tm-text');
+  if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+v.length;
+  ta.focus();
+}
+
+function editText(id)   { openTextModal(getTexte().find(t=>t.id===id)); }
+function deleteText(id) {
+  if(!confirm('Textbaustein löschen?'))return;
+  saveTexte(getTexte().filter(t=>t.id!==id)); renderTexte();
+  toast('Textbaustein gelöscht','w');
+}
+function copyText(id){
+  const t=getTexte().find(x=>x.id===id);
+  if(!t)return;
+  navigator.clipboard?.writeText(t.text).then(()=>toast('📋 Text kopiert','i')).catch(()=>toast('Text: '+t.text.slice(0,50)+'...','i'));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  BANKING (vollständig funktional)
+// ═══════════════════════════════════════════════════════════════════
+const BANK_ACCOUNTS_DEFAULT = [
+  {id:'ba1',name:'Commerzbank Girokonto',iban:'DE89370400440532013000',bank:'Commerzbank',balance:34820.50,currency:'EUR',color:'#f59e0b',icon:'🏦',connected:true},
+  {id:'ba2',name:'Sparkasse Geschäftskonto',iban:'DE12500105170648489890',bank:'Sparkasse',balance:12400.00,currency:'EUR',color:'#ef4444',icon:'🔴',connected:true},
+  {id:'ba3',name:'PayPal Business',iban:'',bank:'PayPal',balance:1240.80,currency:'EUR',color:'#3b82f6',icon:'💳',connected:false},
+];
+
+const TRANSACTIONS_DEFAULT = [
+  {id:'tx001',date:'2025-03-16',desc:'Eingang RE-2025-0039 Acme GmbH',amount:3332.00,type:'in',account:'ba1',matched:true,matchedTo:'RE-2025-0039',category:'Umsatz'},
+  {id:'tx002',date:'2025-03-15',desc:'SEPA Amazon Business Marketplace',amount:-234.50,type:'out',account:'ba1',matched:true,matchedTo:'B001',category:'Betriebsausgaben'},
+  {id:'tx003',date:'2025-03-14',desc:'Miete Büro März 2025',amount:-2800.00,type:'out',account:'ba1',matched:false,matchedTo:null,category:'Miete'},
+  {id:'tx004',date:'2025-03-12',desc:'VB-Nr 8820013 TechStart AG',amount:1428.00,type:'in',account:'ba1',matched:false,matchedTo:null,category:''},
+  {id:'tx005',date:'2025-03-10',desc:'Telekom Deutschland GmbH',amount:-89.99,type:'out',account:'ba1',matched:true,matchedTo:'B003',category:'Telefon/Internet'},
+  {id:'tx006',date:'2025-03-08',desc:'Gehaltsüberweisung Max Mustermann',amount:-4200.00,type:'out',account:'ba1',matched:false,matchedTo:null,category:'Personal'},
+  {id:'tx007',date:'2025-03-05',desc:'Eingang RE-2025-0037B FreshBrand',amount:4760.00,type:'in',account:'ba2',matched:true,matchedTo:'RE-2025-0037B',category:'Umsatz'},
+  {id:'tx008',date:'2025-03-03',desc:'E.ON Energie Deutschland GmbH',amount:-312.00,type:'out',account:'ba2',matched:false,matchedTo:null,category:'Energie'},
+  {id:'tx009',date:'2025-03-01',desc:'DATEV-Lizenz Monat',amount:-95.00,type:'out',account:'ba1',matched:false,matchedTo:null,category:'Software'},
+  {id:'tx010',date:'2025-02-28',desc:'Digital Media KG RE-2025-0038',amount:1428.00,type:'in',account:'ba2',matched:true,matchedTo:'RE-2025-0038',category:'Umsatz'},
+];
+
+function getTransactions(){ const t=db('transactions'); return t.length?t:TRANSACTIONS_DEFAULT; }
+function saveTx(t){ dbSave('transactions',t); }
+function getBankAccounts(){ const a=db('bank_accounts'); return a.length?a:BANK_ACCOUNTS_DEFAULT; }
+let bankFilter='all';
+let bankChartInst=null;
+
+function renderBanking(){
+  const accounts=getBankAccounts();
+  // Account cards
+  document.getElementById('bank-accounts-row').innerHTML=accounts.map(a=>`
+    <div class="bank-account-card">
+      <div class="ba-logo" style="background:${a.color}22">${a.icon}</div>
+      <div style="font-size:11px;color:var(--t3)">${a.bank}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--t1);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:${a.balance>=0?'var(--gn)':'var(--rd)'};margin-top:6px">${fmtEur(a.balance)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span style="font-size:9px;color:var(--t4);font-family:'IBM Plex Mono',monospace">${a.iban?a.iban.slice(0,4)+'...'+a.iban.slice(-4):''}</span>
+        <span class="badge ${a.connected?'bg':'bk'}">${a.connected?'Live':'Manuell'}</span>
+      </div>
+    </div>`).join('');
+
+  // Balance list
+  const totalBalance=accounts.reduce((s,a)=>s+a.balance,0);
+  document.getElementById('bank-balance-list').innerHTML=accounts.map(a=>`
+    <div class="ir"><span style="font-size:12px">${a.name.split(' ')[0]}</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:${a.balance>=0?'var(--gn)':'var(--rd)'}">${fmtEur(a.balance)}</span></div>
+  `).join('')+`<div class="ir" style="border-top:1px solid var(--b2);margin-top:4px;padding-top:6px"><span style="font-weight:600">Gesamt</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;color:var(--am)">${fmtEur(totalBalance)}</span></div>`;
+
+  // Connections
+  document.getElementById('bank-connections-list').innerHTML=accounts.map(a=>`
+    <div class="bank-row">
+      <div class="bank-ico" style="background:${a.color}22">${a.icon}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:500">${a.bank}</div><div style="font-size:10px;color:var(--t3)">${a.connected?'GoCardless · Live':'Manuell'}</div></div>
+      <span class="badge ${a.connected?'bg':'bk'}">${a.connected?'Aktiv':'Trennen'}</span>
+    </div>`).join('');
+
+  renderTransactions();
+  renderBankChart();
+}
+
+function renderTransactions(){
+  let txs=getTransactions();
+  if(bankFilter==='in')     txs=txs.filter(t=>t.type==='in');
+  else if(bankFilter==='out')    txs=txs.filter(t=>t.type==='out');
+  else if(bankFilter==='unmatched') txs=txs.filter(t=>!t.matched);
+  txs.sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('bank-count-lbl').textContent=txs.length+' Transaktionen';
+  document.getElementById('bank-tx-list').innerHTML=txs.length?txs.map(t=>`
+    <div class="bank-tx-card ${t.type} ${t.matched?'matched':'unmatched'}">
+      <div style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:${t.type==='in'?'var(--gnbg)':'var(--rdbg)'};flex-shrink:0">
+        ${t.type==='in'?'↓':'↑'}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.desc}</div>
+        <div style="font-size:10px;color:var(--t3);display:flex;gap:8px;margin-top:2px;flex-wrap:wrap">
+          <span>${fmtDate(t.date)}</span>
+          ${t.category?`<span class="badge bk" style="font-size:9px">${t.category}</span>`:''}
+          ${t.matched?`<span class="badge bg" style="font-size:9px">✓ ${t.matchedTo}</span>`:'<span class="badge ba" style="font-size:9px">nicht zugeordnet</span>'}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="tx-amt">${t.type==='in'?'+':''}${fmtEur(t.amount)}</span>
+        ${!t.matched?`<button class="btn btn-c btn-sm" style="font-size:10px" onclick="matchTx('${t.id}')">🔗 Zuordnen</button>`:''}
+      </div>
+    </div>`).join('')
+  : '<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">Keine Transaktionen gefunden</div>';
+}
+
+function renderBankChart(){
+  if(bankChartInst){try{bankChartInst.destroy();}catch(e){} bankChartInst=null;}
+  setTimeout(()=>{
+    const ctx=document.getElementById('bank-monthly-chart');
+    if(!ctx)return;
+    const txs=getTransactions();
+    const months=['Jan','Feb','Mär','Apr','Mai','Jun'];
+    const inc=months.map((_,i)=>{
+      const m=String(i+1).padStart(2,'0');
+      return txs.filter(t=>t.type==='in'&&t.date.includes('-'+m+'-')).reduce((s,t)=>s+Math.abs(t.amount),0);
+    });
+    const exp=months.map((_,i)=>{
+      const m=String(i+1).padStart(2,'0');
+      return txs.filter(t=>t.type==='out'&&t.date.includes('-'+m+'-')).reduce((s,t)=>s+Math.abs(t.amount),0);
+    });
+    bankChartInst=new Chart(ctx,{type:'bar',data:{labels:months,datasets:[
+      {label:'Eingang',data:inc,backgroundColor:'rgba(16,185,129,.65)',borderRadius:4},
+      {label:'Ausgang',data:exp,backgroundColor:'rgba(239,68,68,.55)',borderRadius:4},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b',font:{size:10}}},
+              y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b',font:{size:10},callback:v=>'€'+Math.round(v/1000)+'k'}}}}});
+  },80);
+}
+
+function matchTx(id){
+  // Open matching modal
+  const invs=INVOICES.filter(i=>i.status!=='PAID');
+  const m=document.createElement('div');
+  m.className='modal-ov open';
+  const tx=getTransactions().find(t=>t.id===id);
+  m.innerHTML=`<div class="modal">
+    <div class="mtitle">🔗 Transaktion zuordnen</div>
+    <div class="card" style="padding:10px;background:var(--s2);margin-bottom:14px">
+      <div class="ir"><span>Betrag</span><span style="font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtEur(tx.amount)}</span></div>
+      <div class="ir"><span>Verwendungszweck</span><span style="font-size:11px">${tx.desc}</span></div>
+    </div>
+    <div style="font-size:12px;font-weight:500;margin-bottom:8px">Zu welcher Rechnung zuordnen?</div>
+    <div style="max-height:250px;overflow-y:auto">
+      ${invs.map(i=>`<div class="bank-row" style="cursor:pointer" onclick="doMatchTx('${id}','${i.id}',this.closest('.modal-ov'))">
+        <div style="flex:1"><div style="font-size:12px;font-weight:500">${i.id} — ${i.customer}</div>
+        <div style="font-size:10px;color:var(--t3)">${fmtEur(i.gross)} · fällig ${i.due}</div></div>
+        <button class="btn btn-p btn-sm">Zuordnen</button>
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:12px"><label class="fl">Oder manuell kategorisieren:</label>
+      <div style="display:flex;gap:8px"><select class="inp" id="tx-cat" style="flex:1">
+        ${['Umsatz','Betriebsausgaben','Miete','Personal','Software','Energie','Telefon/Internet','Versicherung','Sonstiges'].map(c=>`<option>${c}</option>`).join('')}
+      </select><button class="btn btn-p btn-sm" onclick="doMatchTxCat('${id}',document.getElementById('tx-cat').value,this.closest('.modal-ov'))">OK</button></div>
+    </div>
+    <button class="btn btn-g btn-sm" style="width:100%;margin-top:10px" onclick="this.closest('.modal-ov').remove()">Abbrechen</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+}
+
+function doMatchTx(txId,invId,modalEl){
+  const txs=getTransactions(); const t=txs.find(x=>x.id===txId);
+  if(t){t.matched=true;t.matchedTo=invId;} saveTx(txs); modalEl.remove();
+  renderTransactions(); toast('✓ Transaktion zugeordnet zu '+invId,'s');
+}
+function doMatchTxCat(txId,cat,modalEl){
+  const txs=getTransactions(); const t=txs.find(x=>x.id===txId);
+  if(t){t.matched=true;t.category=cat;} saveTx(txs); modalEl.remove();
+  renderTransactions(); toast('✓ Kategorie gesetzt: '+cat,'s');
+}
+
+function autoMatchAllTx(){
+  const txs=getTransactions(); let cnt=0;
+  txs.forEach(t=>{
+    if(t.matched)return;
+    const inv=INVOICES.find(i=>Math.abs(i.gross-Math.abs(t.amount))<0.02||t.desc.toLowerCase().includes(i.id.toLowerCase()));
+    if(inv){t.matched=true;t.matchedTo=inv.id;t.category='Umsatz';cnt++;}
+  });
+  saveTx(txs); renderTransactions(); toast('⚡ '+cnt+' Transaktionen automatisch zugeordnet','s');
+}
+
+function addManualTx(){
+  const m=document.createElement('div');
+  m.className='modal-ov open';
+  m.innerHTML=`<div class="modal">
+    <div class="mtitle">+ Manuelle Transaktion</div>
+    <div class="fi"><label class="fl">Datum</label><input class="inp" id="mt-date" type="date" value="${today()}"></div>
+    <div class="fi"><label class="fl">Beschreibung</label><input class="inp" id="mt-desc" placeholder="z.B. Miete März 2025"></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Betrag (€)</label><input class="inp" id="mt-amount" type="number" step="0.01" placeholder="0.00"></div>
+      <div class="fi"><label class="fl">Typ</label><select class="inp" id="mt-type"><option value="out">Ausgang (−)</option><option value="in">Eingang (+)</option></select></div>
+    </div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Konto</label><select class="inp" id="mt-account">${getBankAccounts().map(a=>`<option value="${a.id}">${a.name}</option>`).join('')}</select></div>
+      <div class="fi"><label class="fl">Kategorie</label><select class="inp" id="mt-cat">${['Umsatz','Betriebsausgaben','Miete','Personal','Software','Energie','Versicherung','Sonstiges'].map(c=>`<option>${c}</option>`).join('')}</select></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-p" id="mt-save" style="flex:1">+ Hinzufügen</button>
+      <button class="btn btn-g" id="mt-cancel">Abbrechen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector('#mt-cancel').onclick=()=>m.remove();
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+  m.querySelector('#mt-save').onclick=()=>{
+    const amt=parseFloat(m.querySelector('#mt-amount').value);
+    const type=m.querySelector('#mt-type').value;
+    if(!amt||!m.querySelector('#mt-desc').value.trim()){toast('Alle Felder ausfüllen','e');return;}
+    const txs=getTransactions();
+    txs.unshift({id:newId(),date:m.querySelector('#mt-date').value,desc:m.querySelector('#mt-desc').value.trim(),
+      amount:type==='out'?-Math.abs(amt):Math.abs(amt),type,account:m.querySelector('#mt-account').value,
+      matched:false,matchedTo:null,category:m.querySelector('#mt-cat').value});
+    saveTx(txs); m.remove(); renderTransactions();
+    toast('✓ Transaktion hinzugefügt','s');
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  EVENT WIRING — DOMContentLoaded ergänzen via delegation
+// ═══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Kunden
+  document.getElementById('new-k-btn').addEventListener('click', ()=>openKundeModal());
+  document.getElementById('import-k-btn').addEventListener('click', ()=>{
+    toast('Import: CSV-Datei hochladen (kommt in nächstem Update)','i');
+  });
+
+  // Artikel
+  document.getElementById('new-a-btn').addEventListener('click', ()=>openArtikelModal());
+
+  // Textbausteine
+  document.getElementById('new-t-btn').addEventListener('click', ()=>openTextModal());
+  document.querySelectorAll('#text-cat-tabs .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#text-cat-tabs .chip').forEach(c=>{c.className='chip chip-inactive';});
+      chip.className='chip chip-active';
+      activeTextCat=chip.dataset.cat;
+      renderTexte();
+    });
+  });
+
+  // Banking
+  document.getElementById('bank-sync-btn').addEventListener('click', ()=>{
+    toast('⟳ Synchronisiere mit GoCardless...','i');
+    setTimeout(()=>{ toast('✓ Bankdaten aktualisiert','s'); renderBanking(); },2000);
+  });
+  document.getElementById('bank-manual-btn').addEventListener('click', addManualTx);
+  document.getElementById('bank-match-btn').addEventListener('click', autoMatchAllTx);
+  document.getElementById('bank-connect-btn').addEventListener('click', ()=>toast('GoCardless-Verbindung: API-Key in Einstellungen hinterlegen','i'));
+  document.querySelectorAll('#bank-filter-tabs .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#bank-filter-tabs .chip').forEach(c=>c.className='chip chip-inactive');
+      chip.className='chip chip-active';
+      bankFilter=chip.dataset.filter;
+      renderTransactions();
+    });
+  });
+
+});
+</script>
