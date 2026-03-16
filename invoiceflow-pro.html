@@ -955,7 +955,6 @@ select.inp option{background:var(--s2)}
     </div><!-- /main -->
   </div><!-- /layout -->
 </div><!-- /app-page -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════
 //  USERS DATA
@@ -1510,177 +1509,129 @@ Antworte NUR mit validem JSON ohne Backticks oder Kommentare:
 
 async function processOcr(file) {
   currentFilename = file.name;
-  document.getElementById('ocr-progress').style.display = 'block';
+  const prog = document.getElementById('ocr-progress');
+  const statusTxt = document.getElementById('ocr-status-txt');
+  const pfill = document.getElementById('ocr-pf');
+  if(prog) prog.style.display = 'block';
   document.getElementById('ocr-result-card').style.display = 'none';
 
-  const statusTxt = document.getElementById('ocr-status-txt');
   let pct = 0;
   const iv = setInterval(() => {
-    pct = Math.min(pct+8, 88);
-    document.getElementById('ocr-pf').style.width = pct + '%';
-    const msgs = ['Bild wird vorbereitet...','KI analysiert Beleg...','Felder werden extrahiert...'];
-    if(statusTxt) statusTxt.textContent = msgs[pct<30?0:pct<60?1:2];
+    pct = Math.min(pct + 8, 88);
+    if(pfill) pfill.style.width = pct + '%';
+    if(statusTxt) statusTxt.textContent = pct < 30 ? 'Bild wird vorbereitet...' : pct < 60 ? 'KI analysiert...' : 'Felder werden extrahiert...';
   }, 250);
 
-  // Always read keys fresh from inputs AND localStorage
-  function getKey(inputId, settingsKey) {
-    const inputEl = document.getElementById(inputId);
-    const fromInput = (inputEl ? inputEl.value.trim() : '');
-    const fromStorage = (getSettings()[settingsKey] || '').trim();
-    const key = fromInput || fromStorage;
-    // Save whichever we found
-    if (key) {
-      const obj = {};
-      obj[settingsKey] = key;
-      saveSettings(obj);
-      if (inputEl && !inputEl.value) inputEl.value = key;
-    }
-    return key;
-  }
+  const stopProgress = () => { clearInterval(iv); if(pfill) pfill.style.width = '100%'; };
 
-  const claudeKey = getKey('key-claude', 'key_claude');
-  const openaiKey = getKey('key-openai', 'key_openai');
+  // Get keys from inputs first, then storage
+  const ci = document.getElementById('key-claude');
+  const oi = document.getElementById('key-openai');
+  if(ci && ci.value.trim()) saveSettings({key_claude: ci.value.trim()});
+  if(oi && oi.value.trim()) saveSettings({key_openai: oi.value.trim()});
+  const cfg = getSettings();
+  const claudeKey = (cfg.key_claude || '').trim();
+  const openaiKey = (cfg.key_openai || '').trim();
   const engine = currentEngine;
 
-  // Convert file to base64
+  // Convert to base64
   let base64, mediaType;
   try {
     base64 = await new Promise((res, rej) => {
-      const reader = new FileReader();
-      reader.onload = () => res(reader.result.split(',')[1]);
-      reader.onerror = rej;
-      reader.readAsDataURL(file);
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
     });
     mediaType = (file.type && file.type.startsWith('image/')) ? file.type : 'image/jpeg';
   } catch(e) {
-    clearInterval(iv);
-    document.getElementById('ocr-progress').style.display = 'none';
-    toast('Fehler beim Lesen der Datei: ' + e.message, 'e');
+    stopProgress();
+    if(prog) prog.style.display = 'none';
+    toast('Datei konnte nicht gelesen werden: ' + e.message, 'e');
     return;
   }
 
   let result = null;
-  let usedEngine = engine;
 
   try {
-    if (engine === 'openai' && openaiKey) {
-      // OpenAI supports CORS - works directly in browser
-      if(statusTxt) statusTxt.textContent = 'GPT-4o Vision analysiert...';
-      const resp = await fetch('/proxy/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: openaiKey, payload: {
-          model: 'gpt-4o', max_tokens: 1500,
-          messages: [{ role: 'user', content: [
-            { type: 'image_url', image_url: { url: 'data:'+(file.type||'image/jpeg')+';base64,'+base64, detail:'high' } },
-            { type: 'text', text: OCR_PROMPT }
-          ]}]
-        }})
-      });
-      if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error('OpenAI: '+(e.error?.message||resp.status)); }
-      const data = await resp.json();
-      const text = (data.choices?.[0]?.message?.content||'').trim();
-      result = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,'').trim());
-
-    } else if (engine === 'claude' && claudeKey) {
-      // Claude: Try via proxy first, then direct (for server deployments)
-      if(statusTxt) statusTxt.textContent = 'Claude Vision analysiert...';
-
-      // Try proxy endpoint first (works on server)
-      const proxyUrl = window.location.origin + '/api/claude-ocr';
-      let usedProxy = false;
-      try {
-        const proxyResp = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: claudeKey, base64, mediaType, prompt: OCR_PROMPT }),
-          signal: AbortSignal.timeout(15000)
-        });
-        if (proxyResp.ok) {
-          result = await proxyResp.json();
-          usedProxy = true;
-        }
-      } catch(proxyErr) { /* Proxy not available, try direct */ }
-
-      if (!usedProxy) {
-        // Direct call (works if CORS headers are set, or in development)
-        const resp = await fetch('/proxy/claude', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: claudeKey, payload: {
-          model: 'claude-opus-4-6', max_tokens: 1500,
-          messages: [{ role: 'user', content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: OCR_PROMPT }
-          ]}]
-        }})
-      });
-      if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error('Claude: '+(e.error?.message||resp.status)); }
-      const data = await resp.json();
-      const text = (data.content?.[0]?.text||'').trim();
-      result = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,'').trim());
-      }
-
-    } else {
-      // No key - try the other engine as fallback
-      if (engine === 'claude' && !claudeKey) {
-        if (openaiKey) {
-          toast('Kein Claude Key — versuche OpenAI als Fallback...', 'w');
-          usedEngine = 'openai';
-          document.getElementById('ki-openai')?.click();
-          processOcr(file); return;
-        }
-        throw new Error('NO_KEY:Claude');
-      }
-      if (engine === 'openai' && !openaiKey) {
-        if (claudeKey) {
-          toast('Kein OpenAI Key — versuche Claude als Fallback...', 'w');
-          usedEngine = 'claude';
-          document.getElementById('ki-claude')?.click();
-          processOcr(file); return;
-        }
-        throw new Error('NO_KEY:OpenAI');
-      }
+    if (!claudeKey && !openaiKey) {
+      throw new Error('NO_KEY:beide');
     }
 
-    clearInterval(iv);
-    document.getElementById('ocr-pf').style.width = '100%';
-    if(statusTxt) statusTxt.textContent = '✓ Analyse abgeschlossen (' + usedEngine + ')';
+    const useEngine = (engine === 'claude' && claudeKey) ? 'claude'
+                    : (engine === 'openai' && openaiKey) ? 'openai'
+                    : claudeKey ? 'claude' : 'openai';
+
+    if(statusTxt) statusTxt.textContent = useEngine === 'claude' ? 'Claude Vision analysiert...' : 'GPT-4o analysiert...';
+
+    if (useEngine === 'claude') {
+      const resp = await fetch('/proxy/claude', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          apiKey: claudeKey,
+          payload: {
+            model: 'claude-opus-4-6',
+            max_tokens: 1500,
+            messages: [{role: 'user', content: [
+              {type: 'image', source: {type: 'base64', media_type: mediaType, data: base64}},
+              {type: 'text', text: OCR_PROMPT}
+            ]}]
+          }
+        })
+      });
+      if (!resp.ok) {
+        const e = await resp.json().catch(() => ({}));
+        throw new Error('Claude ' + resp.status + ': ' + (e.error && e.error.message ? e.error.message : resp.statusText));
+      }
+      const data = await resp.json();
+      const raw = (data.content && data.content[0] ? data.content[0].text : '{}').trim();
+      result = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    } else {
+      const resp = await fetch('/proxy/openai', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          apiKey: openaiKey,
+          payload: {
+            model: 'gpt-4o',
+            max_tokens: 1500,
+            messages: [{role: 'user', content: [
+              {type: 'image_url', image_url: {url: 'data:' + (file.type || 'image/jpeg') + ';base64,' + base64, detail: 'high'}},
+              {type: 'text', text: OCR_PROMPT}
+            ]}]
+          }
+        })
+      });
+      if (!resp.ok) {
+        const e = await resp.json().catch(() => ({}));
+        throw new Error('OpenAI ' + resp.status + ': ' + (e.error && e.error.message ? e.error.message : resp.statusText));
+      }
+      const data = await resp.json();
+      const raw = (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '{}').trim();
+      result = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    }
+
+    stopProgress();
+    if(statusTxt) statusTxt.textContent = '✓ Analyse abgeschlossen';
     setTimeout(() => {
-      document.getElementById('ocr-progress').style.display = 'none';
+      if(prog) prog.style.display = 'none';
       showOcrResult(result, file.name);
     }, 400);
 
   } catch(err) {
-    clearInterval(iv);
-    document.getElementById('ocr-progress').style.display = 'none';
-
+    stopProgress();
+    if(prog) prog.style.display = 'none';
     if (err.message.startsWith('NO_KEY:')) {
-      const eng = err.message.split(':')[1];
-      toast('⚠ Kein ' + eng + ' API-Key — bitte in Einstellungen → API-Keys eintragen', 'w');
+      toast('⚠ Bitte API-Key in Einstellungen → API-Keys eintragen', 'w');
       showView('v-settings');
-      return;
+    } else {
+      toast('KI-Fehler: ' + err.message, 'e');
+      showOcrResult({vendor:'', invoiceNr:'', date: new Date().toLocaleDateString('de-DE'), net:0, gross:0, vat:19, vatAmount:0, desc:'Manuell ausfüllen', account:'', confidence:0, items:[]}, file.name);
     }
-
-    // CORS error handling
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('CORS')) {
-      if (engine === 'claude') {
-        toast('Claude CORS-Einschränkung im Browser → Bitte OpenAI verwenden oder Server-Proxy einrichten', 'w');
-        // Auto-switch to OpenAI if available
-        if (openaiKey) {
-          toast('Wechsle automatisch zu OpenAI...', 'i');
-          setTimeout(() => { document.getElementById('ki-openai')?.click(); processOcr(file); }, 500);
-          return;
-        }
-      }
-    }
-
-    toast('KI-Fehler: ' + err.message, 'e');
-    // Show empty form for manual entry
-    showOcrResult({ vendor:'', invoiceNr:'', date:new Date().toLocaleDateString('de-DE'), net:0, gross:0, vat:19, vatAmount:0, desc:'Bitte manuell ausfüllen', account:'', confidence:0, items:[] }, file.name);
   }
 }
-
 
 
 function showOcrResult(data, filename) {
@@ -2002,7 +1953,48 @@ document.querySelectorAll('[data-tab]').forEach(el => {
   });
 });
 
-document.querySelectorAll('[data-test]').forEach(btn => {
+document.querySelectorAll('[data-test]').forEach(function(btn) {
+  btn.addEventListener('click', async function() {
+    var engine = btn.dataset.test;
+    var statusEl = document.getElementById('ks-' + engine);
+    if (statusEl) statusEl.innerHTML = '<span class="spin"></span>';
+    var inputEl = document.getElementById('key-' + engine);
+    if (inputEl && inputEl.value.trim()) {
+      var sv = {}; sv['key_' + engine] = inputEl.value.trim(); saveSettings(sv);
+    }
+    var cfg = getSettings();
+    var k = (cfg['key_' + engine] || '').trim();
+    if (!k) {
+      toast('Bitte ' + engine + ' API-Key eingeben', 'e');
+      if (statusEl) statusEl.innerHTML = '<span class="badge br">Kein Key</span>';
+      return;
+    }
+    var endpoint = engine === 'claude' ? '/proxy/test-claude' : engine === 'openai' ? '/proxy/test-openai' : null;
+    if (!endpoint) {
+      if (statusEl) statusEl.innerHTML = '<span class="badge bg">✓ Gespeichert</span>';
+      toast('✓ Konfiguration gespeichert', 's');
+      return;
+    }
+    try {
+      var r = await fetch(endpoint, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({apiKey: k})
+      });
+      var d = await r.json().catch(function() { return {}; });
+      if (r.ok || r.status === 400) {
+        if (statusEl) statusEl.innerHTML = '<span class="badge bg">✓ OK</span>';
+        toast('✓ ' + engine + ' API verbunden!', 's');
+      } else {
+        if (statusEl) statusEl.innerHTML = '<span class="badge br">✗ ' + r.status + '</span>';
+        toast(engine + ' Fehler: ' + (d.error ? d.error.message : r.status), 'e');
+      }
+    } catch(err) {
+      if (statusEl) statusEl.innerHTML = '<span class="badge ba">✓ Key gespeichert</span>';
+      toast('Key gespeichert (Proxy-Test nicht verfügbar)', 'i');
+    }
+  });
+});
   btn.addEventListener('click', async () => {
     const engine = btn.dataset.test;
     const statusEl = document.getElementById('ks-'+engine);
