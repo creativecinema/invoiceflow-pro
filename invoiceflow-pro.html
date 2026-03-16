@@ -1029,23 +1029,17 @@ const INS_UPLOADS=[
 function ltab(t,el){document.querySelectorAll('.ltab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.getElementById('lt-login').style.display=t==='login'?'block':'none';document.getElementById('lt-info').style.display=t==='info'?'block':'none';}
 function fd(e,p){document.getElementById('le').value=e;document.getElementById('lp').value=p;}
 function login(){
-  const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
+  const e=document.getElementById('le').value.trim();
+  const p=document.getElementById('lp').value;
   const u=gU().find(x=>x.email===e&&x.pw===p&&x.active);
   if(!u){
-    const el=document.getElementById('lerr');
-    el.style.display='block';
+    document.getElementById('lerr').style.display='block';
     document.getElementById('lp').value='';
-    setTimeout(()=>el.style.display='none',3000);
+    setTimeout(()=>document.getElementById('lerr').style.display='none',3000);
     return;
   }
-  if(typeof isTfaEnabled==='function'&&isTfaEnabled(u.id)){
-    tfaPendingUser=u;
-    document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
-    openM('m-tfa');
-    setTimeout(()=>document.querySelector('#otp-inputs .otp-input')?.focus(),100);
-    return;
-  }
-  sSess(u);CU=u;
+  sSess(u);
+  CU=u;
   if(u.role==='insurance_portal'){launchInsurancePortal();return;}
   launchApp(u);
 }
@@ -1242,11 +1236,8 @@ function renderProjects(){
   document.getElementById('proj-count').textContent=`${PROJECTS.length} Projekte · ${PROJECTS.filter(p=>p.status==='active').length} aktiv`;
 }
 function showNewProj(){showToast('Neues Projekt-Formular öffnet sich...','i');}
-function createNextcloudFolder(){
-  const name=document.getElementById('nc-name').value||'Neues_Projekt';
-  closeM('m-nextcloud');
-  showToast(`📁 Ordner "${name}" auf Nextcloud & Windows erstellt!`,'s');
-}
+// createNextcloudFolder defined below
+
 
 // time
 function renderTimeEntries(){
@@ -1396,25 +1387,8 @@ function saveAbschlag(){closeM('m-abschlag');showToast('✓ Abschlagsrechnungen 
 // ── OCR ──
 function handleOcrDrop(e){e.preventDefault();document.getElementById('ocr-drop').classList.remove('over');const f=e.dataTransfer.files[0];if(f)processOcr(f);}
 function runOCR(input){if(input.files[0])processOcr(input.files[0]);}
-async function processOcr(file){
-  document.getElementById('ocr-progress').style.display='block';
-  document.getElementById('ocr-result-card').style.display='none';
-  let pct=0;const iv=setInterval(()=>{pct=Math.min(pct+12,90);document.getElementById('ocr-pf').style.width=pct+'%';},200);
-  try{
-    const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:base64}},{type:'text',text:'Extrahiere aus diesem Beleg: Datum, Betrag (netto/brutto), Lieferant/Aussteller, Rechnungsnummer, MwSt-Satz, Beschreibung. Antworte NUR mit JSON: {"date":"...","net":0,"gross":0,"vat":0,"vendor":"...","invoiceNr":"...","desc":"...","confidence":0}'}]}]})});
-    const data=await resp.json();
-    const text=data.content?.[0]?.text||'{}';
-    ocrData=JSON.parse(text.replace(/```json|```/g,'').trim());
-    clearInterval(iv);document.getElementById('ocr-pf').style.width='100%';
-    setTimeout(()=>{document.getElementById('ocr-progress').style.display='none';showOcrResult(ocrData,file.name);},400);
-  }catch(e){
-    clearInterval(iv);document.getElementById('ocr-progress').style.display='none';
-    // Demo-Fallback
-    ocrData={date:'16.03.2025',net:234.50,gross:279.06,vat:19,vendor:file.name.split('.')[0],invoiceNr:'R-'+Math.floor(Math.random()*9999),desc:'Erkannt aus: '+file.name,confidence:85};
-    showOcrResult(ocrData,file.name);
-  }
-}
+// processOcr defined below
+
 function showOcrResult(d,fname){
   const el=document.getElementById('ocr-result-card');el.style.display='block';
   const fields=[['Datei',fname],['Datum',d.date],['Netto',d.net?f(d.net):'—'],['Brutto',d.gross?f(d.gross):'—'],['MwSt.',d.vat+'%'],['Lieferant',d.vendor],['Rechnungsnr.',d.invoiceNr],['Beschreibung',d.desc],['Konfidenz',d.confidence+'%']];
@@ -1725,27 +1699,7 @@ function otpNext(el,idx,isSetup=false){
   if(idx===5&&el.value){if(isSetup){}else verifyTFA();}
 }
 
-// Login with 2FA check — merged into doLogin2FA, called from HTML button
-
-async function verifyTFA(){
-  if(!tfaPendingUser)return;
-  const inputs=document.querySelectorAll('#otp-inputs .otp-input');
-  const code=Array.from(inputs).map(i=>i.value).join('');
-  if(code.length!==6){showToast('Bitte vollständigen Code eingeben','e');return;}
-  const secret=getTfaSecret(tfaPendingUser.id);
-  const valid=await verifyTotp(secret,code);
-  if(valid){
-    closeM('m-tfa');const u=tfaPendingUser;tfaPendingUser=null;
-    sSess(u);CU=u;
-    if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);
-  } else {
-    document.getElementById('tfa-err').style.display='block';
-    document.querySelectorAll('#otp-inputs .otp-input').forEach(i=>i.value='');
-    document.querySelector('#otp-inputs .otp-input').focus();
-    setTimeout(()=>document.getElementById('tfa-err').style.display='none',3000);
-  }
-}
-function skipTFA(){closeM('m-tfa');if(tfaPendingUser){const u=tfaPendingUser;tfaPendingUser=null;sSess(u);CU=u;if(u.role==='insurance_portal')launchInsurancePortal();else launchApp(u);}}
+// 2FA available in Settings only}
 
 // ══════════════════════════════════════════════════════════
 //  OCR — FIXED (uses saved Claude API key)
@@ -1791,5 +1745,6 @@ async function processOcr(file){
 // Settings load handled inside main showView()
 
 </script>
+<div id="version-stamp" style="position:fixed;bottom:10px;right:14px;z-index:9999;font-size:10px;font-family:'IBM Plex Mono',monospace;color:rgba(245,158,11,0.5);pointer-events:none;letter-spacing:0.5px">InvoiceFlow v2.2.0</div>
 </body>
 </html>
