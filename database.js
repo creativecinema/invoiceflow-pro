@@ -226,6 +226,7 @@ db.exec(`
     vat_amt      REAL DEFAULT 0,
     gross        REAL DEFAULT 0,
     notes        TEXT DEFAULT '',
+    bestell_nr   TEXT DEFAULT '',
     pdf_path     TEXT DEFAULT '',
     datev_exported INTEGER DEFAULT 0,
     datev_exported_at TEXT DEFAULT '',
@@ -314,6 +315,19 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS projekt_files (
+    id          TEXT PRIMARY KEY,
+    projekt_id  TEXT NOT NULL,
+    name        TEXT NOT NULL DEFAULT '',
+    filename    TEXT NOT NULL DEFAULT '',
+    size        INTEGER DEFAULT 0,
+    mime_type   TEXT DEFAULT '',
+    note        TEXT DEFAULT '',
+    created_by  TEXT DEFAULT '',
+    created_at  TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (projekt_id) REFERENCES projekte(id) ON DELETE CASCADE
+  );
+
   -- ── Finanzen ───────────────────────────────────────
 
   CREATE TABLE IF NOT EXISTS belege (
@@ -372,6 +386,21 @@ db.exec(`
   );
 `);
 
+// ─── Migrations (safe ALTER TABLE) ────────────────────
+try { db.exec("ALTER TABLE rechnungen ADD COLUMN bestell_nr TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE angebote ADD COLUMN bestell_nr TEXT DEFAULT ''"); } catch {}
+try { db.exec(`CREATE TABLE IF NOT EXISTS projekt_files (
+  id TEXT PRIMARY KEY, projekt_id TEXT NOT NULL, name TEXT DEFAULT '', filename TEXT DEFAULT '',
+  size INTEGER DEFAULT 0, mime_type TEXT DEFAULT '', note TEXT DEFAULT '',
+  created_by TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now'))
+)`); } catch {}
+try { db.exec("ALTER TABLE artikel ADD COLUMN long_desc TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE artikel ADD COLUMN internal_note TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE artikel ADD COLUMN min_stock INTEGER DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE artikel ADD COLUMN stock INTEGER DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE artikel ADD COLUMN weight REAL DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE artikel ADD COLUMN ean TEXT DEFAULT ''"); } catch {}
+
 // ─── Default Settings ──────────────────────────────
 const defaults = {
   company: '',
@@ -393,6 +422,12 @@ const defaults = {
   smtp_pass: '',
   smtp_from: '',
   invoice_prefix: 'RE',
+  invoice_header_text: 'Sehr geehrte Damen und Herren,\n\nbitte überweisen Sie den nachfolgenden Rechnungsbetrag fristgerecht auf unser Konto.',
+  invoice_footer_text: 'Wir danken für Ihr Vertrauen und stehen für Rückfragen gerne zur Verfügung.',
+  invoice_payment_text: 'Bitte überweisen Sie den Rechnungsbetrag innerhalb von {{payment_days}} Tagen unter Angabe der Rechnungsnummer.',
+  angebot_header_text: 'Sehr geehrte Damen und Herren,\n\ngerne unterbreiten wir Ihnen folgendes Angebot:',
+  angebot_footer_text: 'Wir freuen uns auf Ihre Beauftragung und stehen für Rückfragen gerne zur Verfügung.',
+  storno_text: 'Wir stornieren hiermit die oben genannte Rechnung gemäß §14 UStG.',
   quote_prefix: 'ANG',
   order_prefix: 'AU',
 };

@@ -574,68 +574,6 @@ function Kunden() {
       E('div',{className:'flex g-2'},E('button',{className:'btn bp wf',onClick:save},'✓ Speichern'),E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
 }
 
-// ─── Artikel ───────────────────────────────────────
-function Artikel() {
-  const {toast,setView,setDetail} = useContext(Ctx);
-  const [items,setItems] = useState([]);
-  const [modal,setModal] = useState(false);
-  const [form,setForm] = useState({});
-  const [cf,setCf] = useState('');
-  const load = ()=>get('/artikel').then(setItems).catch(e=>toast(e.message,'e'));
-  useEffect(()=>{load();},[]);
-  const CATS=['Dienstleistung','Produkt','Lizenz','Abo','Material'];
-  const ICOS={Dienstleistung:'🛠️',Produkt:'📦',Lizenz:'🔑',Abo:'🔄',Material:'🧱'};
-  const filtered=cf?items.filter(a=>a.cat===cf):items;
-  const pg=usePg(filtered);
-  const save=async()=>{
-    if(!form.name){toast('Bitte Namen eingeben','e');return;}
-    try{form.id?await put(`/artikel/${form.id}`,form):await post('/artikel',form);setModal(false);toast('✓ Gespeichert','s');load();}
-    catch(e){toast(e.message,'e');}
-  };
-  const E=React.createElement;
-  return E('div',null,
-    E(Topbar,{title:'Artikel',actions:[E('button',{key:'n',className:'btn bp sm',onClick:()=>{setForm({name:'',desc:'',unit:'h',price:0,ek:0,vat:19,cat:'Dienstleistung',active:true});setModal(true);}},'+ Neuer Artikel')]}),
-    E('div',{className:'content'},
-      E('div',{className:'g3 mb4'},
-        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Artikel'),E('div',{className:'kpi-v'},items.length)),
-        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Dienstleistungen'),E('div',{className:'kpi-v'},items.filter(a=>a.cat==='Dienstleistung').length)),
-        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Ø VK-Preis'),E('div',{className:'kpi-v c-am',style:{fontSize:16}},eur(items.reduce((s,a)=>s+a.price,0)/Math.max(items.length,1))))),
-      E('div',{className:'flex g-2 mb3',style:{flexWrap:'wrap'}},
-        E('div',{className:`chip ${cf===''?'con':'cof'}`,onClick:()=>setCf('')},'Alle'),
-        CATS.map(c=>E('div',{key:c,className:`chip ${cf===c?'con':'cof'}`,onClick:()=>setCf(c)},c))),
-      pg.sliced.map(a=>E('div',{key:a.id,className:'card mb2 flex aic g-3',style:{cursor:'pointer'}},
-        E('div',{style:{width:36,height:36,borderRadius:9,background:'var(--s2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}},ICOS[a.cat]||'📋'),
-        E('div',{style:{flex:1,minWidth:0}},
-          E('div',{style:{fontWeight:600,fontSize:13}},a.name,' ',E('span',{style:{fontSize:10,color:'var(--t3)',fontFamily:'monospace'}},a.nr)),
-          E('div',{style:{fontSize:11,color:'var(--t3)',marginTop:2}},a.desc),
-          E('div',{className:'flex g-2 mt1'},
-            E('span',{className:'badge tb'},a.cat),
-            E('span',{className:'badge ta',style:{fontFamily:'monospace'}},`${eur(a.price)} / ${a.unit}`),
-            E('span',{className:'badge tk'},`MwSt. ${a.vat}%`),
-            a.ek>0&&E('span',{className:'badge tr'},`EK ${eur(a.ek)}`),
-            E('span',{className:`badge ${a.active?'tg':'tr'}`},a.active?'Aktiv':'Inaktiv'))),
-        E('div',{className:'flex g-2',onClick:e=>e.stopPropagation()},
-          E('button',{className:'btn bg sm',onClick:()=>{setForm({...a});setModal(true);}},'✏️'),
-          E('button',{className:'btn bd sm',onClick:async()=>{if(!confirm('Löschen?'))return;try{await del(`/artikel/${a.id}`);toast('Gelöscht','s');load();}catch(e){toast(e.message,'e');}}},'✕')))),
-      !filtered.length&&E('div',{className:'empty'},E('div',{className:'ei'},'📦'),E('div',{className:'et'},'Keine Artikel'))),
-    E(Modal,{open:modal,onClose:()=>setModal(false),title:form.id?'Artikel bearbeiten':'Neuer Artikel'},
-      E('div',{className:'mb3'},E('label',{className:'lbl'},'Bezeichnung *'),E('input',{className:'inp',value:form.name||'',onChange:e=>setForm(f=>({...f,name:e.target.value}))})),
-      E('div',{className:'mb3'},E('label',{className:'lbl'},'Beschreibung'),E('input',{className:'inp',value:form.desc||'',onChange:e=>setForm(f=>({...f,desc:e.target.value}))})),
-      E('div',{className:'g2 mb3 g-3'},
-        E('div',null,E('label',{className:'lbl'},'Einheit'),E('select',{className:'inp',value:form.unit||'h',onChange:e=>setForm(f=>({...f,unit:e.target.value}))},['h','Stück','Pauschal','Monat','Jahr','Tag'].map(u=>E('option',{key:u},u)))),
-        E('div',null,E('label',{className:'lbl'},'VK-Preis netto €'),E('input',{className:'inp',type:'number',step:'.01',value:form.price||0,onChange:e=>setForm(f=>({...f,price:+e.target.value}))})),
-        E('div',null,E('label',{className:'lbl'},'EK-Preis netto €'),E('input',{className:'inp',type:'number',step:'.01',value:form.ek||0,onChange:e=>setForm(f=>({...f,ek:+e.target.value}))})),
-        E('div',null,E('label',{className:'lbl'},'MwSt. %'),E('input',{className:'inp',type:'number',value:form.vat||19,onChange:e=>setForm(f=>({...f,vat:+e.target.value}))})),
-        E('div',null,E('label',{className:'lbl'},'Kategorie'),E('select',{className:'inp',value:form.cat||'Dienstleistung',onChange:e=>setForm(f=>({...f,cat:e.target.value}))},CATS.map(c=>E('option',{key:c},c))))),
-      (form.price>0&&form.ek>0)&&E('div',{style:{background:'var(--s2)',border:'1px solid var(--b1)',borderRadius:8,padding:'9px 12px',marginBottom:12,fontSize:11}},
-        E('div',{style:{fontWeight:600,marginBottom:4}},'Spanne'),
-        E('div',{className:'flex jb'},E('span',null,'VK netto'),E('span',{style:{color:'var(--gn)',fontFamily:'monospace'}},eur(form.price))),
-        E('div',{className:'flex jb'},E('span',null,'EK netto'),E('span',{style:{color:'var(--rd)',fontFamily:'monospace'}},eur(form.ek))),
-        E('div',{className:'flex jb',style:{borderTop:'1px solid var(--b1)',marginTop:4,paddingTop:4,fontWeight:700}},
-          E('span',null,'Spanne'),E('span',{style:{color:'var(--am)',fontFamily:'monospace'}},`${eur(form.price-form.ek)} (${((form.price-form.ek)/form.price*100).toFixed(1)}%)`))),
-      E('div',{className:'mb4 flex aic g-2',style:{fontSize:12}},E('input',{type:'checkbox',id:'aa',checked:!!form.active,onChange:e=>setForm(f=>({...f,active:e.target.checked}))}),E('label',{htmlFor:'aa'},'Aktiver Artikel')),
-      E('div',{className:'flex g-2'},E('button',{className:'btn bp wf',onClick:save},'✓ Speichern'),E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
-}
 
 // ─── Angebote ──────────────────────────────────────
 function Angebote() {
@@ -651,7 +589,6 @@ function Angebote() {
   useEffect(()=>{load();},[]);
   const filtered=filter==='all'?items:items.filter(a=>a.status===filter);
   const pg=usePg(filtered);
-  const cfg = {};
   const openNew=()=>{
     const yr=new Date().getFullYear();
     const maxNr=items.filter(a=>a.nr?.includes(`ANG-${yr}`)).map(a=>parseInt(a.nr.split('-')[2])||0);
@@ -664,7 +601,7 @@ function Angebote() {
     const d={...form,items:posItems.map(({_id,...it})=>it)};
     try{form.id?await put(`/angebote/${form.id}`,d):await post('/angebote',d);setModal(false);toast('✓ Gespeichert','s');load();}catch(e){toast(e.message,'e');}
   };
-  const pdf=a=>get('/settings').then(cfg=>makePDF('angebot',a,cfg)).catch(e=>toast(e.message,'e'));
+  const pdf=a=>{window.location.href=`/api/angebote/${a.id}/pdf`;toast('PDF wird generiert...','i');};
   const toAuftrag=async a=>{
     const yr=new Date().getFullYear();
     const auftrList=await get('/auftraege');
@@ -695,7 +632,7 @@ function Angebote() {
               E('td',{className:'r mono'},eur(a.gross)),E('td',null,E('span',{className:`badge ${SC[a.status]||'tk'}`},a.status)),
               E('td',null,E('div',{className:'flex g-2'},
                 E('button',{className:'btn bg sm',onClick:()=>openEdit(a)},'✏️'),
-                E('button',{className:'btn bg sm',onClick:()=>pdf(a)},'📄'),
+                E('button',{className:'btn bg sm',title:'PDF herunterladen',onClick:()=>pdf(a)},'⬇ PDF'),
                 a.status==='angenommen'&&E('button',{className:'btn bs sm',onClick:()=>toAuftrag(a)},'→ Auftrag'),
                 E('button',{className:'btn bd sm',onClick:async()=>{if(!confirm('Löschen?'))return;await del(`/angebote/${a.id}`);toast('Gelöscht','s');load();}},'✕'))))),
             !filtered.length&&E('tr',null,E('td',{colSpan:7,style:{textAlign:'center',padding:28,color:'var(--t3)'}},'Keine Angebote'))))),
@@ -704,9 +641,9 @@ function Angebote() {
       E('div',{className:'g2 mb3 g-3'},
         E('div',null,E('label',{className:'lbl'},'Angebotsnummer'),E('input',{className:'inp',value:form.nr||'',onChange:e=>setForm(f=>({...f,nr:e.target.value}))})),
         E('div',null,E('label',{className:'lbl'},'Datum'),E('input',{className:'inp',value:form.date||'',placeholder:'TT.MM.JJJJ',onChange:e=>setForm(f=>({...f,date:e.target.value}))})),
-        E('div',null,E('label',{className:'lbl'},'Kunde'),E('select',{className:'inp',value:form.kunden_id||'',onChange:e=>{const k=kunden.find(c=>c.id===e.target.value);setForm(f=>({...f,kunden_id:e.target.value,customer:k?.company||''}));}},
-          E('option',{value:''},'— Frei eingeben —'),...kunden.filter(k=>k.active).map(k=>E('option',{key:k.id,value:k.id},k.company)))),
+        E('div',null,E('label',{className:'lbl'},'Kunde'),E('select',{className:'inp',value:form.kunden_id||'',onChange:e=>{const k=kunden.find(c=>c.id===e.target.value);setForm(f=>({...f,kunden_id:e.target.value,customer:k?.company||''}));}},E('option',{value:''},'— Frei eingeben —'),...kunden.filter(k=>k.active).map(k=>E('option',{key:k.id,value:k.id},k.company)))),
         E('div',null,E('label',{className:'lbl'},'Gültig bis'),E('input',{className:'inp',value:form.valid||'',placeholder:'TT.MM.JJJJ',onChange:e=>setForm(f=>({...f,valid:e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Bestell-Nr. (Kunde)'),E('input',{className:'inp',placeholder:'PO-2025-001',value:form.bestell_nr||'',onChange:e=>setForm(f=>({...f,bestell_nr:e.target.value}))})),
         E('div',null,E('label',{className:'lbl'},'Status'),E('select',{className:'inp',value:form.status||'offen',onChange:e=>setForm(f=>({...f,status:e.target.value}))},['offen','versendet','angenommen','abgelehnt'].map(s=>E('option',{key:s},s))))),
       E(ItemEditor,{items:posItems,setItems:setPosItems,artikel}),
       E('div',{className:'mt3 mb3'},E('label',{className:'lbl'},'Notizen'),E('textarea',{className:'inp',rows:2,value:form.notes||'',onChange:e=>setForm(f=>({...f,notes:e.target.value}))})),
@@ -729,13 +666,13 @@ function Invoices() {
   const pg=usePg(filtered);
   const openNew=()=>{
     const yr=new Date().getFullYear();
-    const maxNr=items.filter(i=>i.nr?.includes(`RE-${yr}`)).map(i=>parseInt(i.nr.split('-')[2])||0);
+    const maxNr=items.filter(i=>i.nr?.includes(`RE-${yr}`)&&!i.is_storno).map(i=>parseInt(i.nr.split('-')[2])||0);
     const num=(maxNr.length?Math.max(...maxNr):0)+1;
-    setForm({nr:`RE-${yr}-${String(num).padStart(3,'0')}`,date:today(),due:addDays(today(),14),service_date:today(),status:'draft',notes:'',kunden_id:'',customer:''});
+    setForm({nr:`RE-${yr}-${String(num).padStart(3,'0')}`,date:today(),due:addDays(today(),14),service_date:today(),status:'draft',notes:'',kunden_id:'',customer:'',bestell_nr:''});
     setPosItems([{_id:'i1',desc:'',qty:1,unit:'h',price:0,total:0}]);setModal(true);
   };
   const openEdit=inv=>{
-    if(inv.immutable){toast('Unveränderliche Rechnung (GoBD §146). Bitte Storno erstellen.','e');return;}
+    if(inv.immutable){toast('Unveränderlich (GoBD §146) – bitte Storno erstellen','e');return;}
     setForm({...inv});setPosItems((inv.items||[]).map((it,i)=>({...it,_id:'e'+i})));setModal(true);
   };
   const save=async()=>{
@@ -748,55 +685,58 @@ function Invoices() {
 Gemäß §14 UStG wird eine Stornorechnung erstellt.`))return;
     try{const r=await post(`/rechnungen/${inv.id}/storno`,{});toast(`✓ Stornorechnung ${r.storno.nr} erstellt`,'s');load();}catch(e){toast(e.message,'e');}
   };
-  const paid=async inv=>{try{await post(`/rechnungen/${inv.id}/paid`,{});toast('✓ Als bezahlt markiert','s');load();}catch(e){toast(e.message,'e');}};
-  const pdf=inv=>get('/settings').then(cfg=>makePDF('rechnung',inv,cfg)).catch(e=>toast(e.message,'e'));
-  const datev=inv=>{window.location.href=`/api/rechnungen/${inv.id}/datev`;toast('✓ DATEV Export gestartet','s');};
+  const paid=async inv=>{try{await post(`/rechnungen/${inv.id}/paid`,{});toast('✓ Bezahlt markiert','s');load();}catch(e){toast(e.message,'e');}};
+  const pdf=inv=>{window.location.href=`/api/rechnungen/${inv.id}/pdf`;toast('PDF wird generiert...','i');};
+  const datev=inv=>{window.location.href=`/api/rechnungen/${inv.id}/datev`;toast('DATEV CSV Export...','s');};
   const FILTERS=[{k:'all',l:'Alle'},{k:'draft',l:'Entwurf'},{k:'sent',l:'Gesendet'},{k:'open',l:'Offen'},{k:'overdue',l:'Überfällig'},{k:'paid',l:'Bezahlt'},{k:'cancelled',l:'Storniert'}];
   const E=React.createElement;
   return E('div',null,
     E(Topbar,{title:'Rechnungen / Gutschriften',actions:[E('button',{key:'n',className:'btn bp sm',onClick:openNew},'+ Neue Rechnung')]}),
     E('div',{className:'content'},
       E('div',{className:'g4 mb3'},
-        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Gesamt'),E('div',{className:'kpi-v',style:{fontSize:16}},eur(items.reduce((s,i)=>s+i.gross,0)))),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Gesamt'),E('div',{className:'kpi-v',style:{fontSize:16}},eur(items.filter(i=>!i.is_storno).reduce((s,i)=>s+i.gross,0)))),
         E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Offen'),E('div',{className:'kpi-v c-am',style:{fontSize:16}},eur(items.filter(i=>i.status==='open'||i.status==='overdue').reduce((s,i)=>s+i.gross,0)))),
         E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Bezahlt'),E('div',{className:'kpi-v c-gn',style:{fontSize:16}},eur(items.filter(i=>i.status==='paid').reduce((s,i)=>s+i.gross,0)))),
         E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Überfällig'),E('div',{className:'kpi-v c-rd'},items.filter(i=>i.status==='overdue').length))),
-      E('div',{className:'lbox mb3'},E('strong',null,'§14 UStG / GoBD:'),' Versendete/bezahlte Rechnungen sind unveränderlich. Storno (⊗) erzeugt automatisch Stornorechnung mit negativem Betrag. ',E('strong',null,'E-Rechnung ab 01.01.2025: '),'B2B-Pflicht XRechnung/ZUGFeRD.'),
+      E('div',{className:'lbox mb3'},E('strong',null,'§14 UStG / GoBD:'),' Versendete/bezahlte Rechnungen sind unveränderlich (🔒). Storno (⊗) → Stornorechnung mit negativem Betrag. E-Rechnung (XRechnung) ab 01.01.2025 B2B-Pflicht.'),
       E('div',{className:'flex g-2 mb3',style:{flexWrap:'wrap'}},FILTERS.map(f=>E('div',{key:f.k,className:`chip ${filter===f.k?'con':'cof'}`,onClick:()=>setFilter(f.k)},f.l))),
       E('div',{className:'card',style:{padding:0}},
         E('div',{className:'ovx'},E('table',{className:'tbl'},
-          E('thead',null,E('tr',null,E('th',null,'Nummer'),E('th',null,'Kunde'),E('th',null,'Datum'),E('th',null,'Fällig'),E('th',{className:'r'},'Brutto'),E('th',null,'Status'),E('th',null,'Aktionen'))),
+          E('thead',null,E('tr',null,E('th',null,'Nummer'),E('th',null,'Kunde'),E('th',null,'Best.-Nr.'),E('th',null,'Datum'),E('th',null,'Fällig'),E('th',{className:'r'},'Brutto'),E('th',null,'Status'),E('th',null,'Aktionen'))),
           E('tbody',null,
-            pg.sliced.map(inv=>E('tr',{key:inv.id,style:{opacity:inv.status==='cancelled'||inv.is_storno?.45:1}},
-              E('td',{className:'mono'},inv.nr,inv.is_storno&&E('span',{className:'badge tr',style:{marginLeft:4,fontSize:7}},'STORNO'),inv.immutable&&!inv.is_storno&&E('span',{style:{marginLeft:3,fontSize:10}},'🔒')),
-              E('td',{className:'strong'},inv.customer),E('td',null,inv.date),E('td',null,inv.due||'—'),
-              E('td',{className:`r mono ${inv.gross<0?'c-rd':''}`},eur(inv.gross)),E('td',null,E(SBadge,{s:inv.status})),
+            pg.sliced.map(inv=>E('tr',{key:inv.id,style:{opacity:inv.status==='cancelled'?.45:1}},
+              E('td',{className:'mono'},inv.nr,inv.is_storno&&E('span',{className:'badge tr',style:{marginLeft:4,fontSize:7}},'STORNO'),inv.immutable&&!inv.is_storno&&' 🔒'),
+              E('td',{className:'strong'},inv.customer),
+              E('td',{style:{fontSize:10,color:'var(--t3)'}},inv.bestell_nr||'—'),
+              E('td',null,inv.date),E('td',null,inv.due||'—'),
+              E('td',{className:`r mono ${inv.gross<0?'c-rd':''}`},eur(inv.gross)),
+              E('td',null,E(SBadge,{s:inv.status})),
               E('td',null,E('div',{className:'flex g-2'},
-                E('button',{className:'btn bg sm',title:'PDF',onClick:()=>pdf(inv)},'📄'),
+                E('button',{className:'btn bg sm',title:'PDF herunterladen',onClick:()=>pdf(inv)},'⬇ PDF'),
                 E('button',{className:'btn bc sm',title:'DATEV CSV',onClick:()=>datev(inv)},'📊'),
-                (inv.status==='open'||inv.status==='overdue')&&E('button',{className:'btn bs sm',onClick:()=>paid(inv)},'✓'),
+                (inv.status==='open'||inv.status==='overdue')&&E('button',{className:'btn bs sm',onClick:()=>paid(inv)},'✓ Bezahlt'),
                 !inv.immutable&&E('button',{className:'btn bg sm',onClick:()=>openEdit(inv)},'✏️'),
                 (!inv.is_storno&&inv.status!=='cancelled'&&inv.status!=='draft')&&E('button',{className:'btn bd sm',title:'Stornieren',onClick:()=>storno(inv)},'⊗'),
                 (!inv.immutable&&inv.status==='draft')&&E('button',{className:'btn bd sm',onClick:async()=>{if(!confirm('Entwurf löschen?'))return;await del(`/rechnungen/${inv.id}`);toast('Gelöscht','s');load();}},'✕'))))),
-            !filtered.length&&E('tr',null,E('td',{colSpan:7,style:{textAlign:'center',padding:28,color:'var(--t3)'}},'Keine Rechnungen'))))),
+            !filtered.length&&E('tr',null,E('td',{colSpan:8,style:{textAlign:'center',padding:28,color:'var(--t3)'}},'Keine Rechnungen'))))),
         filtered.length>pg.perPage&&E(Pagination,{...pg}))),
     E(Modal,{open:modal,onClose:()=>setModal(false),title:form.id?'Rechnung (Entwurf)':'Neue Rechnung',wide:true},
-      E('div',{className:'lbox'},E('strong',null,'§14 UStG:'),' Nach Versand unveränderlich. Pflichtangaben: Steuernr., Rechnungsnr., Rechnungs- und Leistungsdatum.'),
+      E('div',{className:'lbox mb3'},E('strong',null,'§14 UStG:'),' Pflichtangaben: Steuernr., fortlfd. Rechnungsnr., Ausstellungs- und Leistungsdatum. Nach Versand unveränderlich (GoBD §146).'),
       E('div',{className:'g2 mb3 g-3'},
         E('div',null,E('label',{className:'lbl'},'Rechnungsnummer'),E('input',{className:'inp',value:form.nr||'',onChange:e=>setForm(f=>({...f,nr:e.target.value}))})),
         E('div',null,E('label',{className:'lbl'},'Rechnungsdatum'),E('input',{className:'inp',value:form.date||'',placeholder:'TT.MM.JJJJ',onChange:e=>setForm(f=>({...f,date:e.target.value}))})),
-        E('div',null,E('label',{className:'lbl'},'Kunde'),E('select',{className:'inp',value:form.kunden_id||'',onChange:e=>{const k=kunden.find(c=>c.id===e.target.value);setForm(f=>({...f,kunden_id:e.target.value,customer:k?.company||''}));}},
-          E('option',{value:''},'— Frei eingeben —'),...kunden.filter(k=>k.active).map(k=>E('option',{key:k.id,value:k.id},k.company)))),
+        E('div',null,E('label',{className:'lbl'},'Kunde'),E('select',{className:'inp',value:form.kunden_id||'',onChange:e=>{const k=kunden.find(c=>c.id===e.target.value);setForm(f=>({...f,kunden_id:e.target.value,customer:k?.company||''}));}},E('option',{value:''},'— Frei eingeben —'),...kunden.filter(k=>k.active).map(k=>E('option',{key:k.id,value:k.id},k.company)))),
         E('div',null,E('label',{className:'lbl'},'Leistungsdatum'),E('input',{className:'inp',value:form.service_date||'',placeholder:'TT.MM.JJJJ',onChange:e=>setForm(f=>({...f,service_date:e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Bestell-Nr. des Kunden'),E('input',{className:'inp',placeholder:'z.B. PO-2025-001',value:form.bestell_nr||'',onChange:e=>setForm(f=>({...f,bestell_nr:e.target.value}))})),
         E('div',null,E('label',{className:'lbl'},'Status'),E('select',{className:'inp',value:form.status||'draft',onChange:e=>setForm(f=>({...f,status:e.target.value}))},['draft','sent','open','paid'].map(s=>E('option',{key:s},s))))),
       E(ItemEditor,{items:posItems,setItems:setPosItems,artikel}),
-      E('div',{className:'mt3 mb3'},E('label',{className:'lbl'},'Notizen / Zahlungshinweis'),E('textarea',{className:'inp',rows:2,value:form.notes||'',onChange:e=>setForm(f=>({...f,notes:e.target.value}))})),
+      E('div',{className:'mt3 mb3'},E('label',{className:'lbl'},'Notizen'),E('textarea',{className:'inp',rows:2,value:form.notes||'',onChange:e=>setForm(f=>({...f,notes:e.target.value}))})),
       E('div',{className:'flex g-2'},E('button',{className:'btn bp wf',onClick:save},'✓ Speichern'),E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
 }
 
 // ─── Zeiterfassung ─────────────────────────────────
 function Zeiterfassung() {
-  const {toast} = useContext(Ctx);
+  const {toast,user} = useContext(Ctx);
   const [items,setItems] = useState([]);
   const [projekte,setProjekte] = useState([]);
   const [modal,setModal] = useState(false);
@@ -804,7 +744,6 @@ function Zeiterfassung() {
   const [secs,setSecs] = useState(0);
   const [running,setRunning] = useState(false);
   const timerRef=useRef(null);
-  const {user} = useContext(Ctx);
   const load=()=>Promise.all([get('/zeiterfassung'),get('/projekte')]).then(([z,p])=>{setItems(z);setProjekte(p);}).catch(e=>toast(e.message,'e'));
   useEffect(()=>{load();return()=>clearInterval(timerRef.current);},[]);
   const pg=usePg(items);
@@ -859,46 +798,112 @@ function Zeiterfassung() {
 function Settings() {
   const {toast} = useContext(Ctx);
   const [cfg,setCfg] = useState({});
+  const [tab,setTab] = useState('firma');
   const s=(k,v)=>setCfg(p=>({...p,[k]:v}));
   useEffect(()=>{get('/settings').then(setCfg).catch(e=>toast(e.message,'e'));},[]);
-  const save=async()=>{try{await put('/settings',cfg);toast('✓ Gespeichert','s');}catch(e){toast(e.message,'e');}};
+  const save=async()=>{try{await put('/settings',cfg);toast('✓ Einstellungen gespeichert','s');}catch(e){toast(e.message,'e');}};
   const E=React.createElement;
   const F=(k,l,ph,t)=>E('div',{className:'mb3'},E('label',{className:'lbl'},l),E('input',{className:'inp',type:t||'text',placeholder:ph,value:cfg[k]||'',onChange:e=>s(k,e.target.value)}));
+  const TA=(k,l,rows=3)=>E('div',{className:'mb3'},E('label',{className:'lbl'},l),E('textarea',{className:'inp',rows,value:cfg[k]||'',onChange:e=>s(k,e.target.value)}));
+  const TABS=[{k:'firma',l:'🏢 Firma'},{k:'layout',l:'🎨 Rechnungslayout'},{k:'datev',l:'📊 DATEV'},{k:'smtp',l:'📧 E-Mail'},{k:'legal',l:'⚖️ Recht'}];
   return E('div',null,
     E(Topbar,{title:'Einstellungen',actions:[E('button',{key:'s',className:'btn bp sm',onClick:save},'✓ Speichern')]}),
     E('div',{className:'content'},
-      E('div',{className:'g2',style:{gap:16}},
+      E('div',{className:'det-tabs'},TABS.map(t=>E('div',{key:t.k,className:`dtab${tab===t.k?' on':''}`,onClick:()=>setTab(t.k)},t.l))),
+
+      tab==='firma'&&E('div',{className:'g2',style:{gap:16}},
+        E('div',{className:'dsec'},
+          E('div',{className:'dsec-t'},'Firmendaten (Pflichtangaben §14 UStG)'),
+          F('company','Firmenname *','Muster GmbH'),
+          F('company_address','Adresse','Musterstr. 1, 80333 München'),
+          F('company_email','E-Mail','info@firma.de'),
+          F('company_phone','Telefon','+49 89 ...'),
+          E('div',{className:'g2 g-3'},
+            E('div',null,F('tax_nr','Steuernummer *','123/456/78900')),
+            E('div',null,F('uid_nr','USt-IdNr. *','DE123456789')))),
         E('div',null,
-          E('div',{className:'card mb3'},
-            E('div',{style:{fontWeight:700,fontSize:13,marginBottom:12}},'🏢 Firmendaten (für Rechnungen/Angebote)'),
-            F('company','Firmenname','Muster GmbH'),F('company_address','Adresse','Musterstr. 1, 80333 München'),
-            F('company_email','E-Mail','info@firma.de'),F('company_phone','Telefon','+49 89 ...'),
-            F('tax_nr','Steuernummer','123/456/78900'),F('uid_nr','USt-IdNr.','DE123456789'),
-            F('iban','IBAN','DE12 3456 7890 1234 5678 90'),F('bic','BIC','DEUTDEDB'),
-            E('div',{className:'mb3'},E('label',{className:'lbl'},'Standard-Zahlungsziel (Tage)'),E('input',{className:'inp',type:'number',value:cfg.payment_days||14,onChange:e=>s('payment_days',e.target.value)}))),
-          E('div',{className:'card'},
-            E('div',{style:{fontWeight:700,fontSize:13,marginBottom:12}},'📧 E-Mail (SMTP)'),
-            F('smtp_host','SMTP Host','mail.firma.de'),F('smtp_port','SMTP Port','587'),
-            F('smtp_user','SMTP Benutzername','user@firma.de'),
-            E('div',{className:'mb3'},E('label',{className:'lbl'},'SMTP Passwort'),E('input',{className:'inp',type:'password',placeholder:'Passwort',value:cfg.smtp_pass||'',onChange:e=>s('smtp_pass',e.target.value)})),
-            F('smtp_from','Absender-Adresse','noreply@firma.de'))),
-        E('div',null,
-          E('div',{className:'card mb3',style:{borderColor:'rgba(0,80,164,.3)'}},
-            E('div',{className:'flex aic g-2 mb3'},
-              E('div',{style:{background:'rgba(0,80,164,.15)',color:'#58a6ff',border:'1px solid rgba(0,80,164,.3)',borderRadius:6,padding:'3px 10px',fontWeight:800,letterSpacing:1,fontSize:14}},'DATEV'),
-              E('span',{style:{fontSize:11,color:'var(--t2)'}},'Connect Online')),
-            E('div',{className:'lbox lbox-blue'},E('strong',null,'DATEV REST API'),' (developers.datev.de): OAuth2 für direkte Übertragung. CSV-Export (Buchungsstapel v700, SKR03/04) via 📊-Button.'),
-            E('div',{className:'g2 mb3 g-3'},
-              E('div',null,E('label',{className:'lbl'},'Berater-Nr.'),E('input',{className:'inp',value:cfg.datev_consultant||'',onChange:e=>s('datev_consultant',e.target.value),placeholder:'1001'})),
-              E('div',null,E('label',{className:'lbl'},'Mandanten-Nr.'),E('input',{className:'inp',value:cfg.datev_client||'',onChange:e=>s('datev_client',e.target.value),placeholder:'12345'})),
-              E('div',null,E('label',{className:'lbl'},'Kontenrahmen'),E('select',{className:'inp',value:cfg.skr||'03',onChange:e=>s('skr',e.target.value)},E('option',{value:'03'},'SKR 03'),E('option',{value:'04'},'SKR 04')))),
-            E('button',{className:'btn bc wf',style:{padding:9},onClick:()=>toast('DATEV OAuth2 Login – bitte Zugangsdaten in Einstellungen hinterlegen','i')},'🔐 DATEV Login (OAuth2)')),
-          E('div',{className:'card'},
-            E('div',{style:{fontWeight:700,fontSize:13,marginBottom:10}},'⚖️ Rechtliche Hinweise'),
-            E('div',{className:'lbox'},
-              E('strong',null,'§14 UStG:'),' Pflichtangaben auf Rechnungen: Steuernr./USt-IdNr., fortlfd. Rechnungsnr., Ausstellungs- und Leistungsdatum, Netto/MwSt/Brutto.',E('br',null),
-              E('strong',null,'GoBD §146:'),' Unveränderlichkeit nach Versand, 10 Jahre Aufbewahrung (§147 AO).',E('br',null),
-              E('strong',null,'E-Rechnung ab 01.01.2025:'),' B2B-Pflicht XRechnung/ZUGFeRD.'))))));
+          E('div',{className:'dsec'},
+            E('div',{className:'dsec-t'},'Bankverbindung & Zahlungskonditionen'),
+            F('iban','IBAN','DE12 3456 7890 1234 5678 90'),
+            F('bic','BIC','DEUTDEDB'),
+            E('div',{className:'mb3'},E('label',{className:'lbl'},'Zahlungsziel (Tage)'),E('input',{className:'inp',type:'number',value:cfg.payment_days||14,onChange:e=>s('payment_days',e.target.value)}))),
+          E('div',{className:'dsec'},
+            E('div',{className:'dsec-t'},'Nummerierung'),
+            E('div',{className:'g3 g-3'},
+              E('div',null,F('invoice_prefix','Rechnungs-Präfix','RE')),
+              E('div',null,F('quote_prefix','Angebots-Präfix','ANG')),
+              E('div',null,F('order_prefix','Auftrags-Präfix','AU')))))),
+
+      tab==='layout'&&E('div',null,
+        E('div',{className:'lbox mb3'},
+          E('strong',null,'Texte auf Rechnungen und Angeboten'),E('br',null),
+          'Diese Bausteine erscheinen im generierten PDF. Für Zahlungshinweis: ',
+          E('code',{style:{background:'rgba(240,180,41,.15)',padding:'1px 5px',borderRadius:3}},'{{payment_days}}'),' wird durch den eingestellten Wert ersetzt.'),
+        E('div',{className:'g2',style:{gap:16}},
+          E('div',null,
+            E('div',{className:'dsec'},
+              E('div',{className:'dsec-t'},'📄 Rechnung'),
+              TA('invoice_header_text','Einleitungstext (vor Positionen)',4),
+              TA('invoice_payment_text','Zahlungshinweis (§14 UStG Pflicht)',3),
+              TA('invoice_footer_text','Schlusstext',3)),
+            E('div',{className:'dsec'},
+              E('div',{className:'dsec-t'},'⊗ Stornorechnung'),
+              TA('storno_text','Storno-Erklärungstext',2))),
+          E('div',null,
+            E('div',{className:'dsec'},
+              E('div',{className:'dsec-t'},'📋 Angebot'),
+              TA('angebot_header_text','Einleitungstext',4),
+              TA('angebot_footer_text','Schlusstext',3)),
+            E('div',{className:'dsec',style:{background:'rgba(240,180,41,.04)',border:'1px solid rgba(240,180,41,.15)'}},
+              E('div',{className:'dsec-t'},'Live-Vorschau (vereinfacht)'),
+              E('div',{style:{fontSize:11,lineHeight:1.7,color:'var(--t2)'}},
+                E('div',{style:{fontWeight:700,fontSize:13,color:'var(--t1)',marginBottom:2}},cfg.company||'[Firmenname]'),
+                E('div',{style:{fontSize:9,color:'var(--t3)',marginBottom:6}},cfg.company_address||'[Adresse]',' · ',cfg.tax_nr?'St.-Nr.: '+cfg.tax_nr:'[Steuernr.]'),
+                E('hr',{style:{borderColor:'var(--b1)',margin:'5px 0'}}),
+                E('div',{style:{fontSize:9,color:'var(--t2)',whiteSpace:'pre-wrap',marginBottom:6}},cfg.invoice_header_text||'[Einleitungstext]'),
+                E('div',{style:{background:'var(--s2)',borderRadius:4,padding:'5px 7px',fontSize:9,fontFamily:'monospace'}},
+                  'Pos. | Bezeichnung         | Menge | EP      | GP
+',
+                  '  1  | Webentwicklung      | 10 h  | 120,00€ | 1.200,00€
+',
+                  '─────────────────────────────────────────────────
+',
+                  '     | Netto: 1.200,00€   MwSt. 228,00€   Brutto: 1.428,00€'),
+                E('div',{style:{fontSize:9,color:'var(--t3)',marginTop:5,whiteSpace:'pre-wrap'}},cfg.invoice_footer_text||'[Schlusstext]')))))),
+
+      tab==='datev'&&E('div',null,
+        E('div',{className:'dsec',style:{borderColor:'rgba(0,80,164,.3)'}},
+          E('div',{className:'dsec-t',style:{color:'#58a6ff'}},'DATEV Connect Online'),
+          E('div',{className:'lbox lbox-blue mb3'},'CSV-Export (Buchungsstapel v700, SKR03/04) über den ',E('strong',null,'📊'),' Button bei jeder Rechnung.'),
+          E('div',{className:'g3 g-3'},
+            E('div',null,F('datev_consultant','Berater-Nr.','1001')),
+            E('div',null,F('datev_client','Mandanten-Nr.','12345')),
+            E('div',{className:'mb3'},E('label',{className:'lbl'},'Kontenrahmen'),E('select',{className:'inp',value:cfg.skr||'03',onChange:e=>s('skr',e.target.value)},E('option',{value:'03'},'SKR 03 (Standard)'),E('option',{value:'04'},'SKR 04 (Industrie)')))),
+          E('button',{className:'btn bc',onClick:()=>toast('DATEV OAuth2 – Zugangsdaten über DATEV Unternehmen Online einrichten','i')},'🔐 DATEV OAuth2 einrichten'))),
+
+      tab==='smtp'&&E('div',null,
+        E('div',{className:'dsec'},
+          E('div',{className:'dsec-t'},'SMTP Konfiguration'),
+          E('div',{className:'g2 g-3'},
+            E('div',null,F('smtp_host','SMTP Host','mail.firma.de')),
+            E('div',null,F('smtp_port','Port','587'))),
+          F('smtp_user','Benutzername','user@firma.de'),
+          E('div',{className:'mb3'},E('label',{className:'lbl'},'Passwort'),E('input',{className:'inp',type:'password',placeholder:'••••••••',value:cfg.smtp_pass||'',onChange:e=>s('smtp_pass',e.target.value)})),
+          F('smtp_from','Absender','noreply@firma.de'))),
+
+      tab==='legal'&&E('div',null,
+        E('div',{className:'dsec'},
+          E('div',{className:'dsec-t'},'Rechtliche Grundlagen'),
+          E('div',{className:'lbox'},
+            E('strong',null,'§14 UStG – Pflichtangaben:'),E('br',null),
+            '✓ Vollständiger Name + Adresse beider Vertragsparteien',E('br',null),
+            '✓ Steuernummer oder USt-IdNr.',E('br',null),
+            '✓ Ausstellungsdatum + fortlaufende Rechnungsnummer',E('br',null),
+            '✓ Art/Umfang der Leistung + Leistungszeitpunkt',E('br',null),
+            '✓ Nettobetrag + Steuersatz + Steuerbetrag + Brutto'),
+          E('div',{className:'lbox mt3'},
+            E('strong',null,'GoBD §146 + §147 AO:'),' Unveränderlichkeit nach Versand, 10 Jahre Aufbewahrung.',E('br',null),
+            E('strong',null,'E-Rechnung ab 01.01.2025:'),' B2B-Pflicht XRechnung/ZUGFeRD.')))));
 }
 
 // ─── Users ─────────────────────────────────────────
@@ -917,17 +922,17 @@ function Users() {
     E(Topbar,{title:'Nutzerverwaltung',actions:[E('button',{key:'n',className:'btn bp sm',onClick:()=>{setForm({name:'',email:'',role:'employee',dept:'',active:true,password:''});setModal(true);}},'+ Neuer Nutzer')]}),
     E('div',{className:'content'},
       E('div',{className:'g2 mb4'},
-        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Nutzer'),E('div',{className:'kpi-v'},items.length)),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Nutzer gesamt'),E('div',{className:'kpi-v'},items.length)),
         E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Aktiv'),E('div',{className:'kpi-v c-gn'},items.filter(u=>u.active).length))),
       E('div',{className:'card',style:{padding:0}},E('table',{className:'tbl'},
         E('thead',null,E('tr',null,E('th',null,'Name'),E('th',null,'E-Mail'),E('th',null,'Rolle'),E('th',null,'Abteilung'),E('th',null,'Status'),E('th',null,'Aktionen'))),
         E('tbody',null,items.map(u=>{
           const ini=u.name.split(' ').map(n=>n[0]||'').join('').slice(0,2).toUpperCase();
           return E('tr',{key:u.id},
-            E('td',null,E('div',{className:'flex aic g-2'},E('div',{className:AVC[u.role]||'av av-em',style:{width:24,height:24,fontSize:8}},ini),E('span',{style:{fontWeight:600}},u.name))),
+            E('td',null,E('div',{className:'flex aic g-2'},E('div',{className:(AVC[u.role]||'av av-em'),style:{width:24,height:24,fontSize:8}},ini),E('span',{style:{fontWeight:600}},u.name))),
             E('td',{style:{fontSize:11,color:'var(--t3)'}},u.email),
             E('td',null,E('span',{className:'badge ta'},RL[u.role]||u.role)),
-            E('td',{style:{fontSize:11}},u.dept),
+            E('td',{style:{fontSize:11}},u.dept||'—'),
             E('td',null,E('span',{className:`badge ${u.active?'tg':'tr'}`},u.active?'Aktiv':'Inaktiv')),
             E('td',null,E('div',{className:'flex g-2'},
               E('button',{className:'btn bg sm',onClick:()=>{setForm({...u,password:''});setModal(true);}},'✏️'),
@@ -946,13 +951,227 @@ function Users() {
         E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
 }
 
+// ─── Artikelverwaltung (full) ───────────────────────
+function Artikel() {
+  const {toast,setView,setDetail} = useContext(Ctx);
+  const [items,setItems] = useState([]);
+  const [modal,setModal] = useState(false);
+  const [tab,setTab] = useState('stamm');
+  const [form,setForm] = useState({});
+  const [cf,setCf] = useState('');
+  const [search,setSearch] = useState('');
+  const CATS=['Dienstleistung','Produkt','Lizenz','Abo','Material','Sonstiges'];
+  const ICOS={Dienstleistung:'🛠️',Produkt:'📦',Lizenz:'🔑',Abo:'🔄',Material:'🧱',Sonstiges:'📋'};
+  const load = ()=>get('/artikel').then(setItems).catch(e=>toast(e.message,'e'));
+  useEffect(()=>{load();},[]);
+  const filtered=(cf?items.filter(a=>a.cat===cf):items).filter(a=>!search||a.name.toLowerCase().includes(search.toLowerCase())||a.nr.toLowerCase().includes(search.toLowerCase()));
+  const pg=usePg(filtered,15);
+  const openNew=()=>{setForm({name:'',desc:'',long_desc:'',internal_note:'',unit:'h',price:0,ek:0,vat:19,cat:'Dienstleistung',stock:0,min_stock:0,weight:0,ean:'',active:true});setTab('stamm');setModal(true);};
+  const openEdit=a=>{setForm({...a});setTab('stamm');setModal(true);};
+  const save=async()=>{
+    if(!form.name){toast('Bitte Namen eingeben','e');return;}
+    try{form.id?await put(`/artikel/${form.id}`,form):await post('/artikel',form);setModal(false);toast('✓ Gespeichert','s');load();}
+    catch(e){toast(e.message,'e');}
+  };
+  const spanne = f => f.price>0&&f.ek>0 ? ((f.price-f.ek)/f.price*100).toFixed(1)+'%' : '—';
+  const E=React.createElement;
+  const MTABS=[{k:'stamm',l:'Stammdaten'},{k:'texte',l:'Texte'},{k:'preise',l:'Preise & Kalkulation'},{k:'lager',l:'Lager'}];
+  return E('div',null,
+    E(Topbar,{title:'Artikelverwaltung',actions:[
+      E('input',{key:'s',className:'inp',style:{width:200,padding:'4px 9px',fontSize:11},placeholder:'Suche...',value:search,onChange:e=>setSearch(e.target.value)}),
+      E('button',{key:'n',className:'btn bp sm',onClick:openNew},'+ Neuer Artikel')]}),
+    E('div',{className:'content'},
+      E('div',{className:'g4 mb3'},
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Artikel gesamt'),E('div',{className:'kpi-v'},items.length)),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Dienstleistungen'),E('div',{className:'kpi-v'},items.filter(a=>a.cat==='Dienstleistung').length)),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Produkte'),E('div',{className:'kpi-v'},items.filter(a=>a.cat==='Produkt'||a.cat==='Material').length)),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Ø Marge'),E('div',{className:'kpi-v c-am'},
+          (() => {const mit=items.filter(a=>a.price>0&&a.ek>0);return mit.length?((mit.reduce((s,a)=>(a.price-a.ek)/a.price+s,0)/mit.length)*100).toFixed(1)+'%':'—';})()))),
+      E('div',{className:'flex g-2 mb3',style:{flexWrap:'wrap'}},
+        E('div',{className:`chip ${cf===''?'con':'cof'}`,onClick:()=>setCf('')},'Alle'),
+        CATS.map(c=>E('div',{key:c,className:`chip ${cf===c?'con':'cof'}`,onClick:()=>setCf(c)},ICOS[c],' ',c))),
+      E('div',{className:'card',style:{padding:0}},
+        E('div',{className:'ovx'},E('table',{className:'tbl'},
+          E('thead',null,E('tr',null,E('th',null,'Nr.'),E('th',null,'Bezeichnung'),E('th',null,'Kategorie'),E('th',{className:'r'},'VK netto'),E('th',{className:'r'},'EK netto'),E('th',{className:'r'},'Marge'),E('th',null,'Einheit'),E('th',null,'Status'),E('th',null,'Aktionen'))),
+          E('tbody',null,
+            pg.sliced.map(a=>E('tr',{key:a.id},
+              E('td',{className:'mono',style:{fontSize:10}},a.nr),
+              E('td',null,E('div',{style:{display:'flex',alignItems:'center',gap:6}},
+                E('span',{style:{fontSize:14}},ICOS[a.cat]||'📋'),
+                E('div',null,E('div',{style:{fontWeight:600,fontSize:12}},a.name),a.desc&&E('div',{style:{fontSize:10,color:'var(--t3)'}},a.desc.slice(0,50)+(a.desc.length>50?'…':''))))),
+              E('td',null,E('span',{className:'badge tb'},a.cat)),
+              E('td',{className:'r mono'},eur(a.price),E('span',{style:{fontSize:9,color:'var(--t3)',marginLeft:3}},'/',a.unit)),
+              E('td',{className:'r mono',style:{color:'var(--rd)'}},a.ek>0?eur(a.ek):'—'),
+              E('td',{className:'r',style:{color:(a.price>0&&a.ek>0&&(a.price-a.ek)/a.price>.3)?'var(--gn)':'var(--am)'}},spanne(a)),
+              E('td',null,a.unit),
+              E('td',null,E('span',{className:`badge ${a.active?'tg':'tr'}`},a.active?'Aktiv':'Inaktiv')),
+              E('td',null,E('div',{className:'flex g-2'},
+                E('button',{className:'btn bg sm',onClick:()=>openEdit(a)},'✏️'),
+                E('button',{className:'btn bd sm',onClick:async()=>{if(!confirm('Löschen?'))return;try{await del(`/artikel/${a.id}`);toast('Gelöscht','s');load();}catch(e){toast(e.message,'e');}}},'✕'))))),
+            !filtered.length&&E('tr',null,E('td',{colSpan:9,style:{textAlign:'center',padding:28,color:'var(--t3)'}},'Keine Artikel'))))),
+        filtered.length>pg.perPage&&E(Pagination,{...pg}))),
+    E(Modal,{open:modal,onClose:()=>setModal(false),title:form.id?`Artikel: ${form.name||''}`:' Neuer Artikel',wide:true},
+      E('div',{className:'det-tabs mb3',style:{marginBottom:12}},MTABS.map(t=>E('div',{key:t.k,className:`dtab${tab===t.k?' on':''}`,onClick:()=>setTab(t.k)},t.l))),
+      
+      tab==='stamm'&&E('div',null,
+        E('div',{className:'g2 mb3 g-3'},
+          E('div',null,E('label',{className:'lbl'},'Bezeichnung *'),E('input',{className:'inp',value:form.name||'',onChange:e=>setForm(f=>({...f,name:e.target.value}))})),
+          E('div',null,E('label',{className:'lbl'},'Artikel-Nr.'),E('input',{className:'inp',value:form.nr||'',onChange:e=>setForm(f=>({...f,nr:e.target.value}))}))),
+        E('div',{className:'g2 mb3 g-3'},
+          E('div',null,E('label',{className:'lbl'},'Kategorie'),E('select',{className:'inp',value:form.cat||'Dienstleistung',onChange:e=>setForm(f=>({...f,cat:e.target.value}))},CATS.map(c=>E('option',{key:c},c)))),
+          E('div',null,E('label',{className:'lbl'},'Einheit'),E('select',{className:'inp',value:form.unit||'h',onChange:e=>setForm(f=>({...f,unit:e.target.value}))},['h','Stück','Pauschal','Monat','Jahr','Tag','kg','m','m²','Lizenz'].map(u=>E('option',{key:u},u)))),
+          E('div',null,E('label',{className:'lbl'},'EAN / Barcode'),E('input',{className:'inp',value:form.ean||'',onChange:e=>setForm(f=>({...f,ean:e.target.value}))})),
+          E('div',null,E('label',{className:'lbl'},'Gewicht (kg)'),E('input',{className:'inp',type:'number',step:'.001',value:form.weight||0,onChange:e=>setForm(f=>({...f,weight:+e.target.value}))}))),
+        E('div',{className:'mb3 flex aic g-2',style:{fontSize:12}},E('input',{type:'checkbox',id:'aact',checked:!!form.active,onChange:e=>setForm(f=>({...f,active:e.target.checked}))}),E('label',{htmlFor:'aact'},'Aktiver Artikel'))),
+      
+      tab==='texte'&&E('div',null,
+        E('div',{className:'mb3'},E('label',{className:'lbl'},'Kurzbeschreibung (erscheint auf Rechnungen)'),E('textarea',{className:'inp',rows:2,value:form.desc||'',onChange:e=>setForm(f=>({...f,desc:e.target.value}))})),
+        E('div',{className:'mb3'},E('label',{className:'lbl'},'Langtext (für Website/Katalog)'),E('textarea',{className:'inp',rows:5,value:form.long_desc||'',onChange:e=>setForm(f=>({...f,long_desc:e.target.value}))})),
+        E('div',{className:'mb3'},E('label',{className:'lbl'},'Interner Hinweis (nur intern sichtbar)'),E('textarea',{className:'inp',rows:3,style:{borderColor:'rgba(240,180,41,.3)'},value:form.internal_note||'',onChange:e=>setForm(f=>({...f,internal_note:e.target.value}))}))),
+      
+      tab==='preise'&&E('div',null,
+        E('div',{className:'g2 mb3 g-3'},
+          E('div',null,E('label',{className:'lbl'},'VK-Preis netto (€)'),E('input',{className:'inp',type:'number',step:'.01',value:form.price||0,onChange:e=>setForm(f=>({...f,price:+e.target.value}))})),
+          E('div',null,E('label',{className:'lbl'},'EK-Preis netto (€)'),E('input',{className:'inp',type:'number',step:'.01',value:form.ek||0,onChange:e=>setForm(f=>({...f,ek:+e.target.value}))})),
+          E('div',null,E('label',{className:'lbl'},'MwSt. %'),E('input',{className:'inp',type:'number',value:form.vat||19,onChange:e=>setForm(f=>({...f,vat:+e.target.value}))}))),
+        (form.price>0||form.ek>0)&&E('div',{className:'dsec',style:{marginTop:4}},
+          E('div',{className:'dsec-t'},'Kalkulation'),
+          E('div',{className:'skv'},E('span',null,'VK netto'),E('span',{className:'skv-v'},eur(form.price))),
+          E('div',{className:'skv'},E('span',null,'VK brutto (19%)'),E('span',{className:'skv-v'},eur((form.price||0)*1.19))),
+          form.ek>0&&E('div',{className:'skv'},E('span',null,'EK netto'),E('span',{className:'skv-v',style:{color:'var(--rd)'}},eur(form.ek))),
+          form.ek>0&&E('div',{className:'skv'},E('span',null,'Rohgewinn'),E('span',{className:'skv-v',style:{color:'var(--gn)'}},eur((form.price||0)-(form.ek||0)))),
+          form.ek>0&&form.price>0&&E('div',{className:'skv skv-hl'},E('span',null,'Marge'),E('span',{className:'skv-v'},spanne(form))))),
+        E('div',{className:'lbox mt3',style:{fontSize:10}},'Tipp: Weitere Preisstufen (Staffelpreise, Kundengruppen) können über die Angebots-Positionen manuell angepasst werden.')),
+      
+      tab==='lager'&&E('div',null,
+        E('div',{className:'g2 mb3 g-3'},
+          E('div',null,E('label',{className:'lbl'},'Aktueller Bestand'),E('input',{className:'inp',type:'number',value:form.stock||0,onChange:e=>setForm(f=>({...f,stock:+e.target.value}))})),
+          E('div',null,E('label',{className:'lbl'},'Mindestbestand (Alarm)'),E('input',{className:'inp',type:'number',value:form.min_stock||0,onChange:e=>setForm(f=>({...f,min_stock:+e.target.value}))}))),
+        (form.stock||0)>0&&(form.min_stock||0)>0&&(form.stock||0)<=(form.min_stock||0)&&E('div',{className:'lbox',style:{background:'var(--rdb)',borderColor:'rgba(248,81,73,.3)',color:'var(--rd)'}},'⚠️ Bestand unter Mindestbestand!'),
+        E('div',{className:'lbox mt3',style:{fontSize:10}},'Lagerbestand wird aktuell manuell gepflegt. Automatische Buchung bei Rechnungserstellung in Entwicklung.')),
+      
+      E('div',{className:'flex g-2 mt3'},
+        E('button',{className:'btn bp wf',onClick:save},'✓ Speichern'),
+        E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
+}
+
+// ─── Projekte mit Datenablage ──────────────────────
+function Projekte() {
+  const {toast} = useContext(Ctx);
+  const [items,setItems] = useState([]);
+  const [kunden,setKunden] = useState([]);
+  const [modal,setModal] = useState(false);
+  const [form,setForm] = useState({});
+  const [detail,setDetail] = useState(null);
+  const [dtab,setDtab] = useState('info');
+  const [files,setFiles] = useState([]);
+  const [uploading,setUploading] = useState(false);
+  const fileRef = useRef(null);
+  const load=()=>Promise.all([get('/projekte'),get('/kunden')]).then(([p,k])=>{setItems(p);setKunden(k);}).catch(e=>toast(e.message,'e'));
+  const loadFiles=id=>get(`/projekte/${id}/files`).then(setFiles).catch(()=>{});
+  useEffect(()=>{load();},[]);
+  const COLORS=['#f0b429','#58a6ff','#3fb950','#a371f7','#f85149','#fb923c'];
+  const openDetail=(p)=>{setDetail(p);setDtab('info');loadFiles(p.id);};
+  const openEdit=(p=null)=>{setForm(p?{...p}:{name:'',kunden_id:'',client:'',status:'active',budget:0,start:today(),end:'',color:'#f0b429',notes:''});setModal(true);};
+  const save=async()=>{
+    if(!form.name){toast('Bitte Name eingeben','e');return;}
+    try{form.id?await put(`/projekte/${form.id}`,form):await post('/projekte',form);setModal(false);if(detail?.id===form.id)setDetail({...detail,...form});toast('✓ Gespeichert','s');load();}
+    catch(e){toast(e.message,'e');}
+  };
+  const uploadFile=async(f)=>{
+    if(!f||!detail)return;
+    setUploading(true);
+    const fd=new FormData();fd.append('file',f);fd.append('name',f.name);
+    try{await api('POST',`/projekte/${detail.id}/files`,fd,true);loadFiles(detail.id);toast('✓ Hochgeladen','s');}
+    catch(e){toast(e.message,'e');}
+    finally{setUploading(false);}
+  };
+  const delFile=async(fid)=>{
+    if(!confirm('Datei löschen?'))return;
+    await del(`/projekte/${detail.id}/files/${fid}`);loadFiles(detail.id);toast('Gelöscht','s');
+  };
+  const fmtSize=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB';
+  const E=React.createElement;
+  return E('div',null,
+    E(Topbar,{title:'Projekte',actions:[E('button',{key:'n',className:'btn bp sm',onClick:()=>openEdit()},'+ Neues Projekt')]}),
+    E('div',{className:'content'},
+      E('div',{className:'g4 mb4'},
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Aktiv'),E('div',{className:'kpi-v c-gn'},items.filter(p=>p.status==='active').length)),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Abgeschlossen'),E('div',{className:'kpi-v'},items.filter(p=>p.status==='done').length)),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Budget gesamt'),E('div',{className:'kpi-v c-am',style:{fontSize:16}},eur(items.reduce((s,p)=>s+(p.budget||0),0)))),
+        E('div',{className:'kpi'},E('div',{className:'kpi-l'},'Geleistet'),E('div',{className:'kpi-v'},eur(items.reduce((s,p)=>s+(p.spent||0),0))))),
+      E('div',{className:'g2',style:{gap:16}},
+        // Project list
+        E('div',null,items.map(p=>{
+          const pct=Math.round((p.spent||0)/Math.max(p.budget||1,1)*100);
+          const cl=p.color||'#f0b429';
+          return E('div',{key:p.id,className:`card mb2 ${detail?.id===p.id?'':''}`,style:{cursor:'pointer',borderColor:detail?.id===p.id?cl:'var(--b1)',borderLeftWidth:4,borderLeftColor:cl},onClick:()=>openDetail(p)},
+            E('div',{className:'flex jb aic mb2'},
+              E('div',{style:{fontWeight:700,fontSize:13,color:'var(--t1)'}},p.nr,' · ',p.name),
+              E('div',{className:'flex g-2'},
+                E('span',{className:`badge ${p.status==='active'?'tg':p.status==='done'?'tb':'tk'}`},p.status),
+                E('button',{className:'btn bg sm',onClick:e=>{e.stopPropagation();openEdit(p);}},'✏️'))),
+            E('div',{style:{fontSize:11,color:'var(--t3)',marginBottom:8}},p.client||p.kunden_company||'Kein Kunde',' · ',p.start,' – ',p.end||'laufend'),
+            E('div',{className:'flex jb',style:{fontSize:11,marginBottom:4}},
+              E('span',null,'Budget: ',E('strong',{style:{color:'var(--am)'}},eur(p.budget))),
+              E('span',null,'Geleistet: ',E('strong',{style:{color:pct>100?'var(--rd)':'var(--gn)'}},eur(p.spent))),
+              E('span',{style:{fontWeight:700}},pct+'%')),
+            E('div',{className:'pbar'},E('div',{className:'pfill',style:{width:`${Math.min(pct,100)}%`,background:pct>100?'var(--rd)':cl}})));
+        })),
+        // Detail panel
+        detail&&E('div',{className:'card',style:{position:'sticky',top:62}},
+          E('div',{className:'flex jb aic mb2'},
+            E('div',{style:{fontWeight:700,fontSize:13}},detail.name),
+            E('button',{className:'btn bg sm',onClick:()=>setDetail(null)},'✕')),
+          E('div',{className:'det-tabs',style:{marginBottom:10}},
+            [{k:'info',l:'Info'},{k:'files',l:`Dateien (${files.length})`},{k:'zeit',l:'Zeiten'}].map(t=>E('div',{key:t.k,className:`dtab${dtab===t.k?' on':''}`,onClick:()=>setDtab(t.k)},t.l))),
+          dtab==='info'&&E('div',null,
+            E('div',{className:'sbc'},E('div',{className:'sbc-t'},'Projektdetails'),
+              E('div',{className:'skv'},E('span',null,'Nr.'),E('span',{className:'skv-v mono'},detail.nr)),
+              E('div',{className:'skv'},E('span',null,'Status'),E('span',{className:'skv-v'},E(SBadge,{s:detail.status}))),
+              E('div',{className:'skv'},E('span',null,'Kunde'),E('span',{className:'skv-v'},detail.client||'—')),
+              E('div',{className:'skv'},E('span',null,'Start'),E('span',{className:'skv-v'},detail.start||'—')),
+              E('div',{className:'skv'},E('span',null,'Ende'),E('span',{className:'skv-v'},detail.end||'laufend')),
+              E('div',{className:'skv skv-hl'},E('span',null,'Budget'),E('span',{className:'skv-v'},eur(detail.budget))),
+              E('div',{className:'skv'},E('span',null,'Geleistet'),E('span',{className:'skv-v'},eur(detail.spent)))),
+            detail.notes&&E('div',{className:'sbc'},E('div',{className:'sbc-t'},'Notizen'),E('div',{style:{fontSize:12,color:'var(--t2)',lineHeight:1.6,whiteSpace:'pre-line'}},detail.notes))),
+          dtab==='files'&&E('div',null,
+            E('div',{className:'dz mb3',onClick:()=>!uploading&&fileRef.current?.click()},
+              E('input',{type:'file',ref:fileRef,style:{display:'none'},onChange:e=>e.target.files[0]&&uploadFile(e.target.files[0])}),
+              uploading?E('span',{className:'spin'}):E('div',null,E('div',{style:{fontSize:22,marginBottom:5}},'📎'),E('div',{style:{fontSize:12,fontWeight:600,color:'var(--t2)'}},'Datei hochladen'),E('div',{style:{fontSize:10,color:'var(--t3)'}},'Klicken oder Drag & Drop'))),
+            files.length?files.map(f=>E('div',{key:f.id,className:'card mb2 flex aic g-2',style:{padding:'8px 11px'}},
+              E('div',{style:{fontSize:20,flexShrink:0}},f.mime_type?.includes('image')?'🖼️':f.mime_type?.includes('pdf')?'📄':f.mime_type?.includes('sheet')||f.name?.endsWith('.xlsx')?'📊':'📎'),
+              E('div',{style:{flex:1,minWidth:0}},
+                E('div',{style:{fontWeight:600,fontSize:12,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},f.name),
+                E('div',{style:{fontSize:10,color:'var(--t3)'}},fmtSize(f.size),' · ',f.created_by,' · ',f.created_at?.slice(0,10))),
+              E('a',{href:`/api/projekte/${detail.id}/files/${f.id}/download`,className:'btn bg sm',style:{textDecoration:'none'}},'↓'),
+              E('button',{className:'btn bd sm',onClick:()=>delFile(f.id)},'✕'))):
+            E('div',{className:'empty',style:{padding:20}},E('div',{className:'ei'},'📂'),E('div',{className:'et'},'Keine Dateien'))),
+          dtab==='zeit'&&E('div',null,
+            E('div',{className:'lbox',style:{fontSize:11}},'Zeiteinträge für dieses Projekt werden in der Zeiterfassung-Ansicht verwaltet.'),
+            E('button',{className:'btn bg wf',style:{marginTop:8}},'→ Zur Zeiterfassung'))))),
+    E(Modal,{open:modal,onClose:()=>setModal(false),title:form.id?'Projekt bearbeiten':'Neues Projekt'},
+      E('div',{className:'mb3'},E('label',{className:'lbl'},'Projektname *'),E('input',{className:'inp',value:form.name||'',onChange:e=>setForm(f=>({...f,name:e.target.value}))})),
+      E('div',{className:'g2 mb3 g-3'},
+        E('div',null,E('label',{className:'lbl'},'Kunde'),E('select',{className:'inp',value:form.kunden_id||'',onChange:e=>{const k=kunden.find(c=>c.id===e.target.value);setForm(f=>({...f,kunden_id:e.target.value,client:k?.company||f.client}));}},E('option',{value:''},'— kein Kunde —'),...kunden.filter(k=>k.active).map(k=>E('option',{key:k.id,value:k.id},k.company)))),
+        E('div',null,E('label',{className:'lbl'},'Kunden-Name (Freitext)'),E('input',{className:'inp',value:form.client||'',onChange:e=>setForm(f=>({...f,client:e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Status'),E('select',{className:'inp',value:form.status||'active',onChange:e=>setForm(f=>({...f,status:e.target.value}))},['active','done','paused','cancelled'].map(s=>E('option',{key:s},s)))),
+        E('div',null,E('label',{className:'lbl'},'Budget (€)'),E('input',{className:'inp',type:'number',value:form.budget||0,onChange:e=>setForm(f=>({...f,budget:+e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Geleistet (€)'),E('input',{className:'inp',type:'number',value:form.spent||0,onChange:e=>setForm(f=>({...f,spent:+e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Start'),E('input',{className:'inp',value:form.start||'',placeholder:'TT.MM.JJJJ',onChange:e=>setForm(f=>({...f,start:e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Ende'),E('input',{className:'inp',value:form.end||'',placeholder:'TT.MM.JJJJ',onChange:e=>setForm(f=>({...f,end:e.target.value}))})),
+        E('div',null,E('label',{className:'lbl'},'Farbe'),E('input',{className:'inp',type:'color',value:form.color||'#f0b429',onChange:e=>setForm(f=>({...f,color:e.target.value})),style:{height:34,padding:2}}))),
+      E('div',{className:'mb4'},E('label',{className:'lbl'},'Notizen'),E('textarea',{className:'inp',rows:2,value:form.notes||'',onChange:e=>setForm(f=>({...f,notes:e.target.value}))})),
+      E('div',{className:'flex g-2'},E('button',{className:'btn bp wf',onClick:save},'✓ Speichern'),E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
+}
+
 // ─── Placeholder ───────────────────────────────────
 function Placeholder({title,icon}) {
   const E=React.createElement;
-  return E('div',null,E(Topbar,{title}),E('div',{className:'content'},E('div',{className:'empty',style:{paddingTop:70}},E('div',{style:{fontSize:44,marginBottom:14,opacity:.25}},icon||'🚧'),E('div',{style:{fontSize:13,fontWeight:700,color:'var(--t2)',marginBottom:6}},title),E('div',{style:{fontSize:11,color:'var(--t3)'}},'Diese Seite wird gerade implementiert.'))));
+  return E('div',null,E(Topbar,{title}),E('div',{className:'content'},E('div',{className:'empty',style:{paddingTop:70}},E('div',{style:{fontSize:44,marginBottom:14,opacity:.25}},icon||'🚧'),E('div',{style:{fontSize:13,fontWeight:700,color:'var(--t2)',marginBottom:6}},title),E('div',{style:{fontSize:11,color:'var(--t3)'}},'Wird implementiert.'))));
 }
 
-// ─── Main App ──────────────────────────────────────
+// ─── App Root ──────────────────────────────────────
 function App() {
   const [user,setUser] = useState(null);
   const [view,setView] = useState('dashboard');
@@ -965,7 +1184,6 @@ function App() {
     get('/auth/check').then(r=>{if(r.ok)setUser(r.user);setChecked(true);}).catch(()=>setChecked(true));
   },[]);
 
-  // Refresh invoice count for badge
   useEffect(()=>{
     if(!user)return;
     get('/rechnungen').then(r=>setInvCount(r.filter(i=>i.status==='open'||i.status==='overdue').length)).catch(()=>{});
@@ -983,14 +1201,12 @@ function App() {
   },[]);
 
   const ctx={user,toast,logout,setView,detail,setDetail};
-
   const E=React.createElement;
 
   if(!checked) return E('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh'}},E('span',{className:'spin'}));
-
   if(!user) return E(Ctx.Provider,{value:ctx},E(Login,{onLogin:u=>{setUser(u);setView('dashboard');},showToast:toast}),E(Toasts,{list:toasts}));
 
-  const TITLES={dashboard:'Dashboard','crm-kontakte':'CRM · Kontakte','crm-kunden':'CRM · Kunden','crm-lieferanten':'CRM · Lieferanten','crm-chancen':'CRM · Chancen','vk-angebote':'Verkauf · Angebote','vk-auftraege':'Verkauf · Aufträge',invoices:'Rechnungen / Gutschriften',artikel:'Artikel',projekte:'Projekt-Übersicht',zeit:'Zeiterfassung',belege:'Belege & OCR',versicherungen:'Versicherungen',users:'Nutzerverwaltung',settings:'Einstellungen'};
+  const TITLES={dashboard:'Dashboard','crm-kontakte':'CRM · Kontakte','crm-kunden':'CRM · Kunden','crm-lieferanten':'CRM · Lieferanten','crm-chancen':'CRM · Chancen','vk-angebote':'Verkauf · Angebote','vk-auftraege':'Verkauf · Aufträge',invoices:'Rechnungen / Gutschriften',artikel:'Artikelverwaltung',projekte:'Projekte',zeit:'Zeiterfassung',belege:'Belege & OCR',versicherungen:'Versicherungen',users:'Nutzerverwaltung',settings:'Einstellungen'};
 
   const renderView=()=>{
     switch(view){
@@ -999,6 +1215,7 @@ function App() {
       case 'vk-angebote': return E(Angebote,null);
       case 'invoices': return E(Invoices,null);
       case 'artikel': return E(Artikel,null);
+      case 'projekte': return E(Projekte,null);
       case 'zeit': return E(Zeiterfassung,null);
       case 'settings': return E(Settings,null);
       case 'users': return E(Users,null);
