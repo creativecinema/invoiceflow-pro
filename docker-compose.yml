@@ -1,40 +1,70 @@
-services:
+version: "3.9"
 
-  frontend:
+services:
+  invoiceflow:
+    image: ${DEPLOY_IMAGE:-invoiceflow-app:latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: invoiceflow-pro
+    container_name: invoiceflow
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ifp-data:/app/data
+      - ifp-uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/app/data
+      - TRUST_PROXY=1
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    healthcheck:
+      test: ["CMD","node","-e","require('http').get('http://localhost:3000/api/auth/check',r=>{process.exit(r.statusCode<500?0:1)}).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  nginx:
+    image: nginx:alpine
+    container_name: invoiceflow-nginx
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
     depends_on:
-      - ai-proxy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+      - invoiceflow
 
-  ai-proxy:
-    image: python:3.12-alpine
-    container_name: invoiceflow-proxy
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker/config.json:/config.json:ro
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=120
+      - WATCHTOWER_LABEL_ENABLE=true
+    command: --interval 120 --cleanup --label-enable
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "9443:9443"
     volumes:
-      - ./proxy.py:/app/proxy.py:ro
-    working_dir: /app
-    command: python3 proxy.py
-    environment:
-      - PROXY_PORT=3001
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
 
-networks:
-  default:
-    name: invoiceflow-net
+volumes:
+  ifp-data:
+  ifp-uploads:
+  portainer-data:
