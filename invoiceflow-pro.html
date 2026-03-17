@@ -784,6 +784,219 @@ tbody tr{transition:background .1s}
   gap:6px;align-items:center;margin-bottom:6px;
 }
 
+
+/* ── WECLAPP-STYLE ADDITIONS ─────────────────────────────────── */
+
+/* Detail View Layout */
+.detail-topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0 14px;
+  border-bottom:1px solid var(--b1);
+  margin-bottom:14px;
+}
+.detail-header{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:0;padding-bottom:14px;
+}
+.detail-title{
+  font-family:'Syne',sans-serif;font-size:18px;font-weight:700;
+  color:#e2e8f0;letter-spacing:-.3px;margin:0 0 4px;
+}
+.detail-meta{font-size:11px;color:var(--t3)}
+
+/* Tabs */
+.det-tabs{
+  display:flex;gap:0;
+  border-bottom:2px solid var(--b1);
+  margin-bottom:20px;
+  overflow-x:auto;
+}
+.ad-tab,.kd-tab{
+  padding:10px 18px;
+  font-size:12px;font-weight:500;
+  color:var(--t3);cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-2px;
+  white-space:nowrap;
+  transition:all .13s;
+}
+.ad-tab:hover,.kd-tab:hover{color:#e2e8f0}
+.ad-tab.active,.kd-tab.active{
+  color:var(--am);
+  border-bottom-color:var(--am);
+  font-weight:600;
+}
+
+/* Detail 2-col layout */
+.detail-layout{
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:20px;
+  align-items:start;
+}
+.detail-main{}
+.detail-sidebar{display:flex;flex-direction:column;gap:12px}
+
+/* Detail sections */
+.detail-section{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r-lg);padding:18px;
+  margin-bottom:14px;
+}
+.detail-section:last-child{margin-bottom:0}
+.detail-sec-title{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  color:#e2e8f0;text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--b1);
+}
+.detail-field{
+  font-size:13px;color:#e2e8f0;
+  padding:8px 10px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--r-sm);
+  min-height:34px;
+  line-height:1.4;
+}
+
+/* Sidebar cards */
+.sidebar-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r-lg);padding:14px 16px;
+}
+.sidebar-card-title{
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+  color:#e2e8f0;text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:10px;padding-bottom:8px;
+  border-bottom:1px solid var(--b1);
+}
+.sidebar-kv-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);
+  font-size:11px;color:var(--t2);
+}
+.sidebar-kv-row:last-child{border-bottom:none}
+.sidebar-kv-val{font-weight:600;color:#e2e8f0}
+.sidebar-kv-row.highlight{
+  background:rgba(245,158,11,.1);border:none;
+  margin:-2px -4px;padding:8px 4px;border-radius:6px;
+  font-size:12px;font-weight:600;
+}
+.sidebar-kv-row.highlight .sidebar-kv-val.highlight{
+  font-size:14px;font-weight:700;color:var(--am);
+}
+
+/* Akte rows */
+.akte-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);
+  cursor:pointer;transition:background .1s;
+}
+.akte-row:hover{background:rgba(255,255,255,.02);border-radius:4px;padding-left:4px}
+.akte-row:last-child{border-bottom:none}
+.akte-ico{font-size:14px;flex-shrink:0}
+.akte-body{flex:1;min-width:0}
+.akte-lbl{font-size:11px;font-weight:600;color:var(--am)}
+.akte-sub{font-size:10px;color:var(--t3);margin-top:1px}
+.akte-date{font-size:9px;color:var(--t3);flex-shrink:0}
+
+/* Shortcuts grid in sidebar */
+.shortcuts-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.shortcut-item{
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--r-md);padding:10px;
+  text-align:center;cursor:pointer;
+  transition:border-color .13s,transform .13s;
+}
+.shortcut-item:hover{border-color:var(--am);transform:translateY(-1px)}
+.shortcut-num{
+  font-family:'Syne',sans-serif;font-size:22px;font-weight:700;
+  color:var(--am);line-height:1;
+}
+.shortcut-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
+
+/* Activity feed */
+.act-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.act-row:last-child{border-bottom:none}
+.act-av{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
+  color:#fff;flex-shrink:0;
+}
+.act-body{flex:1;min-width:0}
+.act-user{font-size:12px;font-weight:600;color:#e2e8f0}
+.act-action{font-size:12px;color:var(--t2)}
+.act-target{font-size:12px;font-weight:500;color:var(--am)}
+.act-meta{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* Quick actions (Dashboard) */
+.quick-action{
+  display:flex;align-items:center;gap:10px;
+  padding:12px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--r-md);cursor:pointer;
+  transition:border-color .13s,transform .13s;
+}
+.quick-action:hover{border-color:var(--am);transform:translateY(-1px)}
+.qa-icon{font-size:20px;flex-shrink:0}
+.qa-title{font-size:12px;font-weight:600;color:#e2e8f0}
+.qa-sub{font-size:10px;color:var(--t3);margin-top:2px}
+
+/* Pagination */
+.pag-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:0 0 var(--r-lg) var(--r-lg);
+  flex-wrap:wrap;
+}
+.pag-info{font-size:11px;color:var(--t3);flex:1}
+.pag-info b{color:var(--t2)}
+.pag-nav{display:flex;align-items:center;gap:4px}
+.pag-btn{
+  padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;
+  background:var(--s2);border:1px solid var(--b1);color:var(--t2);
+  cursor:pointer;transition:all .12s;
+}
+.pag-btn:hover:not([disabled]){border-color:var(--am);color:var(--am)}
+.pag-btn[disabled]{opacity:.35;cursor:default}
+.pag-cur{font-size:11px;color:var(--t2);padding:0 8px;white-space:nowrap}
+.pag-size{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3)}
+
+/* Table row interactivity */
+.tbl-row{cursor:pointer}
+.tbl-row:hover td{background:rgba(245,158,11,.04) !important}
+.tbl-actions{opacity:0;transition:opacity .13s}
+.tbl-row:hover .tbl-actions{opacity:1}
+
+/* Enhanced kontakt modal */
+.contact-type-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:7px;
+  font-size:12px;font-weight:500;cursor:pointer;
+  border:2px solid var(--b2);
+  background:var(--s2);color:var(--t2);
+  transition:all .13s;
+}
+.contact-type-btn.sel{border-color:var(--am);background:var(--amb);color:var(--am)}
+.biz-check{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:6px;
+  font-size:11px;font-weight:500;cursor:pointer;
+  border:1px solid var(--b1);background:var(--s2);
+  color:var(--t3);transition:all .13s;
+}
+.biz-check.sel{border-color:var(--am);background:var(--amb);color:var(--am)}
+
 </style>
 </head>
 <body>
@@ -837,28 +1050,69 @@ tbody tr{transition:background .1s}
 
 <!-- ═══════════════ DASHBOARD ════════════════════════════════════ -->
 <div class="view" id="v-dashboard">
+  <!-- KPI row -->
   <div class="g4 mb4">
-    <div class="kpi"><div class="kpi-l">Umsatz MTD</div><div class="kpi-v" id="dash-revenue">—</div><div class="kpi-s up">Bezahlte Rechnungen</div></div>
+    <div class="kpi"><div class="kpi-l">Umsatz MTD</div><div class="kpi-v up" id="dash-revenue">—</div><div class="kpi-s up">Bezahlte Rechnungen</div></div>
     <div class="kpi"><div class="kpi-l">Kontostand</div><div class="kpi-v" id="dash-balance">—</div><div class="kpi-s" style="color:var(--cy)">Alle Konten</div></div>
     <div class="kpi"><div class="kpi-l">Offene Posten</div><div class="kpi-v am" id="dash-open">—</div><div class="kpi-s am" id="dash-open-count">überfällig</div></div>
-    <div class="kpi"><div class="kpi-l">Cashflow</div><div class="kpi-v up" id="dash-cashflow">—</div><div class="kpi-s up">Saldo aller Tx</div></div>
+    <div class="kpi"><div class="kpi-l" id="dash-cashflow-lbl">Pipeline (gewichtet)</div><div class="kpi-v" style="color:var(--pu)" id="dash-cashflow">—</div></div>
   </div>
-  <div class="g2 mb4">
-    <div class="card"><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:12px">Umsatz & Kosten (6 Monate)</div><div class="cw"><canvas id="rev-chart"></canvas></div></div>
-    <div class="card"><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:10px">Offene Posten nach Alter</div>
-      <div class="ir"><span>0–14 Tage</span><span style="color:var(--gn);font-weight:500">€ 9.200</span></div>
-      <div class="ir"><span>15–30 Tage</span><span style="color:var(--am);font-weight:500">€ 5.500</span></div>
-      <div class="ir"><span>31–60 Tage</span><span style="color:var(--rd);font-weight:500">€ 2.850</span></div>
-      <div class="div"></div><div class="cw" style="height:120px"><canvas id="donut-chart"></canvas></div>
+  <!-- Main content: activity + chart | projects + pipeline -->
+  <div class="g2 mb4" style="gap:20px;align-items:start">
+    <!-- Left: Activity + Chart -->
+    <div>
+      <div class="card mb4">
+        <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:14px">Aktuelle Aktivitäten</div>
+        <div id="dash-activity"></div>
+        <button class="btn bg bsm" style="margin-top:10px;width:100%">Weitere anzeigen</button>
+      </div>
+      <div class="card">
+        <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:12px">Entwicklung Umsatz</div>
+        <div class="cw" style="height:200px"><canvas id="dash-revenue-chart"></canvas></div>
+      </div>
     </div>
-  </div>
-  <div class="g2">
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-family:Syne,sans-serif;font-size:13px;font-weight:600">Letzte Rechnungen</span><button class="btn bg bsm" onclick="showView('v-invoices')">Alle →</button></div><div class="sx"><table><thead><tr><th>Nr.</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead><tbody id="dash-inv-tbody"></tbody></table></div></div>
-    <div class="card"><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:12px">Aktive Projekte</div><div id="dash-proj-list"></div></div>
+    <!-- Right: Quick actions + tables -->
+    <div>
+      <!-- Quick actions -->
+      <div class="card mb4">
+        <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:12px">Herzlich willkommen · Direkt loslegen</div>
+        <div class="g2" style="gap:8px">
+          <div class="quick-action" onclick="editKontakt(null)"><div class="qa-icon">👤</div><div><div class="qa-title">Neuer Kontakt</div><div class="qa-sub">Kontakt mit Adressdaten anlegen</div></div></div>
+          <div class="quick-action" onclick="editKunde(null)"><div class="qa-icon">🏢</div><div><div class="qa-title">Neuer Kunde</div><div class="qa-sub">Kunden mit Informationen anlegen</div></div></div>
+          <div class="quick-action" onclick="editLieferant(null)"><div class="qa-icon">🏭</div><div><div class="qa-title">Neuer Lieferant</div><div class="qa-sub">Lieferant für Bestellungen</div></div></div>
+          <div class="quick-action" onclick="editArtikel(null)"><div class="qa-icon">📦</div><div><div class="qa-title">Neuer Artikel</div><div class="qa-sub">Artikel mit Stammdaten anlegen</div></div></div>
+          <div class="quick-action" onclick="editAngebot(null)"><div class="qa-icon">📄</div><div><div class="qa-title">Neues Angebot</div><div class="qa-sub">Angebot erstellen und versenden</div></div></div>
+          <div class="quick-action" onclick="editInvoice(null)"><div class="qa-icon">🧾</div><div><div class="qa-title">Neue Rechnung</div><div class="qa-sub">Rechnung für Kunden erstellen</div></div></div>
+        </div>
+      </div>
+      <!-- Pipeline -->
+      <div class="card mb4">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-family:Syne,sans-serif;font-size:13px;font-weight:600">Sales Pipeline</span>
+          <button class="btn bg bsm" onclick="showView('v-crm-chancen')">Alle Chancen →</button>
+        </div>
+        <div id="dash-pipeline"></div>
+      </div>
+      <!-- Active projects -->
+      <div class="card mb4">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-family:Syne,sans-serif;font-size:13px;font-weight:600">Aktive Projekte</span>
+          <button class="btn bg bsm" onclick="showView('v-projekte')">Alle →</button>
+        </div>
+        <div id="dash-proj-list"></div>
+      </div>
+      <!-- Recent invoices -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-family:Syne,sans-serif;font-size:13px;font-weight:600">Letzte Rechnungen</span>
+          <button class="btn bg bsm" onclick="showView('v-invoices')">Alle →</button>
+        </div>
+        <div class="sx"><table><thead><tr><th>Nr.</th><th>Kunde</th><th style="text-align:right">Betrag</th><th>Status</th></tr></thead><tbody id="dash-inv-tbody"></tbody></table></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════ RECHNUNGEN ═══════════════════════════════════ -->
 <div class="view" id="v-invoices">
   <div class="view-toolbar">
     <div class="g4" style="flex:1;gap:8px">
@@ -1096,8 +1350,10 @@ tbody tr{transition:background .1s}
       <div class="kpi" style="flex:1;min-width:180px"><div class="kpi-l">Umsatz Gesamt</div><div class="kpi-v am" id="kst3">€ 0</div></div>
     </div>
     <button class="btn bp bsm" onclick="editKunde(null)">+ Neuer Kunde</button>
+    </div>
   </div>
   <div id="klist"></div>
+  <div id="kunden-pagination"></div>
 </div>
 
 <!-- ═══════════════ ARTIKEL ═══════════════════════════════════════ -->
@@ -1216,11 +1472,6 @@ tbody tr{transition:background .1s}
   </div>
 </div>
 
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /layout -->
-</div><!-- /app -->
-
 
 <!-- ═══════════════ CRM: KONTAKTE ════════════════════════════ -->
 <div class="view" id="v-crm-kontakte">
@@ -1229,9 +1480,13 @@ tbody tr{transition:background .1s}
       <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Gesamt</div><div class="kpi-v" style="font-size:16px" id="kontak-count">0</div></div>
       <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Aktiv</div><div class="kpi-v up" style="font-size:16px" id="kontak-aktiv">0</div></div>
     </div>
-    <button class="btn bp bsm" onclick="editKontakt(null)">+ Neuer Kontakt</button>
+    <div style="display:flex;gap:6px">
+      <button class="btn bg bsm" onclick="renderKontakte()">⟳ Aktualisieren</button>
+      <button class="btn bp bsm" onclick="editKontakt(null)">+ Neuer Kontakt</button>
+    </div>
   </div>
-  <div id="kontak-list"></div>
+  <div class="card" style="padding:0"><div id="kontak-list"></div></div>
+  <div id="kontak-pagination"></div>
 </div>
 
 <!-- ═══════════════ CRM: INTERESSENTEN ═══════════════════════ -->
@@ -1305,7 +1560,8 @@ tbody tr{transition:background .1s}
     </div>
     <button class="btn bp bsm" onclick="editAngebot(null)">+ Neues Angebot</button>
   </div>
-  <div class="card" style="padding:0"><table><thead><tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Gültig bis</th><th style="text-align:right">Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="ang-tbody"></tbody></table></div>
+  <div class="card" style="padding:0"><table><thead><tr><th style="width:30px"></th><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Gültig bis</th><th style="text-align:right">Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="ang-tbody"></tbody></table></div>
+  <div id="ang-pagination"></div>
 </div>
 
 <!-- ═══════════════ VERKAUF: RAHMENAUFTRÄGE ══════════════════ -->
@@ -1414,6 +1670,146 @@ tbody tr{transition:background .1s}
   <div class="card" style="padding:0"><table><thead><tr><th>Nummer</th><th>Bezeichnung</th><th>Zeitraum</th><th style="text-align:right">Stunden</th><th style="text-align:right">Betrag</th><th>Erstellt von</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="bb-tbody"></tbody></table></div>
 </div>
 
+
+<!-- ═══════════════ ANGEBOT DETAIL ═══════════════════════════ -->
+<div class="view" id="v-ang-detail">
+  <!-- Back bar -->
+  <div class="detail-topbar">
+    <button class="btn bg bsm" onclick="showView('v-vk-angebote')">‹ Übersicht</button>
+    <div style="display:flex;gap:6px">
+      <button class="btn bg bsm" onclick="editAngebot(currentAngId)">✏️ Bearbeiten</button>
+      <button class="btn bp bsm" onclick="angebotToAuftrag(currentAngId)">→ Auftrag erstellen</button>
+    </div>
+  </div>
+  <!-- Title bar -->
+  <div class="detail-header">
+    <div>
+      <h1 class="detail-title" id="ad-title">Angebot</h1>
+      <div class="detail-meta" id="ad-created"></div>
+    </div>
+    <div id="ad-status-badge"></div>
+  </div>
+  <!-- Tabs -->
+  <div class="det-tabs">
+    <div class="ad-tab active" data-tab="uebersicht" onclick="showAngTab('uebersicht')">Übersicht</div>
+    <div class="ad-tab" data-tab="positionen" onclick="showAngTab('positionen')">Positionen (<span id="ad-tab-pos-count">0</span>)</div>
+    <div class="ad-tab" data-tab="dokumente" onclick="showAngTab('dokumente')">Dokumente</div>
+    <div class="ad-tab" data-tab="aufgaben" onclick="showAngTab('aufgaben')">Aufgaben</div>
+  </div>
+  <!-- 2-column layout -->
+  <div class="detail-layout">
+    <!-- Main content -->
+    <div class="detail-main" id="ad-body"></div>
+    <!-- Right sidebar -->
+    <div class="detail-sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Allgemeines</div>
+        <div class="sidebar-kv-row highlight">
+          <span>Angebotswert</span>
+          <span class="sidebar-kv-val highlight" id="ad-sidebar-wert">—</span>
+        </div>
+        <div class="sidebar-kv-row"><span>Nettobetrag</span><span id="ad-sidebar-net">—</span></div>
+        <div class="sidebar-kv-row"><span>Anzahl Positionen</span><span id="ad-sidebar-pos">—</span></div>
+        <div class="sidebar-kv-row"><span>MwSt.</span><span id="ad-sidebar-vat">—</span></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Dokumentenupload</div>
+        <div class="drop-z" style="padding:16px;margin:0">
+          <div style="font-size:11px;color:var(--t3);text-align:center">Datei(en) hier ablegen oder<br>hier auswählen</div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Akte</div>
+        <div id="ad-sidebar-akte"></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Kennzahlen Kunde</div>
+        <div class="sidebar-kv-row"><span>Angebote</span><span id="ad-sidebar-kz-angebote">—</span></div>
+        <div class="sidebar-kv-row"><span>Aufträge</span><span id="ad-sidebar-kz-auftraege">—</span></div>
+        <div class="sidebar-kv-row"><span>Rechnungen</span><span id="ad-sidebar-kz-rechnungen">—</span></div>
+        <div class="sidebar-kv-row"><span>Umsatz gesamt</span><span id="ad-sidebar-kz-umsatz">—</span></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Letzte Angebote</div>
+        <div id="ad-letzte-angebote"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ KUNDE DETAIL ══════════════════════════════ -->
+<div class="view" id="v-kd-detail">
+  <div class="detail-topbar">
+    <button class="btn bg bsm" onclick="showView('v-kunden')">‹ Übersicht</button>
+    <div style="display:flex;gap:6px">
+      <button class="btn bg bsm" onclick="editKunde(currentKdId)">✏️ Bearbeiten</button>
+      <button class="btn bp bsm" onclick="editAngebot(null)">+ Neues Angebot</button>
+    </div>
+  </div>
+  <div class="detail-header">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="av av-sa" style="width:44px;height:44px;font-size:16px;border-radius:12px" id="kd-avatar">K</div>
+      <div>
+        <h1 class="detail-title" id="kd-title">Kunde</h1>
+        <div class="detail-meta">Stammkunde · Aktiv</div>
+      </div>
+    </div>
+  </div>
+  <div class="det-tabs">
+    <div class="kd-tab active" data-tab="uebersicht" onclick="showKdTab('uebersicht')">Übersicht</div>
+    <div class="kd-tab" data-tab="angebote" onclick="showKdTab('angebote')">Angebote (<span id="kd-tab-ang-cnt">0</span>)</div>
+    <div class="kd-tab" data-tab="auftraege" onclick="showKdTab('auftraege')">Aufträge (<span id="kd-tab-auftr-cnt">0</span>)</div>
+    <div class="kd-tab" data-tab="rechnungen" onclick="showKdTab('rechnungen')">Rechnungen (<span id="kd-tab-inv-cnt">0</span>)</div>
+  </div>
+  <div class="detail-layout">
+    <div class="detail-main" id="kd-body"></div>
+    <div class="detail-sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Dokumentenupload</div>
+        <div class="drop-z" style="padding:16px;margin:0">
+          <div style="font-size:11px;color:var(--t3);text-align:center">Datei(en) hier ablegen</div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Akte</div>
+        <div id="kd-sidebar-akte"></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Shortcuts</div>
+        <div class="shortcuts-grid">
+          <div class="shortcut-item" onclick="showKdTab('angebote')">
+            <div class="shortcut-num" id="kd-sc-angebote">0</div>
+            <div class="shortcut-lbl">Angebote</div>
+          </div>
+          <div class="shortcut-item" onclick="showKdTab('auftraege')">
+            <div class="shortcut-num" id="kd-sc-auftraege">0</div>
+            <div class="shortcut-lbl">Aufträge</div>
+          </div>
+          <div class="shortcut-item" onclick="showKdTab('rechnungen')">
+            <div class="shortcut-num" id="kd-sc-rechnungen">0</div>
+            <div class="shortcut-lbl">Rechnungen</div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-num" id="kd-sc-kontakte">0</div>
+            <div class="shortcut-lbl">Adressen</div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Kennzahlen Kunde</div>
+        <div class="sidebar-kv-row"><span>Umsatz lfd. Jahr</span><span id="kd-kz-umsatz-ytd">—</span></div>
+        <div class="sidebar-kv-row"><span>Auftragsvolumen</span><span id="kd-kz-auftragsvolumen">—</span></div>
+        <div class="sidebar-kv-row"><span>Offene Angebote</span><span id="kd-kz-offene-angebote">—</span></div>
+        <div class="sidebar-kv-row"><span>Offene Rechnungen</span><span id="kd-kz-offene-rechnungen">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /app -->
 
 <!-- ══════════════════ MODALS ════════════════════════════════════ -->
 <!-- Rechnung anzeigen -->
@@ -1831,7 +2227,9 @@ function showView(id){
     'v-art-vkpreise':'Artikel · Verkaufspreise',
     'v-art-ekpreise':'Artikel · Einkaufspreise',
     'v-proj-auftraege':'Projekte · Projektaufträge',
-    'v-proj-buchungen':'Projekte · Buchungsberichte'
+    'v-proj-buchungen':'Projekte · Buchungsberichte',
+    'v-ang-detail':'Angebot',
+    'v-kd-detail':'Kunde'
   };
   if(pt) pt.textContent=titles[id]||id;
   if(id==='v-invoices')  renderInvoices();
@@ -1866,6 +2264,8 @@ function showView(id){
   if(id==='v-art-ekpreise')    renderEkPreise();
   if(id==='v-proj-auftraege')  renderProjAuftraege();
   if(id==='v-proj-buchungen')  renderBuchungsberichte();
+  if(id==='v-ang-detail')      {} // rendered by openAngDetail
+  if(id==='v-kd-detail')       {} // rendered by openKdDetail
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1984,49 +2384,7 @@ function saveInsur(v){ lsSet('if_ins',v); }
 // ─────────────────────────────────────────────────────────────────
 //  DASHBOARD
 // ─────────────────────────────────────────────────────────────────
-function renderDashboard(){
-  var invs=getInvoices();
-  var txs=getTransactions();
-  var projs=getProjekte();
-
-  var mtdRevenue=invs.filter(function(i){return i.status==='paid';}).reduce(function(s,i){return s+i.gross;},0);
-  var openAmt=invs.filter(function(i){return i.status==='open'||i.status==='overdue';}).reduce(function(s,i){return s+i.gross;},0);
-  var overdueCount=invs.filter(function(i){return i.status==='overdue';}).length;
-  var balance=txs.reduce(function(s,t){return s+t.amount;},0);
-  var cashflow30=txs.filter(function(t){return t.amount>0;}).reduce(function(s,t){return s+t.amount;},0)-
-                 txs.filter(function(t){return t.amount<0;}).reduce(function(s,t){return s+Math.abs(t.amount);},0);
-
-  function setT(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-  function setH(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
-
-  setT('dash-revenue', fmtEur(mtdRevenue));
-  setT('dash-balance', fmtEur(balance));
-  setT('dash-open',    fmtEur(openAmt));
-  setT('dash-open-count', overdueCount+' überfällig');
-  setT('dash-cashflow',(cashflow30>=0?'+':'')+fmtEur(cashflow30));
-
-  // Recent invoices
-  var recentInvs=invs.slice(-5).reverse();
-  var invHtml=recentInvs.map(function(i){
-    return '<tr><td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+i.nr+'</td>'+
-      '<td>'+i.customer+'</td><td>'+fmtEur(i.gross)+'</td>'+
-      '<td>'+statusBadge(i.status)+'</td></tr>';
-  }).join('');
-  setH('dash-inv-tbody', invHtml||'<tr><td colspan="4" style="text-align:center;color:var(--t3)">Keine Rechnungen</td></tr>');
-
-  // Active projects
-  var activeProjs=projs.filter(function(p){return p.status==='active';}).slice(0,4);
-  setH('dash-proj-list', activeProjs.map(function(p){
-    var pct=Math.round((p.spent/p.budget)*100);
-    var k=getKunden().find(function(c){return c.id===p.client;});
-    return '<div style="margin-bottom:10px">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
-      '<span style="font-size:12px;font-weight:500">'+p.name+'</span>'+
-      '<span style="font-size:11px;color:var(--t3)">'+pct+'%</span></div>'+
-      '<div style="font-size:10px;color:var(--t3);margin-bottom:5px">'+(k?k.company:'')+'</div>'+
-      '<div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div></div>';
-  }).join('')||'<div class="na" style="padding:20px"><div class="na-i">📁</div><div class="na-s">Keine aktiven Projekte</div></div>');
-}
+// renderDashboard REPLACED
 
 // ─────────────────────────────────────────────────────────────────
 //  RECHNUNGEN
@@ -2243,38 +2601,7 @@ function saveInvoiceForm(){
 // ─────────────────────────────────────────────────────────────────
 //  KUNDEN
 // ─────────────────────────────────────────────────────────────────
-function renderKunden(){
-  var list=getKunden();
-  var el=document.getElementById('klist');
-  var kColors=['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444','#06b6d4'];
-
-  function st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-  st('kst1',list.length);
-  st('kst2',list.filter(function(k){return k.active;}).length);
-  st('kst3',fmtEur(list.reduce(function(s,k){return s+(k.revenue||0);},0)));
-
-  if(!el)return;
-  el.innerHTML=list.length?list.map(function(k,i){
-    return '<div class="icard'+(k.active?'':' inact')+'">'+
-      '<div class="iav" style="background:'+kColors[i%kColors.length]+';color:#fff;font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+
-        (k.company||k.name||'?')[0].toUpperCase()+'</div>'+
-      '<div class="iinfo">'+
-        '<div class="inm">'+k.company+'</div>'+
-        '<div class="isub">'+k.name+' · '+k.email+'</div>'+
-        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+
-          '<span class="badge '+(k.active?'tg':'tr')+'">'+(k.active?'Aktiv':'Inaktiv')+'</span>'+
-          '<span class="badge tk">'+k.nr+'</span>'+
-          '<span class="badge tb">'+k.payment+'d Zahlung</span>'+
-          (k.discount?'<span class="badge ta">'+k.discount+'% Rabatt</span>':'')+
-          '<span class="badge tc">'+fmtEur(k.revenue)+'</span>'+
-        '</div>'+
-      '</div>'+
-      '<div class="iact">'+
-        '<button class="btn bg bsm" onclick="editKunde(\''+k.id+'\')">✏️</button>'+
-        '<button class="btn bd bsm" onclick="deleteKunde(\''+k.id+'\')">✕</button>'+
-      '</div></div>';
-  }).join(''):'<div class="na"><div class="na-i">👥</div><div class="na-t">Keine Kunden</div><div class="na-s">Klicke auf "+ Neuer Kunde" um loszulegen</div></div>';
-}
+// renderKunden REPLACED
 
 function editKunde(id){
   var k=id?getKunden().find(function(c){return c.id===id;}):null;
@@ -3774,21 +4101,7 @@ function saveBuchungsberichte(v){lsSet('if_buchber',v);}
 //  CRM RENDER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════
 
-function renderKontakte(){
-  var list=getKontakte();
-  var el=document.getElementById('kontak-list');
-  setT2('kontak-count',list.length);
-  setT2('kontak-aktiv',list.filter(function(c){return c.status==='aktiv';}).length);
-  if(!el)return;
-  el.innerHTML=list.map(function(c,i){
-    var colors=['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444'];
-    var ini=(c.name||'?').split(' ').map(function(n){return n[0]||'';}).join('').slice(0,2).toUpperCase();
-    return crm_icard(ini,colors[i%colors.length],c.name,c.firma+' · '+c.position,
-      [badge('tg',c.status),badge('tk',c.email),badge('tb',c.phone)],
-      '<button class="btn bg bsm" onclick="editKontakt(\''+c.id+'\')">✏️</button>'+
-      '<button class="btn bd bsm" onclick="delGeneric(\'if_kontakte\',\''+c.id+'\',renderKontakte)">✕</button>');
-  }).join('')||emptyState('👤','Keine Kontakte');
-}
+// renderKontakte REPLACED
 
 function renderInteressenten(){
   var list=getInteressenten();
@@ -4679,24 +4992,731 @@ function abrechneBuchung(id){
   if(b){b.status='abgerechnet';}saveBuchungsberichte(list);renderBuchungsberichte();toast('✓ Abgerechnet','s');
 }
 
+
+// ══ WECLAPP ADDITIONS ══
+// ═══════════════════════════════════════════════════════════════
+//  WECLAPP-STYLE ADDITIONS
+//  Dashboard Activity Feed · Detail Views · Pagination · Modals
+// ═══════════════════════════════════════════════════════════════
+
+// ─── ACTIVITY FEED ────────────────────────────────────────────
+var ACTIVITY_FEED = [
+  {id:'A1',user:'Alexandra Weber',action:'hat Angebot erstellt',target:'ANG-2025-003',type:'angebot',time:'17.03.2025 14:22',color:'#f59e0b'},
+  {id:'A2',user:'Max Mustermann',action:'hat Zeit gebucht',target:'4.5h auf Website Relaunch',type:'zeit',time:'17.03.2025 13:45',color:'#3b82f6'},
+  {id:'A3',user:'Alexandra Weber',action:'hat Rechnung erstellt',target:'RE-2025-004',type:'rechnung',time:'17.03.2025 11:30',color:'#10b981'},
+  {id:'A4',user:'Anna Schmidt',action:'hat Interessent hinzugefügt',target:'Content Factory',type:'crm',time:'17.03.2025 10:15',color:'#a78bfa'},
+  {id:'A5',user:'Julia Bauer',action:'hat Auftrag aktualisiert',target:'AU-2025-002 (30%)',type:'auftrag',time:'16.03.2025 17:00',color:'#06b6d4'},
+  {id:'A6',user:'Max Mustermann',action:'hat Beleg hochgeladen',target:'Telekom Feb 2025',type:'beleg',time:'16.03.2025 15:22',color:'#f59e0b'},
+];
+function getActivity(){var d=lsGet('if_activity');return(d&&d.length)?d:ACTIVITY_FEED;}
+function addActivity(user,action,target,type){
+  var feed=getActivity();
+  var now=new Date();
+  var ts=String(now.getDate()).padStart(2,'0')+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+now.getFullYear()+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  var colors={angebot:'#f59e0b',rechnung:'#10b981',zeit:'#3b82f6',crm:'#a78bfa',auftrag:'#06b6d4',beleg:'#f59e0b'};
+  feed.unshift({id:newId('A'),user:user,action:action,target:target,type:type,time:ts,color:colors[type]||'#94a3b8'});
+  if(feed.length>50)feed=feed.slice(0,50);
+  lsSet('if_activity',feed);
+}
+
+// ─── ENHANCED DASHBOARD ───────────────────────────────────────
+function renderDashboard(){
+  var invs=getInvoices();
+  var txs=getTransactions();
+  var projs=getProjekte();
+  var chancen=getChancen();
+  var angebote=getAngebote();
+
+  var mtdRevenue=invs.filter(function(i){return i.status==='paid';}).reduce(function(s,i){return s+i.gross;},0);
+  var openAmt=invs.filter(function(i){return i.status==='open'||i.status==='overdue';}).reduce(function(s,i){return s+i.gross;},0);
+  var overdueCount=invs.filter(function(i){return i.status==='overdue';}).length;
+  var balance=txs.reduce(function(s,t){return s+t.amount;},0);
+  var pipelineWert=chancen.reduce(function(s,c){return s+c.wert*(c.wahrscheinlichkeit/100);},0);
+  var offeneAngebote=angebote.filter(function(a){return a.status==='offen'||a.status==='versendet';}).length;
+
+  function setT(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  function setH(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+
+  setT('dash-revenue',fmtEur(mtdRevenue));
+  setT('dash-balance',fmtEur(balance));
+  setT('dash-open',fmtEur(openAmt));
+  setT('dash-open-count',overdueCount+' überfällig');
+  setT('dash-cashflow',fmtEur(pipelineWert));
+  setT('dash-cashflow-lbl','Pipeline (gewichtet)');
+
+  // Activity feed
+  var feed=getActivity();
+  var typeIcon={angebot:'📄',rechnung:'🧾',zeit:'⏱',crm:'👤',auftrag:'📋',beleg:'📎'};
+  var typeTag={angebot:'Angebot',rechnung:'Rechnung',zeit:'Zeit',crm:'CRM',auftrag:'Auftrag',beleg:'Beleg'};
+  var tagCls={angebot:'ta',rechnung:'tg',zeit:'tb',crm:'tp',auftrag:'tc',beleg:'tk'};
+  setH('dash-activity', feed.slice(0,8).map(function(a){
+    var ini=a.user.split(' ').map(function(n){return n[0]||'';}).join('').slice(0,2).toUpperCase();
+    return '<div class="act-row">'+
+      '<div class="act-av" style="background:'+a.color+'">'+ini+'</div>'+
+      '<div class="act-body">'+
+        '<span class="act-user">'+a.user+'</span>'+
+        '<span class="act-action"> '+a.action+' </span>'+
+        '<span class="act-target">'+a.target+'</span>'+
+        '<div class="act-meta">'+a.time+'&ensp;'+
+          '<span class="badge '+tagCls[a.type]+'" style="font-size:9px">'+typeTag[a.type]+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join(''));
+
+  // Recent invoices
+  var recentInvs=invs.slice(-5).reverse();
+  setH('dash-inv-tbody', recentInvs.map(function(i){
+    return '<tr onclick="viewInvoice(\''+i.id+'\')" style="cursor:pointer">'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+i.nr+'</td>'+
+      '<td>'+i.customer+'</td>'+
+      '<td style="text-align:right;font-weight:500">'+fmtEur(i.gross)+'</td>'+
+      '<td>'+statusBadge(i.status)+'</td></tr>';
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">Keine Rechnungen</td></tr>');
+
+  // Active projects
+  var activeProjs=projs.filter(function(p){return p.status==='active';}).slice(0,3);
+  setH('dash-proj-list', activeProjs.map(function(p){
+    var pct=Math.round((p.spent/p.budget)*100);
+    var k=getKunden().find(function(c){return c.id===p.client;});
+    return '<div style="margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'+
+        '<span style="font-size:12px;font-weight:500">'+p.name.substring(0,30)+'</span>'+
+        '<span style="font-size:10px;color:var(--t3)">'+pct+'%</span></div>'+
+      '<div style="font-size:10px;color:var(--t3);margin-bottom:5px">'+(k?k.company:'')+'</div>'+
+      '<div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div></div>';
+  }).join('')||'<div class="na" style="padding:20px"><div class="na-i">📁</div><div class="na-s">Keine aktiven Projekte</div></div>');
+
+  // Pipeline by phase
+  var phases=['Qualifizierung','Angebot','Verhandlung','Abschluss'];
+  var phaseTotals=phases.map(function(ph){
+    return {ph:ph,val:chancen.filter(function(c){return c.phase===ph;}).reduce(function(s,c){return s+c.wert;},0)};
+  });
+  setH('dash-pipeline', phaseTotals.map(function(p){
+    return '<div class="ir"><span>'+p.ph+'</span>'+
+      '<span style="font-weight:500;font-family:\'IBM Plex Mono\',monospace">'+fmtEur(p.val)+'</span></div>';
+  }).join(''));
+
+  // setTimeout to render charts
+  setTimeout(function(){initCharts();renderDashboardChart();},100);
+}
+
+function renderDashboardChart(){
+  var fcEl=document.getElementById('dash-revenue-chart');
+  if(!fcEl||!window.Chart)return;
+  try{
+    if(fcEl._chart)fcEl._chart.destroy();
+    var ctx=fcEl.getContext('2d');
+    fcEl._chart=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:['Okt','Nov','Dez','Jan','Feb','Mär'],
+        datasets:[
+          {label:'Umsatz',data:[32000,28500,41000,35200,43100,48320],backgroundColor:'rgba(245,158,11,.7)',borderRadius:4},
+          {label:'Vorjahr',data:[26000,24000,35000,28000,36000,38000],backgroundColor:'rgba(148,163,184,.2)',borderRadius:4}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}}},
+        scales:{x:{ticks:{color:'#475569',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
+          y:{ticks:{color:'#475569',font:{size:10},callback:function(v){return v>=1000?Math.round(v/1000)+'k':'€'+v;}},grid:{color:'rgba(255,255,255,.04)'}}}}
+    });
+  }catch(e){console.warn('dash-chart',e);}
+}
+
+// ─── PAGINATION HELPER ─────────────────────────────────────────
+function renderPagination(containerId,total,page,perPage,onPageFn){
+  var el=document.getElementById(containerId);
+  if(!el)return;
+  var totalPages=Math.max(1,Math.ceil(total/perPage));
+  var from=Math.min((page-1)*perPage+1,total);
+  var to=Math.min(page*perPage,total);
+  el.innerHTML='<div class="pag-row">'+
+    '<div class="pag-info">'+from+'–'+to+' von <b>'+total+'</b> Datensätzen</div>'+
+    '<div class="pag-nav">'+
+      '<button class="pag-btn" '+(page<=1?'disabled':'')+' onclick="('+onPageFn+')(1)">«</button>'+
+      '<button class="pag-btn" '+(page<=1?'disabled':'')+' onclick="('+onPageFn+')('+(page-1)+')">‹</button>'+
+      '<span class="pag-cur">Seite '+page+' / '+totalPages+'</span>'+
+      '<button class="pag-btn" '+(page>=totalPages?'disabled':'')+' onclick="('+onPageFn+')('+(page+1)+')">›</button>'+
+      '<button class="pag-btn" '+(page>=totalPages?'disabled':'')+' onclick="('+onPageFn+')('+totalPages+')">»</button>'+
+    '</div>'+
+    '<div class="pag-size">'+
+      '<select class="inp" style="width:70px;padding:4px 8px;font-size:11px" onchange="paginationPerPage=parseInt(this.value);('+onPageFn+')(1)">'+
+        [10,25,50,100].map(function(n){return '<option'+(n===perPage?' selected':'')+'>'+n+'</option>';}).join('')+
+      '</select>'+
+    '</div>'+
+  '</div>';
+}
+var paginationPerPage=25;
+
+// ─── ENHANCED ANGEBOTE LIST with PAGINATION ───────────────────
+var angPage=1;
+function renderAngebote(){
+  var list=getAngebote();
+  var totalList=list;
+  var el=document.getElementById('ang-tbody');
+  var total=totalList.length;
+  var pp=paginationPerPage;
+  var page=angPage;
+  var sliced=totalList.slice((page-1)*pp, page*pp);
+  setT2('ang-count',total);
+  setT2('ang-vol',fmtEur(list.reduce(function(s,a){return s+a.gross;},0)));
+  setT2('ang-offen',list.filter(function(a){return a.status==='offen'||a.status==='versendet';}).length+' aktiv');
+  if(!el)return;
+  var sc={offen:'ta',versendet:'tb',angenommen:'tg',abgelehnt:'tr',abgelaufen:'tk'};
+  el.innerHTML=sliced.map(function(a){
+    return '<tr class="tbl-row" onclick="openAngDetail(\''+a.id+'\')">'+
+      '<td><input type="checkbox" onclick="event.stopPropagation()" class="row-cb"></td>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--am)">'+a.nr+'</td>'+
+      '<td style="font-weight:500">'+a.customer+'</td>'+
+      '<td>'+a.date+'</td>'+
+      '<td>'+a.valid+'</td>'+
+      '<td style="text-align:right;font-weight:600;font-family:\'IBM Plex Mono\',monospace">'+fmtEur(a.gross)+'</td>'+
+      '<td>'+badge(sc[a.status]||'tk',a.status)+'</td>'+
+      '<td class="tbl-actions" onclick="event.stopPropagation()"><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="editAngebot(\''+a.id+'\')">✏️</button>'+
+        (a.status==='angenommen'?'<button class="btn bs bsm" onclick="angebotToAuftrag(\''+a.id+'\')">→ Auftrag</button>':'')+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_angebote\',\''+a.id+'\',renderAngebote)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)">Keine Angebote</td></tr>';
+  renderPagination('ang-pagination',total,page,pp,'function(p){angPage=p;renderAngebote();}');
+}
+
+// ─── ANGEBOT DETAIL VIEW ──────────────────────────────────────
+var currentAngId=null;
+var currentAngTab='uebersicht';
+function openAngDetail(id){
+  var a=getAngebote().find(function(x){return x.id===id;});
+  if(!a)return;
+  currentAngId=id;
+  currentAngTab='uebersicht';
+
+  var k=getKunden().find(function(c){return c.id===a.customerId;});
+  var invs=getInvoices().filter(function(i){return i.customerId===(k?k.id:'');});
+  var auftr=getAuftraege().filter(function(x){return x.customer===a.customer;});
+
+  // Header
+  setT2('ad-title', a.nr+' · '+fmtEur(a.gross)+' · '+a.customer);
+  setT2('ad-status-txt', a.status.charAt(0).toUpperCase()+a.status.slice(1));
+  var el=document.getElementById('ad-status-badge');
+  if(el)el.innerHTML=badge({offen:'ta',versendet:'tb',angenommen:'tg',abgelehnt:'tr',abgelaufen:'tk'}[a.status]||'tk', a.status);
+  setT2('ad-created','Erstellt: '+a.date+' · Gültig bis: '+a.valid);
+
+  // Tab counts
+  setT2('ad-tab-pos-count',a.items?a.items.length:0);
+
+  // Sidebar - Allgemeines
+  setT2('ad-sidebar-wert', fmtEur(a.gross));
+  setT2('ad-sidebar-net', fmtEur(a.net));
+  setT2('ad-sidebar-pos', a.items?a.items.length:0);
+  setT2('ad-sidebar-vat', '19%');
+
+  // Sidebar - Akte
+  var akteEl=document.getElementById('ad-sidebar-akte');
+  if(akteEl){
+    var akteItems=[{icon:'📄',label:a.nr,sub:fmtEur(a.gross)+' · '+a.status,date:a.date}];
+    if(auftr.length)auftr.forEach(function(au){akteItems.push({icon:'📋',label:au.nr,sub:fmtEur(au.gross)+' · '+au.status,date:au.date});});
+    akteEl.innerHTML=akteItems.map(function(item){
+      return '<div class="akte-row">'+
+        '<div class="akte-ico">'+item.icon+'</div>'+
+        '<div class="akte-body"><div class="akte-lbl">'+item.label+'</div>'+
+          '<div class="akte-sub">'+item.sub+'</div></div>'+
+        '<div class="akte-date">'+item.date+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // Sidebar - Kennzahlen
+  if(k){
+    setT2('ad-sidebar-kz-umsatz',fmtEur(k.revenue||0));
+    setT2('ad-sidebar-kz-angebote',getAngebote().filter(function(x){return x.customerId===k.id;}).length);
+    setT2('ad-sidebar-kz-auftraege',auftr.length);
+    setT2('ad-sidebar-kz-rechnungen',invs.length);
+  }
+
+  // Letzte Angebote (same customer)
+  var letzteEl=document.getElementById('ad-letzte-angebote');
+  if(letzteEl){
+    var letzte=getAngebote().filter(function(x){return x.customer===a.customer&&x.id!==id;}).slice(0,4);
+    letzteEl.innerHTML=letzte.map(function(x){
+      return '<div class="ir" style="cursor:pointer" onclick="openAngDetail(\''+x.id+'\')">'+
+        '<span style="color:var(--am);font-size:11px">'+x.nr+'</span>'+
+        '<div style="text-align:right">'+
+          '<div style="font-size:11px;font-weight:600">'+fmtEur(x.gross)+'</div>'+
+          '<div style="font-size:9px;color:var(--t3)">'+x.date+'</div>'+
+        '</div></div>';
+    }).join('')||'<div style="font-size:11px;color:var(--t3);text-align:center;padding:10px">Keine weiteren Angebote</div>';
+  }
+
+  showAngTab('uebersicht',a);
+  showView('v-ang-detail');
+}
+
+function showAngTab(tab, a_param){
+  currentAngTab=tab;
+  var a=a_param||getAngebote().find(function(x){return x.id===currentAngId;});
+  if(!a)return;
+
+  document.querySelectorAll('.ad-tab').forEach(function(t){
+    t.classList.toggle('active',t.dataset.tab===tab);
+  });
+
+  var body=document.getElementById('ad-body');
+  if(!body)return;
+
+  if(tab==='uebersicht'){
+    var k=getKunden().find(function(c){return c.id===a.customerId;});
+    body.innerHTML=
+      '<div class="detail-section">'+
+        '<div class="detail-sec-title">Empfänger</div>'+
+        '<div class="g2" style="gap:10px">'+
+          '<div class="fi"><label class="fl">Empfänger</label>'+
+            '<div class="detail-field">'+a.customer+'</div></div>'+
+          '<div class="fi"><label class="fl">Belegadresse</label>'+
+            '<div class="detail-field">'+(k?k.address:'—')+'</div></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-section">'+
+        '<div class="detail-sec-title">Angebotskopf</div>'+
+        '<div class="g4" style="gap:10px">'+
+          '<div class="fi"><label class="fl">Angebotsdatum</label><div class="detail-field">'+a.date+'</div></div>'+
+          '<div class="fi"><label class="fl">Version</label><div class="detail-field">1</div></div>'+
+          '<div class="fi"><label class="fl">Gültig bis</label><div class="detail-field">'+a.valid+'</div></div>'+
+          '<div class="fi"><label class="fl">Status</label><div class="detail-field">'+badge({offen:'ta',versendet:'tb',angenommen:'tg',abgelehnt:'tr'}[a.status]||'tk',a.status)+'</div></div>'+
+        '</div>'+
+      '</div>'+
+      (a.notes?'<div class="detail-section"><div class="detail-sec-title">Notizen</div><div class="detail-field">'+a.notes+'</div></div>':'')+
+      '<div class="detail-section">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
+          '<div class="detail-sec-title" style="margin:0">Positionen</div>'+
+          '<button class="btn bp bsm" onclick="editAngebot(\''+a.id+'\')">✏️ Bearbeiten</button>'+
+        '</div>'+
+        '<table><thead><tr><th style="width:30px">#</th><th>Artikel / Beschreibung</th>'+
+          '<th style="text-align:right">Menge</th><th style="text-align:right">Preis €</th>'+
+          '<th style="text-align:right">Steuer</th><th style="text-align:right;color:var(--am)">Positionswert €</th></tr></thead><tbody>'+
+          (a.items||[]).map(function(it,i){
+            return '<tr>'+
+              '<td style="color:var(--t3)">'+( i+1)+'</td>'+
+              '<td style="font-weight:500">'+it.desc+'</td>'+
+              '<td style="text-align:right">'+it.qty+' '+it.unit+'</td>'+
+              '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace">'+fmtEur(it.price)+'</td>'+
+              '<td style="text-align:right;color:var(--t3)">19%</td>'+
+              '<td style="text-align:right;font-weight:600;font-family:\'IBM Plex Mono\',monospace;color:var(--am)">'+fmtEur(it.total)+'</td></tr>';
+          }).join('')+
+        '</tbody></table>'+
+        '<div style="display:flex;justify-content:flex-end;margin-top:12px">'+
+          '<div style="width:280px">'+
+            '<div class="ir"><span>Nettobetrag</span><span style="font-weight:500">'+fmtEur(a.net)+'</span></div>'+
+            '<div class="ir"><span>MwSt. 19%</span><span>'+fmtEur(a.vatAmt)+'</span></div>'+
+            '<div class="ir" style="border-top:2px solid var(--b2);margin-top:4px;padding-top:8px">'+
+              '<span style="font-size:14px;font-weight:700">Gesamtbetrag</span>'+
+              '<span style="font-size:16px;font-weight:700;color:var(--am)">'+fmtEur(a.gross)+'</span></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  } else if(tab==='positionen'){
+    body.innerHTML='<div class="detail-section">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:12px">'+
+        '<div class="detail-sec-title" style="margin:0">Alle Positionen ('+((a.items||[]).length)+')</div>'+
+        '<button class="btn bp bsm" onclick="editAngebot(\''+a.id+'\')">+ Position hinzufügen</button>'+
+      '</div>'+
+      '<table><thead><tr><th>Pos.</th><th>Artikel</th><th style="text-align:right">Menge</th>'+
+        '<th style="text-align:right">Einheit</th><th style="text-align:right">Preis €</th>'+
+        '<th style="text-align:right">Steuer</th><th style="text-align:right">Rabatt %</th>'+
+        '<th style="text-align:right">Wert €</th></tr></thead><tbody>'+
+        (a.items||[]).map(function(it,i){
+          return '<tr><td style="color:var(--t3)">'+(i+1)+'</td>'+
+            '<td><div style="font-weight:600">'+it.desc+'</div></td>'+
+            '<td style="text-align:right">'+it.qty+'</td>'+
+            '<td style="text-align:right;color:var(--t3)">'+it.unit+'</td>'+
+            '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace">'+fmtEur(it.price)+'</td>'+
+            '<td style="text-align:right;color:var(--t3)">19,00 %</td>'+
+            '<td style="text-align:right;color:var(--t3)">0,00</td>'+
+            '<td style="text-align:right;font-weight:700;color:var(--am);font-family:\'IBM Plex Mono\',monospace">'+fmtEur(it.total)+'</td></tr>';
+        }).join('')+
+      '</tbody></table></div>';
+  } else if(tab==='dokumente'){
+    body.innerHTML='<div class="detail-section"><div class="detail-sec-title">Dokumente</div>'+
+      '<div class="drop-z" style="margin-bottom:12px"><div style="font-size:24px;margin-bottom:6px">📎</div>'+
+        '<div style="font-size:12px;font-weight:500">Datei(en) hier ablegen oder hier auswählen</div></div>'+
+      '<div style="font-size:11px;color:var(--t3);text-align:center">Keine Dokumente hochgeladen</div>'+
+    '</div>';
+  } else if(tab==='aufgaben'){
+    body.innerHTML='<div class="detail-section"><div class="detail-sec-title">Aufgaben</div>'+
+      '<div class="na" style="padding:30px"><div class="na-i">✅</div><div class="na-t">Keine Aufgaben</div></div>'+
+    '</div>';
+  }
+}
+
+// ─── ENHANCED KUNDEN LIST with PAGINATION ─────────────────────
+var kdPage=1;
+function renderKunden(){
+  var list=getKunden();
+  var kColors=['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444','#06b6d4'];
+
+  function st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  st('kst1',list.length);
+  st('kst2',list.filter(function(k){return k.active;}).length);
+  st('kst3',fmtEur(list.reduce(function(s,k){return s+(k.revenue||0);},0)));
+
+  var el=document.getElementById('klist');
+  if(!el)return;
+  var pp=paginationPerPage;
+  var sliced=list.slice((kdPage-1)*pp,kdPage*pp);
+  el.innerHTML=sliced.length?sliced.map(function(k,i){
+    var globalIdx=list.indexOf(k);
+    return '<div class="icard tbl-row" onclick="openKdDetail(\''+k.id+'\')">'+
+      '<div class="iav" style="background:'+kColors[globalIdx%kColors.length]+';color:#fff;font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+
+        (k.company||k.name||'?')[0].toUpperCase()+'</div>'+
+      '<div class="iinfo">'+
+        '<div class="inm">'+k.company+'</div>'+
+        '<div class="isub">'+k.name+' · '+k.email+'</div>'+
+        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+
+          '<span class="badge '+(k.active?'tg':'tr')+'">'+(k.active?'Aktiv':'Inaktiv')+'</span>'+
+          '<span class="badge tk">'+k.nr+'</span>'+
+          '<span class="badge tb">'+k.payment+'d Zahlung</span>'+
+          (k.discount?'<span class="badge ta">'+k.discount+'% Rabatt</span>':'')+
+          '<span class="badge tc">'+fmtEur(k.revenue)+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="iact" onclick="event.stopPropagation()">'+
+        '<button class="btn bg bsm" onclick="editKunde(\''+k.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="deleteKunde(\''+k.id+'\')">✕</button>'+
+      '</div></div>';
+  }).join(''):'<div class="na"><div class="na-i">👥</div><div class="na-t">Keine Kunden</div></div>';
+  renderPagination('kunden-pagination',list.length,kdPage,pp,'function(p){kdPage=p;renderKunden();}');
+}
+
+// ─── KUNDE DETAIL VIEW ────────────────────────────────────────
+var currentKdId=null;
+var currentKdTab='uebersicht';
+
+function openKdDetail(id){
+  var k=getKunden().find(function(x){return x.id===id;});
+  if(!k)return;
+  currentKdId=id;
+
+  var myAngebote=getAngebote().filter(function(a){return a.customerId===id||a.customer===k.company;});
+  var myAuftraege=getAuftraege().filter(function(a){return a.customerId===id||a.customer===k.company;});
+  var myInvs=getInvoices().filter(function(i){return i.customerId===id||i.customer===k.company;});
+
+  // Header
+  setT2('kd-title','Kunde '+k.nr+': '+k.company);
+  var ini=k.company[0].toUpperCase();
+  var avEl=document.getElementById('kd-avatar');
+  if(avEl){avEl.textContent=ini;avEl.style.background='#f59e0b';}
+
+  // Tab badges
+  setT2('kd-tab-ang-cnt',myAngebote.length);
+  setT2('kd-tab-auftr-cnt',myAuftraege.length);
+  setT2('kd-tab-inv-cnt',myInvs.length);
+
+  // Sidebar - Shortcuts
+  setT2('kd-sc-angebote',myAngebote.length);
+  setT2('kd-sc-auftraege',myAuftraege.length);
+  setT2('kd-sc-rechnungen',myInvs.length);
+  setT2('kd-sc-kontakte','1');
+
+  // Sidebar - Kennzahlen
+  setT2('kd-kz-umsatz-ytd',fmtEur(myInvs.filter(function(i){return i.status==='paid';}).reduce(function(s,i){return s+i.gross;},0)));
+  setT2('kd-kz-auftragsvolumen',fmtEur(myAuftraege.reduce(function(s,a){return s+a.gross;},0)));
+  setT2('kd-kz-offene-angebote',myAngebote.filter(function(a){return a.status==='offen'||a.status==='versendet';}).length);
+  setT2('kd-kz-offene-rechnungen',fmtEur(myInvs.filter(function(i){return i.status==='open'||i.status==='overdue';}).reduce(function(s,i){return s+i.gross;},0)));
+
+  // Sidebar - Akte
+  var akteEl=document.getElementById('kd-sidebar-akte');
+  if(akteEl){
+    var items=[];
+    myInvs.slice(0,3).forEach(function(i){items.push({icon:'🧾',label:i.nr,sub:fmtEur(i.gross)+' · '+i.status,date:i.date});});
+    myAngebote.slice(0,3).forEach(function(a){items.push({icon:'📄',label:a.nr,sub:fmtEur(a.gross)+' · '+a.status,date:a.date});});
+    items.sort(function(a,b){return b.date.localeCompare(a.date);});
+    akteEl.innerHTML=items.slice(0,6).map(function(item){
+      return '<div class="akte-row">'+
+        '<div class="akte-ico">'+item.icon+'</div>'+
+        '<div class="akte-body"><div class="akte-lbl">'+item.label+'</div>'+
+          '<div class="akte-sub">'+item.sub+'</div></div>'+
+        '<div class="akte-date">'+item.date+'</div>'+
+      '</div>';
+    }).join('')||'<div style="font-size:11px;color:var(--t3);text-align:center;padding:8px">Keine Dokumente</div>';
+  }
+
+  showKdTab('uebersicht',k,myAngebote,myAuftraege,myInvs);
+  showView('v-kd-detail');
+}
+
+function showKdTab(tab,k_param,angebote_param,auftraege_param,invs_param){
+  currentKdTab=tab;
+  var k=k_param||getKunden().find(function(x){return x.id===currentKdId;});
+  if(!k)return;
+  var myAng=angebote_param||getAngebote().filter(function(a){return a.customer===k.company;});
+  var myAuftr=auftraege_param||getAuftraege().filter(function(a){return a.customer===k.company;});
+  var myInvs=invs_param||getInvoices().filter(function(i){return i.customer===k.company;});
+
+  document.querySelectorAll('.kd-tab').forEach(function(t){
+    t.classList.toggle('active',t.dataset.tab===tab);
+  });
+
+  var body=document.getElementById('kd-body');
+  if(!body)return;
+
+  if(tab==='uebersicht'){
+    body.innerHTML=
+      '<div class="detail-section">'+
+        '<div class="detail-sec-title">Stammdaten</div>'+
+        '<div class="g2" style="gap:10px">'+
+          kd_field('Firma',k.company)+kd_field('Ansprechpartner',k.name)+
+          kd_field('E-Mail','<a href="mailto:'+k.email+'" style="color:var(--am)">'+k.email+'</a>')+
+          kd_field('Telefon',k.phone||'—')+
+        '</div>'+
+        '<div class="g2" style="gap:10px;margin-top:10px">'+
+          kd_field('Kundennummer',k.nr)+
+          kd_field('Status','<span class="badge '+(k.active?'tg':'tr')+'">'+(k.active?'Aktiv':'Inaktiv')+'</span>')+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-section">'+
+        '<div class="detail-sec-title">Adress- und Kontaktdaten</div>'+
+        kd_field('Adresse',k.address||'—')+
+      '</div>'+
+      '<div class="detail-section">'+
+        '<div class="detail-sec-title">Verkaufsdetails</div>'+
+        '<div class="g4" style="gap:10px">'+
+          kd_field('Zahlungsziel',k.payment+'d')+
+          kd_field('Rabatt',(k.discount||0)+'%')+
+          kd_field('Umsatz gesamt',fmtEur(k.revenue||0))+
+          kd_field('Notizen',k.notes||'—')+
+        '</div>'+
+      '</div>';
+  } else if(tab==='angebote'){
+    var sc={offen:'ta',versendet:'tb',angenommen:'tg',abgelehnt:'tr'};
+    body.innerHTML='<div class="detail-section">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:12px">'+
+        '<div class="detail-sec-title" style="margin:0">Angebote ('+myAng.length+')</div>'+
+        '<button class="btn bp bsm" onclick="editAngebot(null)">+ Neues Angebot</button>'+
+      '</div>'+
+      (myAng.length?'<table><thead><tr><th>Nummer</th><th>Datum</th><th>Gültig bis</th>'+
+        '<th style="text-align:right">Betrag</th><th>Status</th><th>Aktion</th></tr></thead><tbody>'+
+        myAng.map(function(a){return '<tr class="tbl-row" onclick="openAngDetail(\''+a.id+'\')">'+
+          '<td style="color:var(--am);font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+a.nr+'</td>'+
+          '<td>'+a.date+'</td><td>'+a.valid+'</td>'+
+          '<td style="text-align:right;font-weight:600">'+fmtEur(a.gross)+'</td>'+
+          '<td>'+badge(sc[a.status]||'tk',a.status)+'</td>'+
+          '<td onclick="event.stopPropagation()"><button class="btn bg bsm" onclick="openAngDetail(\''+a.id+'\')">→ Details</button></td></tr>';
+        }).join('')+
+      '</tbody></table>':
+      '<div class="na"><div class="na-i">📄</div><div class="na-t">Keine Angebote</div></div>')+
+    '</div>';
+  } else if(tab==='auftraege'){
+    body.innerHTML='<div class="detail-section">'+
+      '<div class="detail-sec-title">Aufträge ('+myAuftr.length+')</div>'+
+      (myAuftr.length?'<table><thead><tr><th>Nummer</th><th>Datum</th><th>Liefertermin</th>'+
+        '<th style="text-align:right">Betrag</th><th>Fortschritt</th><th>Status</th></tr></thead><tbody>'+
+        myAuftr.map(function(a){return '<tr>'+
+          '<td style="color:var(--am);font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+a.nr+'</td>'+
+          '<td>'+a.date+'</td><td>'+(a.due||'—')+'</td>'+
+          '<td style="text-align:right;font-weight:600">'+fmtEur(a.gross)+'</td>'+
+          '<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar" style="width:60px">'+
+            '<div class="pfill" style="width:'+a.fortschritt+'%"></div></div>'+
+            '<span style="font-size:10px;color:var(--t3)">'+a.fortschritt+'%</span></div></td>'+
+          '<td>'+badge({'in Bearbeitung':'tb',abgeschlossen:'tg'}[a.status]||'tk',a.status)+'</td></tr>';
+        }).join('')+'</tbody></table>':
+      '<div class="na"><div class="na-i">📋</div><div class="na-t">Keine Aufträge</div></div>')+
+    '</div>';
+  } else if(tab==='rechnungen'){
+    body.innerHTML='<div class="detail-section">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:12px">'+
+        '<div class="detail-sec-title" style="margin:0">Rechnungen ('+myInvs.length+')</div>'+
+        '<button class="btn bp bsm" onclick="editInvoice(null)">+ Neue Rechnung</button>'+
+      '</div>'+
+      (myInvs.length?'<table><thead><tr><th>Nummer</th><th>Datum</th><th>Fällig</th>'+
+        '<th style="text-align:right">Betrag</th><th>Status</th><th>Aktion</th></tr></thead><tbody>'+
+        myInvs.map(function(i){return '<tr class="tbl-row">'+
+          '<td style="color:var(--am);font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+i.nr+'</td>'+
+          '<td>'+i.date+'</td><td>'+i.due+'</td>'+
+          '<td style="text-align:right;font-weight:600">'+fmtEur(i.gross)+'</td>'+
+          '<td>'+statusBadge(i.status)+'</td>'+
+          '<td><button class="btn bg bsm" onclick="viewInvoice(\''+i.id+'\')">👁</button></td></tr>';
+        }).join('')+'</tbody></table>':
+      '<div class="na"><div class="na-i">🧾</div><div class="na-t">Keine Rechnungen</div></div>')+
+    '</div>';
+  }
+}
+
+function kd_field(label, val){
+  return '<div class="fi"><label class="fl">'+label+'</label><div class="detail-field">'+val+'</div></div>';
+}
+
+// ─── ENHANCED KONTAKTE ────────────────────────────────────────
+var kontPage=1;
+function renderKontakte(){
+  var list=getKontakte();
+  var el=document.getElementById('kontak-list');
+  setT2('kontak-count',list.length);
+  setT2('kontak-aktiv',list.filter(function(c){return c.status==='aktiv';}).length);
+  if(!el)return;
+  var colors=['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444'];
+  var pp=paginationPerPage;
+  var sliced=list.slice((kontPage-1)*pp,kontPage*pp);
+  el.innerHTML='<table><thead><tr>'+
+    '<th style="width:30px"><input type="checkbox" id="cb-all-kont" onchange="toggleAllCb(this,\'kontak-list\')"></th>'+
+    '<th>Name</th><th>Firma</th><th>E-Mail</th><th>Telefon</th><th>Status</th><th>Aktionen</th>'+
+  '</tr></thead><tbody>'+
+  sliced.map(function(c,i){
+    var ini=c.name.split(' ').map(function(n){return n[0]||'';}).join('').slice(0,2).toUpperCase();
+    return '<tr class="tbl-row">'+
+      '<td><input type="checkbox" class="row-cb"></td>'+
+      '<td><div style="display:flex;align-items:center;gap:8px">'+
+        '<div class="av '+(colors[i%colors.length]?'':'av-em')+'" style="width:26px;height:26px;font-size:9px;background:'+colors[i%colors.length]+'">'+ini+'</div>'+
+        '<div><div style="font-weight:500">'+c.name+'</div>'+
+          '<div style="font-size:10px;color:var(--t3)">'+c.position+'</div></div>'+
+      '</div></td>'+
+      '<td>'+c.firma+'</td>'+
+      '<td style="font-size:11px"><a href="mailto:'+c.email+'" style="color:var(--am)" onclick="event.stopPropagation()">'+c.email+'</a></td>'+
+      '<td style="font-size:11px">'+c.phone+'</td>'+
+      '<td>'+badge(c.status==='aktiv'?'tg':'tr',c.status)+'</td>'+
+      '<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="editKontakt(\''+c.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_kontakte\',\''+c.id+'\',renderKontakte)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')+
+  '</tbody></table>';
+  renderPagination('kontak-pagination',list.length,kontPage,pp,'function(p){kontPage=p;renderKontakte();}');
+}
+
+// ─── TABLE HELPER ─────────────────────────────────────────────
+function toggleAllCb(masterCb,containerId){
+  var container=document.getElementById(containerId);
+  if(!container)return;
+  container.querySelectorAll('.row-cb').forEach(function(cb){cb.checked=masterCb.checked;});
+}
+
+
+
+// ─── KONTAKT MODAL HELPERS ────────────────────────────────────
+function setKontaktType(type){
+  var firma=document.getElementById('kont-type-firma');
+  var person=document.getElementById('kont-type-person');
+  var nameRow=document.getElementById('kont-name-row');
+  if(firma)firma.classList.toggle('sel',type==='firma');
+  if(person)person.classList.toggle('sel',type==='person');
+  if(nameRow)nameRow.style.display=type==='person'?'grid':'none';
+  document.getElementById('kont-id') && (document.getElementById('kont-id').dataset.type=type);
+}
+function toggleBizRel(el){
+  el.classList.toggle('sel');
+}
+// Override saveKontaktForm to handle new fields
+function saveKontaktForm(closeAfter){
+  var id=document.getElementById('kont-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var vorname=gv('kont-vorname')||'';
+  var nachname=gv('kont-nachname')||'';
+  var name=vorname?(vorname+' '+nachname).trim():nachname||gv('kont-firma');
+  var bizEls=document.querySelectorAll('.biz-check.sel');
+  var bizRels=[];
+  bizEls.forEach(function(el){if(el.dataset&&el.dataset.rel)bizRels.push(el.dataset.rel);});
+  var k={
+    id:id||newId('C'),
+    nr:id?((getKontakte().find(function(x){return x.id===id;})||{nr:newId('C')}).nr):newId('C'),
+    type:'kontakt',
+    firma:gv('kont-firma'),
+    name:name,
+    vorname:vorname,nachname:nachname,
+    email:gv('kont-email'),
+    phone:gv('kont-phone'),
+    position:gv('kont-position')||'',
+    strasse:gv('kont-strasse'),plz:gv('kont-plz'),
+    stadt:gv('kont-stadt'),bundesland:gv('kont-bundesland'),
+    land:gv('kont-land'),
+    status:gv('kont-status'),
+    bizRels:bizRels,tags:[],created:today(),notes:''
+  };
+  if(!k.name&&!k.firma){toast('Bitte Name oder Firma eingeben','e');return;}
+  var list=getKontakte();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=k;else list.push(k);}
+  else list.push(k);
+  saveKontakte(list);
+  if(CU)addActivity(CU.name,'hat Kontakt angelegt',k.name||k.firma,'crm');
+  if(closeAfter||true){closeModal('m-kontakt');renderKontakte();toast('✓ Kontakt gespeichert','s');}
+}
+// Override editKontakt for new modal
+var _editKontakt=editKontakt;
+editKontakt=function(id){
+  var c=id?getKontakte().find(function(x){return x.id===id;}):null;
+  document.getElementById('kont-id').value=id||'';
+  function sv(elId,v){var e=document.getElementById(elId);if(e)e.value=v||'';}
+  sv('kont-vorname',c?c.vorname:'');
+  sv('kont-nachname',c?c.nachname:'');
+  sv('kont-firma',c?c.firma:'');
+  sv('kont-email',c?c.email:'');
+  sv('kont-phone',c?c.phone:'');
+  sv('kont-strasse',c?c.strasse:'');
+  sv('kont-plz',c?c.plz:'');
+  sv('kont-stadt',c?c.stadt:'');
+  sv('kont-bundesland',c?c.bundesland:'');
+  sv('kont-land',c?(c.land||'Deutschland'):'Deutschland');
+  sv('kont-status',c?c.status:'aktiv');
+  setKontaktType('firma');
+  document.querySelectorAll('.biz-check').forEach(function(el){el.classList.remove('sel');});
+  if(c&&c.bizRels){c.bizRels.forEach(function(r){var el=document.querySelector('.biz-check[data-rel="'+r+'"]');if(el)el.classList.add('sel');});}
+  document.getElementById('m-kont-title').textContent=id?'Kontakt bearbeiten':'Neuer Kontakt';
+  openModal('m-kontakt');
+};
+
 </script>
 
 <!-- CRM MODALS -->
 <div class="modal-ov" id="m-kontakt">
-  <div class="modal">
-    <div class="mtitle" id="m-kont-title">Neuer Kontakt</div>
+  <div class="modal" style="max-width:560px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="mtitle" id="m-kont-title" style="margin:0">Neuer Kontakt</div>
+      <button class="btn bd bsm" onclick="closeModal('m-kontakt')">✕</button>
+    </div>
     <input type="hidden" id="kont-id">
+    <!-- Kontakt-Art -->
+    <div class="fi">
+      <label class="fl">Kontakt-Art</label>
+      <div style="display:flex;gap:8px">
+        <div class="contact-type-btn sel" id="kont-type-firma" onclick="setKontaktType('firma')">🏢 Firma</div>
+        <div class="contact-type-btn" id="kont-type-person" onclick="setKontaktType('person')">👤 Person</div>
+      </div>
+    </div>
+    <!-- Geschäftsbeziehung -->
+    <div class="fi">
+      <label class="fl">Geschäftsbeziehung</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="kont-biz-row">
+        <div class="biz-check" data-rel="interessent" onclick="toggleBizRel(this)">Interessent</div>
+        <div class="biz-check" data-rel="kunde" onclick="toggleBizRel(this)">Kunde</div>
+        <div class="biz-check" data-rel="lieferant" onclick="toggleBizRel(this)">Lieferant</div>
+        <div class="biz-check" data-rel="wettbewerber" onclick="toggleBizRel(this)">Wettbewerber</div>
+      </div>
+    </div>
+    <!-- Name fields -->
+    <div class="g2" style="gap:10px" id="kont-name-row">
+      <div class="fi"><label class="fl">Vorname</label><input class="inp" id="kont-vorname" placeholder="Max"></div>
+      <div class="fi"><label class="fl">Nachname *</label><input class="inp" id="kont-nachname" placeholder="Müller"></div>
+    </div>
+    <div class="fi"><label class="fl">Firma</label><input class="inp" id="kont-firma" placeholder="Firma GmbH"></div>
     <div class="g2" style="gap:10px">
-      <div class="fi"><label class="fl">Firma</label><input class="inp" id="kont-firma" placeholder="Firma GmbH"></div>
-      <div class="fi"><label class="fl">Name *</label><input class="inp" id="kont-name" placeholder="Max Müller"></div>
       <div class="fi"><label class="fl">E-Mail</label><input class="inp" id="kont-email" type="email"></div>
       <div class="fi"><label class="fl">Telefon</label><input class="inp" id="kont-phone" placeholder="+49 89 ..."></div>
-      <div class="fi"><label class="fl">Position</label><input class="inp" id="kont-position" placeholder="Geschäftsführer"></div>
-      <div class="fi"><label class="fl">Status</label><select class="inp" id="kont-status"><option value="aktiv">Aktiv</option><option value="inaktiv">Inaktiv</option></select></div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn bp" style="flex:1" onclick="saveKontaktForm()">✓ Speichern</button>
-      <button class="btn bg" onclick="closeModal('m-kontakt')">Abbrechen</button>
+    <!-- Adresse -->
+    <div style="font-family:Syne,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#e2e8f0;padding:10px 0 8px;border-bottom:1px solid var(--b1);margin-bottom:10px">Adresse</div>
+    <div class="fi"><label class="fl">Straße</label><input class="inp" id="kont-strasse" placeholder="Maximilianstr. 1"></div>
+    <div class="g3" style="gap:8px">
+      <div class="fi"><label class="fl">PLZ</label><input class="inp" id="kont-plz" placeholder="80333"></div>
+      <div class="fi" style="grid-column:span 2"><label class="fl">Stadt</label><input class="inp" id="kont-stadt" placeholder="München"></div>
+    </div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Bundesland</label><input class="inp" id="kont-bundesland" placeholder="Bayern"></div>
+      <div class="fi"><label class="fl">Land</label><select class="inp" id="kont-land"><option>Deutschland</option><option>Österreich</option><option>Schweiz</option><option>Luxemburg</option><option>Frankreich</option><option>Niederlande</option></select></div>
+    </div>
+    <div class="fi"><label class="fl">Status</label><select class="inp" id="kont-status" style="width:200px"><option value="aktiv">Aktiv</option><option value="inaktiv">Inaktiv</option></select></div>
+    <!-- Buttons -->
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn bd" onclick="closeModal('m-kontakt')" style="padding:9px 14px">Abbrechen</button>
+      <button class="btn bs" style="flex:1" onclick="saveKontaktForm(false)">✓ Speichern und Details</button>
+      <button class="btn bp" style="flex:1" onclick="saveKontaktForm(true)">✓ Speichern und Schließen</button>
     </div>
   </div>
 </div>
