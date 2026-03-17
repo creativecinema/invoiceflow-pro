@@ -256,7 +256,7 @@ app.post('/api/artikel', requireAuth, wrap(async (req, res) => {
 
 app.put('/api/artikel/:id', requireAuth, wrap(async (req, res) => {
   const d = req.body;
-  db.prepare('UPDATE artikel SET nr=?,name=?,desc=?,unit=?,price=?,ek=?,vat=?,cat=?,active=?,updated_at=datetime("now") WHERE id=?').run(d.nr,d.name,d.desc||'',d.unit||'h',d.price||0,d.ek||0,d.vat||19,d.cat||'Dienstleistung',d.active!==false?1:0,req.params.id);
+  db.prepare('UPDATE artikel SET nr=?,name=?,desc=?,long_desc=?,internal_note=?,unit=?,price=?,ek=?,vat=?,cat=?,stock=?,min_stock=?,weight=?,ean=?,active=?,updated_at=datetime("now") WHERE id=?').run(d.nr,d.name,d.desc||'',d.long_desc||'',d.internal_note||'',d.unit||'h',d.price||0,d.ek||0,d.vat||19,d.cat||'Dienstleistung',d.stock||0,d.min_stock||0,d.weight||0,d.ean||'',d.active!==false?1:0,req.params.id);
   res.json(db.prepare('SELECT * FROM artikel WHERE id = ?').get(req.params.id));
 }));
 
@@ -390,7 +390,7 @@ app.post('/api/rechnungen', requireAuth, wrap(async (req, res) => {
   const net = (d.items||[]).reduce((s,it) => s + (it.total||0), 0);
   const vatAmt = Math.round(net * (d.vat_pct||19) / 100 * 100) / 100;
   const gross = net + vatAmt;
-  db.prepare('INSERT INTO rechnungen (id,nr,kunden_id,customer,date,due,service_date,status,immutable,is_storno,storno_ref,net,vat_pct,vat_amt,gross,notes,created_by) VALUES (?,?,?,?,?,?,?,?,0,0,"",?,19,?,?,?,?)').run(id,nr,d.kunden_id||null,d.customer||'',d.date||today(),d.due||addDays(today(),14),d.service_date||d.date||today(),d.status||'draft',net,vatAmt,gross,d.notes||'',req.user.id);
+  db.prepare('INSERT INTO rechnungen (id,nr,kunden_id,customer,date,due,service_date,status,immutable,is_storno,storno_ref,net,vat_pct,vat_amt,gross,notes,bestell_nr,created_by) VALUES (?,?,?,?,?,?,?,?,0,0,"",?,19,?,?,?,?,?)').run(id,nr,d.kunden_id||null,d.customer||'',d.date||today(),d.due||addDays(today(),14),d.service_date||d.date||today(),d.status||'draft',net,vatAmt,gross,d.notes||'',d.bestell_nr||'',req.user.id);
   savePositionen('rechnung_positionen', 'rechnung_id', id, d.items);
   logActivity(req.user.id, req.user.name, 'create', 'rechnungen', id, nr);
   res.json({ ...db.prepare('SELECT * FROM rechnungen WHERE id = ?').get(id), items: getRechnungPositionen(id) });
@@ -406,7 +406,7 @@ app.put('/api/rechnungen/:id', requireAuth, wrap(async (req, res) => {
   const vatAmt = Math.round(net * (d.vat_pct||19) / 100 * 100) / 100;
   // Mark immutable when status leaves draft
   const nowImmutable = (d.status !== 'draft') ? 1 : 0;
-  db.prepare('UPDATE rechnungen SET kunden_id=?,customer=?,date=?,due=?,service_date=?,status=?,immutable=?,net=?,vat_pct=?,vat_amt=?,gross=?,notes=?,updated_at=datetime("now") WHERE id=?').run(d.kunden_id||null,d.customer||'',d.date,d.due,d.service_date||d.date,d.status,nowImmutable,net,d.vat_pct||19,vatAmt,net+vatAmt,d.notes||'',req.params.id);
+  db.prepare('UPDATE rechnungen SET kunden_id=?,customer=?,date=?,due=?,service_date=?,status=?,immutable=?,net=?,vat_pct=?,vat_amt=?,gross=?,notes=?,bestell_nr=?,updated_at=datetime("now") WHERE id=?').run(d.kunden_id||null,d.customer||'',d.date,d.due,d.service_date||d.date,d.status,nowImmutable,net,d.vat_pct||19,vatAmt,net+vatAmt,d.notes||'',d.bestell_nr||'',req.params.id);
   if (!existing.immutable && d.items) savePositionen('rechnung_positionen', 'rechnung_id', req.params.id, d.items);
   res.json({ ...db.prepare('SELECT * FROM rechnungen WHERE id = ?').get(req.params.id), items: getRechnungPositionen(req.params.id) });
 }));
@@ -641,6 +641,179 @@ app.get('/api/dashboard', requireAuth, wrap(async (req, res) => {
   const topKunden = db.prepare('SELECT id,nr,company,revenue FROM kunden ORDER BY revenue DESC LIMIT 5').all();
   const recentActivity = db.prepare('SELECT * FROM activity_log ORDER BY created_at DESC LIMIT 10').all();
   res.json({ revenue, openAmt, overdue, pipeline, activeKunden, activeAngebote, recentInvoices, activeProjekte, phases, topKunden, recentActivity });
+}));
+
+
+// ═══════════════════════════════════════════════════
+//  PDF GENERATION (server-side, pdfkit)
+// ═══════════════════════════════════════════════════
+function buildPDF(type, doc, items, cfg, res, filename) {
+  const PDFDocument = require('pdfkit');
+  const pd = new PDFDocument({ size: 'A4', margin: 0, info: { Title: doc.nr, Author: cfg.company || 'InvoiceFlow Pro' } });
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
+  pd.pipe(res);
+
+  const M = 50; // margin
+  const W = pd.page.width - M * 2;
+  const isStorno = doc.is_storno || doc.status === 'storno';
+  const isAngebot = type === 'angebot';
+  const title = isAngebot ? 'Angebot' : (isStorno ? 'Stornorechnung' : 'Rechnung');
+  const co = cfg.company || 'Ihr Unternehmen';
+  const tmplHeader = isAngebot ? (cfg.angebot_header_text || '') : (cfg.invoice_header_text || '');
+  const tmplFooter = isAngebot ? (cfg.angebot_footer_text || '') : (cfg.invoice_footer_text || '');
+  const payDays = parseInt(cfg.payment_days) || 14;
+
+  // ── Header band ──
+  if (isStorno) {
+    pd.rect(M, M, W, 20).fill('#c53030');
+    pd.fill('#fff').font('Helvetica-Bold').fontSize(9).text('STORNORECHNUNG – Storniert: ' + (doc.storno_ref || ''), M + 5, M + 6, { width: W - 10 });
+  }
+  const yStart = isStorno ? M + 28 : M;
+
+  // ── Company block ──
+  pd.fill('#1a1a2e').font('Helvetica-Bold').fontSize(18).text(co, M, yStart, { width: W * 0.6 });
+  let yC = yStart + 24;
+  pd.font('Helvetica').fontSize(8).fill('#555');
+  const coLines = [cfg.company_address, cfg.company_email, cfg.company_phone, cfg.tax_nr ? 'St.-Nr.: ' + cfg.tax_nr : '', cfg.uid_nr ? 'USt-IdNr.: ' + cfg.uid_nr : ''].filter(Boolean);
+  coLines.forEach(l => { pd.text(l, M, yC, { width: W * 0.55 }); yC += 11; });
+
+  // ── Doc title & meta (right) ──
+  pd.font('Helvetica-Bold').fontSize(22).fill(isAngebot ? '#2b6cb0' : '#1a1a2e').text(title, M + W * 0.6, yStart, { width: W * 0.4, align: 'right' });
+  pd.font('Helvetica').fontSize(9).fill('#444');
+  let yR = yStart + 32;
+  pd.text(`Nummer: ${doc.nr}`, M + W * 0.6, yR, { width: W * 0.4, align: 'right' }); yR += 13;
+  if (doc.bestell_nr) { pd.text(`Bestell-Nr.: ${doc.bestell_nr}`, M + W * 0.6, yR, { width: W * 0.4, align: 'right' }); yR += 13; }
+  pd.text(`Datum: ${doc.date}`, M + W * 0.6, yR, { width: W * 0.4, align: 'right' }); yR += 13;
+  if (isAngebot) {
+    pd.text(`Gültig bis: ${doc.valid}`, M + W * 0.6, yR, { width: W * 0.4, align: 'right' }); yR += 13;
+  } else {
+    pd.text(`Leistungsdatum: ${doc.service_date || doc.date}`, M + W * 0.6, yR, { width: W * 0.4, align: 'right' }); yR += 13;
+    pd.text(`Zahlungsziel: ${addDays(doc.date, payDays)}`, M + W * 0.6, yR, { width: W * 0.4, align: 'right' }); yR += 13;
+  }
+
+  // ── Recipient address box ──
+  const yAddr = Math.max(yC, yR) + 14;
+  pd.rect(M, yAddr, W * 0.55, 58).stroke('#d1d5db');
+  pd.font('Helvetica').fontSize(7).fill('#888').text('Empfänger', M + 6, yAddr + 5);
+  pd.font('Helvetica').fontSize(10).fill('#111').text(doc.customer || '—', M + 6, yAddr + 16, { width: W * 0.5 });
+
+  // ── Intro text ──
+  let y = yAddr + 68;
+  if (tmplHeader && tmplHeader.trim()) {
+    pd.font('Helvetica').fontSize(9).fill('#333').text(tmplHeader, M, y, { width: W }); y += 28;
+  }
+
+  // ── Table header ──
+  y += 6;
+  pd.rect(M, y, W, 18).fill('#1a1a2e');
+  const cols = [30, W * 0.42, 60, 70, 40, 75];
+  const cOff = [M, M + 35, M + 35 + W * 0.42, M + 35 + W * 0.42 + 65, M + 35 + W * 0.42 + 135, M + 35 + W * 0.42 + 180];
+  pd.font('Helvetica-Bold').fontSize(8).fill('#fff');
+  ['Pos.', 'Bezeichnung', 'Menge', 'EP netto', 'MwSt.', 'GP netto'].forEach((h, i) => {
+    pd.text(h, cOff[i] + 3, y + 5, { width: cols[i], align: i >= 2 ? 'right' : 'left' });
+  });
+  y += 18;
+
+  // ── Table rows ──
+  items.forEach((it, idx) => {
+    const rowH = 18;
+    if (y + rowH > pd.page.height - 120) { pd.addPage({ margin: 0 }); y = M; }
+    if (idx % 2 === 0) pd.rect(M, y, W, rowH).fill('#f9fafb');
+    pd.font('Helvetica').fontSize(9).fill('#111');
+    const vals = [String(idx + 1), it.desc || '', `${it.qty} ${it.unit}`, Math.abs(it.price || 0).toFixed(2) + ' €', '19%', Math.abs(it.total || 0).toFixed(2) + ' €'];
+    vals.forEach((v, i) => { pd.text(v, cOff[i] + 3, y + 5, { width: cols[i] - 3, align: i >= 2 ? 'right' : 'left', lineBreak: false }); });
+    y += rowH;
+  });
+
+  // ── Totals box ──
+  y += 10;
+  const net = Math.abs(doc.net || 0), vatAmt = Math.abs(doc.vat_amt || 0), gross = Math.abs(doc.gross || 0);
+  const totX = M + W * 0.58;
+  const totW = W * 0.42;
+  const addTotal = (label, val, bold) => {
+    if (bold) { pd.rect(totX, y, totW, 20).fill('#1a1a2e'); pd.font('Helvetica-Bold').fontSize(10).fill('#fff'); }
+    else { pd.rect(totX, y, totW, 16).fill('#f3f4f6'); pd.font('Helvetica').fontSize(9).fill('#333'); }
+    pd.text(label, totX + 6, y + (bold ? 5 : 4), { width: totW * 0.5 });
+    pd.text(val, totX + totW * 0.5, y + (bold ? 5 : 4), { width: totW * 0.45, align: 'right' });
+    y += bold ? 20 : 16;
+  };
+  addTotal('Nettobetrag', net.toFixed(2) + ' €', false);
+  addTotal('zzgl. MwSt. 19%', vatAmt.toFixed(2) + ' €', false);
+  addTotal('Gesamtbetrag', gross.toFixed(2) + ' €', true);
+
+  // ── Footer text ──
+  y += 12;
+  if (tmplFooter && tmplFooter.trim()) {
+    pd.font('Helvetica').fontSize(9).fill('#444').text(tmplFooter, M, y, { width: W }); y += 22;
+  }
+  if (!isAngebot && cfg.iban) {
+    const payTxt = (cfg.invoice_payment_text || 'Bitte überweisen Sie innerhalb von {{payment_days}} Tagen.')
+      .replace('{{payment_days}}', payDays);
+    pd.font('Helvetica').fontSize(8).fill('#555').text(payTxt + (cfg.iban ? '  IBAN: ' + cfg.iban + (cfg.bic ? '  BIC: ' + cfg.bic : '') : ''), M, y, { width: W }); y += 18;
+  }
+  if (isStorno) {
+    pd.font('Helvetica-Oblique').fontSize(8).fill('#888').text(cfg.storno_text || 'Storno gemäß §14 UStG.', M, y, { width: W }); y += 16;
+  }
+
+  // ── Page footer ──
+  const pY = pd.page.height - 38;
+  pd.rect(M, pY, W, 1).fill('#e5e7eb');
+  pd.font('Helvetica').fontSize(7.5).fill('#888');
+  pd.text(co + (cfg.company_address ? '  ·  ' + cfg.company_address : ''), M, pY + 6, { width: W * 0.6 });
+  pd.text((cfg.company_email || '') + (cfg.iban ? '  ·  IBAN: ' + cfg.iban : ''), M + W * 0.6, pY + 6, { width: W * 0.4, align: 'right' });
+  pd.font('Helvetica').fontSize(7).fill('#ccc').text('Erstellt mit InvoiceFlow Pro  ·  §147 AO – Aufbewahrungspflicht 10 Jahre', M, pY + 17, { width: W, align: 'center' });
+
+  pd.end();
+}
+
+app.get('/api/rechnungen/:id/pdf', requireAuth, wrap(async (req, res) => {
+  const inv = db.prepare('SELECT * FROM rechnungen WHERE id = ?').get(req.params.id);
+  if (!inv) return res.status(404).json({ error: 'Nicht gefunden' });
+  const items = getRechnungPositionen(inv.id);
+  const cfgRows = db.prepare('SELECT key, value FROM settings').all();
+  const cfg = {}; cfgRows.forEach(r => { cfg[r.key] = r.value; });
+  buildPDF('rechnung', inv, items, cfg, res, inv.nr);
+}));
+
+app.get('/api/angebote/:id/pdf', requireAuth, wrap(async (req, res) => {
+  const inv = db.prepare('SELECT * FROM angebote WHERE id = ?').get(req.params.id);
+  if (!inv) return res.status(404).json({ error: 'Nicht gefunden' });
+  const items = getAngebotPositionen(inv.id);
+  const cfgRows = db.prepare('SELECT key, value FROM settings').all();
+  const cfg = {}; cfgRows.forEach(r => { cfg[r.key] = r.value; });
+  buildPDF('angebot', inv, items, cfg, res, inv.nr);
+}));
+
+// ═══════════════════════════════════════════════════
+//  PROJEKT DATENABLAGE
+// ═══════════════════════════════════════════════════
+app.get('/api/projekte/:id/files', requireAuth, wrap(async (req, res) => {
+  res.json(db.prepare('SELECT * FROM projekt_files WHERE projekt_id = ? ORDER BY created_at DESC').all(req.params.id));
+}));
+
+app.post('/api/projekte/:id/files', requireAuth, upload.single('file'), wrap(async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Keine Datei' });
+  const fileId = uid();
+  db.prepare('INSERT INTO projekt_files (id, projekt_id, name, filename, size, mime_type, note, created_by) VALUES (?,?,?,?,?,?,?,?)')
+    .run(fileId, req.params.id, req.body.name || req.file.originalname, req.file.filename, req.file.size, req.file.mimetype, req.body.note || '', req.user.name);
+  logActivity(req.user.id, req.user.name, 'upload', 'projekt_files', fileId, req.file.originalname);
+  res.json(db.prepare('SELECT * FROM projekt_files WHERE id = ?').get(fileId));
+}));
+
+app.delete('/api/projekte/:id/files/:fileId', requireAuth, wrap(async (req, res) => {
+  const f = db.prepare('SELECT * FROM projekt_files WHERE id = ?').get(req.params.fileId);
+  if (f?.filename) { try { fs.unlinkSync(path.join(UPLOAD_DIR, f.filename)); } catch {} }
+  db.prepare('DELETE FROM projekt_files WHERE id = ?').run(req.params.fileId);
+  res.json({ ok: true });
+}));
+
+app.get('/api/projekte/:id/files/:fileId/download', requireAuth, wrap(async (req, res) => {
+  const f = db.prepare('SELECT * FROM projekt_files WHERE id = ?').get(req.params.fileId);
+  if (!f) return res.status(404).json({ error: 'Nicht gefunden' });
+  const fp = path.join(UPLOAD_DIR, f.filename);
+  if (!fs.existsSync(fp)) return res.status(404).json({ error: 'Datei nicht gefunden' });
+  res.download(fp, f.name);
 }));
 
 // ─── Error Handler ─────────────────────────────────
