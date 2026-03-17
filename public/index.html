@@ -101,6 +101,7 @@ select.inp{appearance:none;cursor:pointer}textarea.inp{resize:vertical;min-heigh
 .lbox{background:var(--amb);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:8px 11px;font-size:11px;color:var(--am);line-height:1.55;margin-bottom:11px}
 .lbox strong{color:var(--am)}.lbox-blue{background:rgba(0,80,164,.08);border-color:rgba(0,80,164,.25);color:#58a6ff}
 .empty{text-align:center;padding:44px 20px;color:var(--t3)}.ei{font-size:30px;opacity:.2;margin-bottom:9px}.et{font-size:14px;font-weight:700;color:var(--t2);margin-bottom:4px}.es{font-size:11px}
+#root{min-height:100vh;background:var(--bg)}
 #lr{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
 .lb{width:420px;background:linear-gradient(160deg,rgba(22,27,34,.99),rgba(13,18,26,1));border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:34px 30px;box-shadow:0 30px 80px rgba(0,0,0,.75)}
 .lg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(240,180,41,.09),transparent 70%);pointer-events:none}
@@ -439,6 +440,7 @@ function Dashboard() {
   },[]);
   const E=React.createElement;
   if(loading) return E('div',null,E(Topbar,{title:'Dashboard'}),E('div',{className:'content flex aic je',style:{height:'60vh'}},E('span',{className:'spin'})));
+  if(!data) return E('div',null,E(Topbar,{title:'Dashboard'}),E('div',{className:'content'},E('div',{className:'empty'},E('div',{className:'ei'},'⚠️'),E('div',{className:'et'},'Dashboard konnte nicht geladen werden'),E('button',{className:'btn bp mt3',onClick:()=>window.location.reload()},'Neu laden'))));
   const d=data||{};
   const phases=['Qualifizierung','Angebot','Verhandlung','Abschluss'];
   const qas=[
@@ -475,7 +477,7 @@ function Dashboard() {
         E('div',null,
           E('div',{className:'card mb3'},
             E('div',{className:'flex jb aic mb3'},E('div',{style:{fontWeight:700,fontSize:13}},'Sales Pipeline'),E('button',{className:'btn bg sm',onClick:()=>setView('crm-chancen')},'Chancen →')),
-            phases.map(ph=>{const pv=(d.phases||[]).find(p=>p.phase===ph)?.total||0;return E('div',{key:ph,className:'flex jb aic',style:{padding:'4px 0',borderBottom:'1px solid rgba(48,54,61,.3)',fontSize:12}},E('span',{style:{color:'var(--t2)'}},ph),E('span',{style:{fontWeight:600,fontFamily:'monospace'}},eur(pv)));})),
+            phases.map(ph=>{const pv=((d&&d.phases)||[]).find(p=>p.phase===ph)?.total||0;return E('div',{key:ph,className:'flex jb aic',style:{padding:'4px 0',borderBottom:'1px solid rgba(48,54,61,.3)',fontSize:12}},E('span',{style:{color:'var(--t2)'}},ph),E('span',{style:{fontWeight:600,fontFamily:'monospace'}},eur(pv)));})),
           E('div',{className:'card mb3'},
             E('div',{className:'flex jb aic mb3'},E('div',{style:{fontWeight:700,fontSize:13}},'Aktive Projekte'),E('button',{className:'btn bg sm',onClick:()=>setView('projekte')},'Alle →')),
             (d.activeProjekte||[]).length?d.activeProjekte.map(p=>{const pct=Math.round((p.spent/Math.max(p.budget,1))*100);return E('div',{key:p.id,style:{marginBottom:10}},E('div',{className:'flex jb mb1'},E('span',{style:{fontSize:12,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'80%'}},p.name),E('span',{style:{fontSize:10,color:'var(--t3)'}},`${pct}%`)),E('div',{style:{fontSize:10,color:'var(--t3)',marginBottom:3}},p.kunden_company||''),E('div',{className:'pbar'},E('div',{className:'pfill',style:{width:`${pct}%`}})));})
@@ -1171,6 +1173,23 @@ function Placeholder({title,icon}) {
   return E('div',null,E(Topbar,{title}),E('div',{className:'content'},E('div',{className:'empty',style:{paddingTop:70}},E('div',{style:{fontSize:44,marginBottom:14,opacity:.25}},icon||'🚧'),E('div',{style:{fontSize:13,fontWeight:700,color:'var(--t2)',marginBottom:6}},title),E('div',{style:{fontSize:11,color:'var(--t3)'}},'Wird implementiert.'))));
 }
 
+// ─── Error Boundary ────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = {err:null}; }
+  static getDerivedStateFromError(e) { return {err:e}; }
+  componentDidCatch(e,info) { console.error('InvoiceFlow Error:',e,info); }
+  render() {
+    if(this.state.err) {
+      return React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#0d1117',flexDirection:'column',gap:16,padding:20}},
+        React.createElement('div',{style:{fontSize:32}},'⚠️'),
+        React.createElement('div',{style:{fontSize:16,fontWeight:700,color:'#e6edf3'}},'Fehler beim Laden'),
+        React.createElement('div',{style:{fontSize:12,color:'#8b949e',maxWidth:480,textAlign:'center',lineHeight:1.6}},this.state.err.message||'Unbekannter Fehler'),
+        React.createElement('button',{style:{marginTop:8,padding:'8px 20px',background:'#f0b429',color:'#000',border:'none',borderRadius:6,fontWeight:700,cursor:'pointer'},onClick:()=>window.location.reload()},'↺ Neu laden'));
+    }
+    return this.props.children;
+  }
+}
+
 // ─── App Root ──────────────────────────────────────
 function App() {
   const [user,setUser] = useState(null);
@@ -1181,7 +1200,7 @@ function App() {
   const [invCount,setInvCount] = useState(0);
 
   useEffect(()=>{
-    get('/auth/check').then(r=>{if(r.ok)setUser(r.user);setChecked(true);}).catch(()=>setChecked(true));
+    get('/auth/check').then(r=>{if(r&&r.ok)setUser(r.user);}).catch(()=>{}).finally(()=>setChecked(true));
   },[]);
 
   useEffect(()=>{
@@ -1203,7 +1222,7 @@ function App() {
   const ctx={user,toast,logout,setView,detail,setDetail};
   const E=React.createElement;
 
-  if(!checked) return E('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh'}},E('span',{className:'spin'}));
+  if(!checked) return E('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--bg)'}},E('span',{className:'spin'}));
   if(!user) return E(Ctx.Provider,{value:ctx},E(Login,{onLogin:u=>{setUser(u);setView('dashboard');},showToast:toast}),E(Toasts,{list:toasts}));
 
   const TITLES={dashboard:'Dashboard','crm-kontakte':'CRM · Kontakte','crm-kunden':'CRM · Kunden','crm-lieferanten':'CRM · Lieferanten','crm-chancen':'CRM · Chancen','vk-angebote':'Verkauf · Angebote','vk-auftraege':'Verkauf · Aufträge',invoices:'Rechnungen / Gutschriften',artikel:'Artikelverwaltung',projekte:'Projekte',zeit:'Zeiterfassung',belege:'Belege & OCR',versicherungen:'Versicherungen',users:'Nutzerverwaltung',settings:'Einstellungen'};
@@ -1231,7 +1250,7 @@ function App() {
 }
 
 const root=ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(App));
+root.render(React.createElement(ErrorBoundary,null,React.createElement(App)));
 </script>
 </body>
 </html>
