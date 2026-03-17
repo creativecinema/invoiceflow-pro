@@ -60,6 +60,25 @@ def validate(path):
     if not check(f"All 16 views present ({len(views)} found)", not missing_views, f"missing: {missing_views}"):
         errors += 1
 
+    # 5b. All views must be INSIDE .content div
+    content_close = html.find('</div><!-- /content -->')
+    if content_close > 0:
+        views_in_content = re.findall(r'<div class="view" id="([^"]+)"', html[:content_close])
+        all_views_all = re.findall(r'<div class="view" id="([^"]+)"', html)
+        outside = [v for v in all_views_all if v not in views_in_content]
+        if not check(f"All views inside content div ({len(views_in_content)} inside)", not outside, f"outside: {outside}"):
+            errors += 1
+    
+    # 5c. HTML nesting: content < main < layout < app < modals
+    content_pos = html.find('</div><!-- /content -->')
+    main_pos    = html.find('</div><!-- /main -->')
+    layout_pos  = html.find('</div><!-- /layout -->')
+    app_pos     = html.find('</div><!-- /app -->')
+    if all(p > 0 for p in [content_pos, main_pos, layout_pos, app_pos]):
+        order_ok = content_pos < main_pos < layout_pos < app_pos
+        if not check("HTML nesting order correct", order_ok, "content/main/layout/app order wrong"):
+            errors += 1
+
     # 6. No duplicate IDs
     ids = re.findall(r'id="([^"]+)"', html)
     dupes = {k:v for k,v in Counter(ids).items() if v>1}
