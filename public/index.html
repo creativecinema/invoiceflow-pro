@@ -483,7 +483,7 @@ function Dashboard() {
           E('div',{className:'card'},
             E('div',{style:{fontWeight:700,fontSize:13,marginBottom:11}},'Top Kunden'),
             (d.topKunden||[]).map((k,i)=>{const colors=['#f0b429','#58a6ff','#3fb950','#a371f7'];return E('div',{key:k.id,className:'flex aic g-2',style:{padding:'5px 0',borderBottom:'1px solid rgba(48,54,61,.3)'}},E('div',{style:{width:21,height:21,borderRadius:5,background:colors[i%4],color:'#000',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,flexShrink:0}},k.company[0]),E('span',{style:{flex:1,fontSize:12,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},k.company),E('span',{style:{fontSize:11,fontFamily:'monospace',fontWeight:600,color:'var(--am)'}},eur(k.revenue)));})
-          )))));
+          ))));
 }
 
 // ─── Generic List View ─────────────────────────────
@@ -1052,7 +1052,7 @@ function Artikel() {
       
       E('div',{className:'flex g-2 mt3'},
         E('button',{className:'btn bp wf',onClick:save},'✓ Speichern'),
-        E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen'))));
+        E('button',{className:'btn bg',onClick:()=>setModal(false)},'Abbrechen')));
 }
 
 // ─── Projekte mit Datenablage ──────────────────────
