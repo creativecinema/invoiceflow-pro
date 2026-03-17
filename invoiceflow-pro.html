@@ -715,6 +715,75 @@ tbody tr{transition:background .1s}
   color:rgba(245,158,11,.3);pointer-events:none;
 }
 
+
+/* ── NEW SECTIONS: CRM / VERKAUF / EINKAUF / PROJEKTE ───────── */
+
+/* Ereignis cards */
+.er-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r-lg);padding:14px 16px;
+  margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:border-color .13s;
+}
+.er-card:hover{border-color:var(--b2)}
+.er-icon{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--s2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.er-body{flex:1;min-width:0}
+.er-title{font-size:13px;font-weight:600;color:#e2e8f0}
+.er-meta{font-size:11px;color:var(--t3);margin-top:3px}
+.er-note{font-size:11px;color:var(--t2);margin-top:6px;font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.er-right{flex-shrink:0;text-align:right}
+
+/* Chancen cards */
+.chance-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r-lg);padding:16px;
+  transition:border-color .13s,transform .13s;
+}
+.chance-card:hover{border-color:var(--b2);transform:translateY(-1px)}
+
+/* Rahmenaufträge */
+.ra-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r-lg);padding:16px;
+  margin-bottom:10px;
+  transition:border-color .13s;
+}
+.ra-card:hover{border-color:var(--b2)}
+
+/* Projektauftrag cards */
+.pa-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r-lg);padding:16px;
+  margin-bottom:10px;
+  transition:border-color .13s;
+}
+.pa-card:hover{border-color:var(--b2)}
+
+/* OP Liste rows */
+.op-row{
+  background:var(--s1);border:1px solid var(--b1);
+  border-left:3px solid var(--rd);
+  border-radius:var(--r-md);padding:14px 16px;
+  margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;
+  transition:border-color .13s;
+}
+.op-row:hover{border-color:var(--b2)}
+
+/* Angebot item rows (editor) */
+.ang-item-row{
+  display:grid;
+  grid-template-columns:2fr 60px 70px 90px 90px 30px;
+  gap:6px;align-items:center;margin-bottom:6px;
+}
+
 </style>
 </head>
 <body>
@@ -1152,6 +1221,200 @@ tbody tr{transition:background .1s}
 </div><!-- /layout -->
 </div><!-- /app -->
 
+
+<!-- ═══════════════ CRM: KONTAKTE ════════════════════════════ -->
+<div class="view" id="v-crm-kontakte">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Gesamt</div><div class="kpi-v" style="font-size:16px" id="kontak-count">0</div></div>
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Aktiv</div><div class="kpi-v up" style="font-size:16px" id="kontak-aktiv">0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editKontakt(null)">+ Neuer Kontakt</button>
+  </div>
+  <div id="kontak-list"></div>
+</div>
+
+<!-- ═══════════════ CRM: INTERESSENTEN ═══════════════════════ -->
+<div class="view" id="v-crm-interessenten">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Interessenten</div><div class="kpi-v" style="font-size:16px" id="inter-count">0</div></div>
+      <div class="kpi" style="flex:1;min-width:160px"><div class="kpi-l">Gesamtpotenzial</div><div class="kpi-v am" style="font-size:16px" id="inter-potential">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editInteressent(null)">+ Neuer Interessent</button>
+  </div>
+  <div id="inter-list"></div>
+</div>
+
+<!-- ═══════════════ CRM: KUNDEN ══════════════════════════════ -->
+<div class="view" id="v-crm-kunden">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Aktive Kunden</div><div class="kpi-v up" style="font-size:16px" id="crm-kunden-count">0</div></div>
+      <div class="kpi" style="flex:1;min-width:180px"><div class="kpi-l">Gesamtumsatz</div><div class="kpi-v am" style="font-size:16px" id="crm-kunden-umsatz">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editKunde(null)">+ Neuer Kunde</button>
+  </div>
+  <div id="crm-kunden-list"></div>
+</div>
+
+<!-- ═══════════════ CRM: LIEFERANTEN ═════════════════════════ -->
+<div class="view" id="v-crm-lieferanten">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Lieferanten</div><div class="kpi-v" style="font-size:16px" id="lief-count">0</div></div>
+      <div class="kpi" style="flex:1;min-width:160px"><div class="kpi-l">Einkaufsvolumen</div><div class="kpi-v am" style="font-size:16px" id="lief-umsatz">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editLieferant(null)">+ Neuer Lieferant</button>
+  </div>
+  <div id="lief-list"></div>
+</div>
+
+<!-- ═══════════════ CRM: EREIGNISSE ══════════════════════════ -->
+<div class="view" id="v-crm-ereignisse">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Ereignisse</div><div class="kpi-v" style="font-size:16px" id="ereignis-count">0</div></div>
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Heute</div><div class="kpi-v am" style="font-size:16px" id="ereignis-heute">0 heute</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editEreignis(null)">+ Neues Ereignis</button>
+  </div>
+  <div id="ereignis-list"></div>
+</div>
+
+<!-- ═══════════════ CRM: CHANCEN ═════════════════════════════ -->
+<div class="view" id="v-crm-chancen">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Chancen</div><div class="kpi-v" style="font-size:16px" id="chance-count">0</div></div>
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Volumen</div><div class="kpi-v" style="font-size:16px" id="chance-volume">€ 0</div></div>
+      <div class="kpi" style="flex:1;min-width:160px"><div class="kpi-l">Gewichtet</div><div class="kpi-v am" style="font-size:16px" id="chance-gewichtet">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editChance(null)">+ Neue Chance</button>
+  </div>
+  <div class="g3" id="chance-list" style="align-items:start"></div>
+</div>
+
+<!-- ═══════════════ VERKAUF: ANGEBOTE ════════════════════════ -->
+<div class="view" id="v-vk-angebote">
+  <div class="view-toolbar">
+    <div class="g3" style="flex:1;gap:8px">
+      <div class="kpi"><div class="kpi-l">Angebote</div><div class="kpi-v" style="font-size:16px" id="ang-count">0</div></div>
+      <div class="kpi"><div class="kpi-l">Volumen</div><div class="kpi-v am" style="font-size:16px" id="ang-vol">€ 0</div></div>
+      <div class="kpi"><div class="kpi-l">Status</div><div class="kpi-v" style="font-size:13px" id="ang-offen">0 aktiv</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editAngebot(null)">+ Neues Angebot</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Gültig bis</th><th style="text-align:right">Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="ang-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ VERKAUF: RAHMENAUFTRÄGE ══════════════════ -->
+<div class="view" id="v-vk-rahmen">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Rahmenaufträge</div><div class="kpi-v" style="font-size:16px" id="rahmen-count">0</div></div>
+      <div class="kpi" style="flex:1;min-width:180px"><div class="kpi-l">Gesamtvolumen</div><div class="kpi-v am" style="font-size:16px" id="rahmen-vol">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editRahmen(null)">+ Neuer Rahmenauftrag</button>
+  </div>
+  <div id="rahmen-list"></div>
+</div>
+
+<!-- ═══════════════ VERKAUF: AUFTRÄGE ════════════════════════ -->
+<div class="view" id="v-vk-auftraege">
+  <div class="view-toolbar">
+    <div class="g3" style="flex:1;gap:8px">
+      <div class="kpi"><div class="kpi-l">Aufträge</div><div class="kpi-v" style="font-size:16px" id="auftr-count">0</div></div>
+      <div class="kpi"><div class="kpi-l">Volumen</div><div class="kpi-v am" style="font-size:16px" id="auftr-vol">€ 0</div></div>
+      <div class="kpi"><div class="kpi-l">Status</div><div class="kpi-v" style="font-size:13px" id="auftr-aktiv">0 aktiv</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editAuftrag(null)">+ Neuer Auftrag</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th>Liefertermin</th><th style="text-align:right">Brutto</th><th>Fortschritt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="auftr-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ EINKAUF: BESTELLUNGEN ════════════════════ -->
+<div class="view" id="v-ek-bestellungen">
+  <div class="view-toolbar">
+    <div class="g3" style="flex:1;gap:8px">
+      <div class="kpi"><div class="kpi-l">Bestellungen</div><div class="kpi-v" style="font-size:16px" id="best-count">0</div></div>
+      <div class="kpi"><div class="kpi-l">Volumen</div><div class="kpi-v am" style="font-size:16px" id="best-vol">€ 0</div></div>
+      <div class="kpi"><div class="kpi-l">Laufend</div><div class="kpi-v" style="font-size:13px" id="best-offen">0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editBestellung(null)">+ Neue Bestellung</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Nummer</th><th>Lieferant</th><th>Bestellt</th><th>Erwartet</th><th style="text-align:right">Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="best-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ EINKAUF: RECHNUNGEN ══════════════════════ -->
+<div class="view" id="v-ek-rechnungen">
+  <div class="view-toolbar">
+    <div class="g3" style="flex:1;gap:8px">
+      <div class="kpi"><div class="kpi-l">Eingangsrechnungen</div><div class="kpi-v" style="font-size:16px" id="ekr-count">0</div></div>
+      <div class="kpi"><div class="kpi-l">Offen</div><div class="kpi-v am" style="font-size:16px" id="ekr-offen">€ 0</div></div>
+      <div class="kpi"><div class="kpi-l">Bezahlt</div><div class="kpi-v up" style="font-size:16px" id="ekr-bezahlt">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editEkRech(null)">+ Eingangsrechnung</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Rechnungsnr.</th><th>Lieferant</th><th>Datum</th><th>Fällig</th><th>Kategorie</th><th style="text-align:right">Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="ekr-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ EINKAUF: OP LISTE ════════════════════════ -->
+<div class="view" id="v-ek-op">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Offene Posten</div><div class="kpi-v" style="font-size:14px;color:var(--rd)" id="op-count">0</div></div>
+      <div class="kpi" style="flex:1;min-width:180px"><div class="kpi-l">Gesamtbetrag offen</div><div class="kpi-v" style="font-size:20px;color:var(--rd)" id="op-total">€ 0</div></div>
+    </div>
+    <button class="btn bs bsm" onclick="renderOPListe()">⟳ Aktualisieren</button>
+  </div>
+  <div id="op-list"></div>
+</div>
+
+<!-- ═══════════════ ARTIKEL: VERKAUFSPREISE ══════════════════ -->
+<div class="view" id="v-art-vkpreise">
+  <div class="view-toolbar">
+    <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Preiszeilen</div><div class="kpi-v" style="font-size:14px" id="vkp-count">0</div></div>
+    <button class="btn bp bsm" onclick="editVkPreis(null)">+ Neuer Verkaufspreis</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Artikel</th><th>Kunde / Gruppe</th><th style="text-align:right">Preis</th><th>Gültig ab</th><th>Gültig bis</th><th>Rabatt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="vkp-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ ARTIKEL: EINKAUFSPREISE ══════════════════ -->
+<div class="view" id="v-art-ekpreise">
+  <div class="view-toolbar">
+    <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Preiszeilen</div><div class="kpi-v" style="font-size:14px" id="ekp-count">0</div></div>
+    <button class="btn bp bsm" onclick="editEkPreis(null)">+ Neuer Einkaufspreis</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Artikel</th><th>Lieferant</th><th style="text-align:right">EK-Preis</th><th style="text-align:right">Marge</th><th>Gültig ab</th><th>Gültig bis</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="ekp-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ PROJEKTE: AUFTRÄGE ═══════════════════════ -->
+<div class="view" id="v-proj-auftraege">
+  <div class="view-toolbar">
+    <div class="g3" style="flex:1;gap:8px">
+      <div class="kpi"><div class="kpi-l">Budget gesamt</div><div class="kpi-v" style="font-size:16px" id="pa-budget">€ 0</div></div>
+      <div class="kpi"><div class="kpi-l">Abgerechnet</div><div class="kpi-v up" style="font-size:16px" id="pa-abgerechnet">€ 0</div></div>
+      <div class="kpi"><div class="kpi-l">Offen</div><div class="kpi-v am" style="font-size:16px" id="pa-offen">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="editProjAuftrag(null)">+ Neuer Projektauftrag</button>
+  </div>
+  <div id="pa-list"></div>
+</div>
+
+<!-- ═══════════════ PROJEKTE: BUCHUNGSBERICHTE ═══════════════ -->
+<div class="view" id="v-proj-buchungen">
+  <div class="view-toolbar">
+    <div style="display:flex;gap:8px">
+      <div class="kpi" style="flex:0 0 auto;padding:10px 14px"><div class="kpi-l">Stunden gesamt</div><div class="kpi-v" style="font-size:16px" id="bb-stunden">0 h</div></div>
+      <div class="kpi" style="flex:1;min-width:160px"><div class="kpi-l">Betrag gesamt</div><div class="kpi-v am" style="font-size:16px" id="bb-betrag">€ 0</div></div>
+    </div>
+    <button class="btn bp bsm" onclick="newBuchungsbericht('')">+ Neuer Buchungsbericht</button>
+  </div>
+  <div class="card" style="padding:0"><table><thead><tr><th>Nummer</th><th>Bezeichnung</th><th>Zeitraum</th><th style="text-align:right">Stunden</th><th style="text-align:right">Betrag</th><th>Erstellt von</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="bb-tbody"></tbody></table></div>
+</div>
+
+
 <!-- ══════════════════ MODALS ════════════════════════════════════ -->
 <!-- Rechnung anzeigen -->
 <div class="modal-ov" id="m-inv-view">
@@ -1435,37 +1698,69 @@ var NAV_SECTIONS = [
   {sec:'Übersicht',items:[
     {id:'v-dashboard',icon:'grid',lbl:'Dashboard',roles:['superadmin','management','employee']}
   ]},
-  {sec:'Stammdaten',items:[
-    {id:'v-kunden',  icon:'users',   lbl:'Kunden',       roles:['superadmin','management','employee']},
-    {id:'v-artikel', icon:'box',     lbl:'Artikel',      roles:['superadmin','management','employee']},
-    {id:'v-texte',   icon:'file-text',lbl:'Textbausteine',roles:['superadmin','management','employee']},
+  {sec:'CRM',items:[
+    {id:'v-crm-kontakte',  icon:'users',       lbl:'Kontakte',      roles:['superadmin','management','employee']},
+    {id:'v-crm-interessenten',icon:'target',   lbl:'Interessenten', roles:['superadmin','management']},
+    {id:'v-crm-kunden',   icon:'user-check',   lbl:'Kunden',        roles:['superadmin','management','employee']},
+    {id:'v-crm-lieferanten',icon:'truck',      lbl:'Lieferanten',   roles:['superadmin','management']},
+    {id:'v-crm-ereignisse',icon:'calendar',    lbl:'Ereignisse',    roles:['superadmin','management','employee']},
+    {id:'v-crm-chancen',  icon:'trending-up',  lbl:'Chancen',       roles:['superadmin','management']},
+  ]},
+  {sec:'Verkauf',items:[
+    {id:'v-vk-angebote',  icon:'file-text',    lbl:'Angebote',      roles:['superadmin','management','employee']},
+    {id:'v-vk-rahmen',    icon:'clipboard',    lbl:'Rahmenaufträge',roles:['superadmin','management']},
+    {id:'v-vk-auftraege', icon:'briefcase',    lbl:'Aufträge',      roles:['superadmin','management','employee']},
+    {id:'v-invoices',     icon:'file',         lbl:'Rechnungen/Gutschr.',roles:['superadmin','management','employee'],badge:'inv'},
+  ]},
+  {sec:'Einkauf',items:[
+    {id:'v-ek-bestellungen',icon:'shopping-cart',lbl:'Bestellungen', roles:['superadmin','management']},
+    {id:'v-ek-rechnungen',icon:'file-minus',   lbl:'Rechnungen/Gutschr.',roles:['superadmin','management']},
+    {id:'v-ek-op',        icon:'alert-circle', lbl:'OP Liste Eingang',roles:['superadmin','management']},
+  ]},
+  {sec:'Artikel',items:[
+    {id:'v-artikel',      icon:'box',          lbl:'Artikel',       roles:['superadmin','management','employee']},
+    {id:'v-art-vkpreise', icon:'tag',          lbl:'Verkaufspreise',roles:['superadmin','management']},
+    {id:'v-art-ekpreise', icon:'tag',          lbl:'Einkaufspreise',roles:['superadmin','management']},
+  ]},
+  {sec:'Projekte',items:[
+    {id:'v-proj-auftraege',icon:'folder',      lbl:'Projektaufträge',roles:['superadmin','management','employee']},
+    {id:'v-proj-buchungen',icon:'clock',       lbl:'Buchungsberichte',roles:['superadmin','management','employee']},
+    {id:'v-projekte',     icon:'layers',       lbl:'Projekt-Übersicht',roles:['superadmin','management','employee']},
+    {id:'v-zeit',         icon:'clock',        lbl:'Zeiterfassung', roles:['superadmin','management','employee']},
   ]},
   {sec:'Finanzen',items:[
-    {id:'v-invoices',icon:'file',    lbl:'Rechnungen',   roles:['superadmin','management','employee'],badge:'inv'},
-    {id:'v-belege',  icon:'camera',  lbl:'Belege & OCR', roles:['superadmin','management','employee']},
-    {id:'v-banking', icon:'credit-card',lbl:'Banking',   roles:['superadmin','management']},
-  ]},
-  {sec:'Arbeit',items:[
-    {id:'v-projekte',icon:'folder',  lbl:'Projekte',     roles:['superadmin','management','employee']},
-    {id:'v-zeit',    icon:'clock',   lbl:'Zeiterfassung',roles:['superadmin','management','employee']},
+    {id:'v-belege',       icon:'camera',       lbl:'Belege & OCR',  roles:['superadmin','management','employee']},
+    {id:'v-banking',      icon:'credit-card',  lbl:'Banking',       roles:['superadmin','management']},
+    {id:'v-forecast',     icon:'bar-chart',    lbl:'Forecast',      roles:['superadmin','management']},
   ]},
   {sec:'KI & Analyse',items:[
-    {id:'v-chatbot', icon:'cpu',     lbl:'KI-Assistent', roles:['superadmin','management','employee']},
-    {id:'v-forecast',icon:'trending-up',lbl:'Forecast',  roles:['superadmin','management']},
+    {id:'v-chatbot',      icon:'cpu',          lbl:'KI-Assistent',  roles:['superadmin','management','employee']},
+    {id:'v-analytics',    icon:'pie-chart',    lbl:'Analysen',      roles:['superadmin','management']},
   ]},
-  {sec:'Versicherung',items:[
-    {id:'v-insurance',icon:'shield', lbl:'Versicherungen',roles:['superadmin','management']},
-    {id:'v-ins-portal',icon:'upload-cloud',lbl:'Upload-Portal',roles:['superadmin','management','ins_portal']},
-  ]},
-  {sec:'Administration',items:[
-    {id:'v-users',   icon:'user-check',lbl:'Nutzerverwaltung',roles:['superadmin'],adm:true},
-    {id:'v-analytics',icon:'bar-chart',lbl:'Analysen',      roles:['superadmin','management'],adm:true},
-    {id:'v-settings',icon:'settings', lbl:'Einstellungen',  roles:['superadmin','management'],adm:true},
+  {sec:'Stammdaten & System',items:[
+    {id:'v-texte',        icon:'file-text',    lbl:'Textbausteine', roles:['superadmin','management','employee']},
+    {id:'v-insurance',    icon:'shield',       lbl:'Versicherungen',roles:['superadmin','management']},
+    {id:'v-ins-portal',   icon:'upload-cloud', lbl:'Upload-Portal', roles:['superadmin','management','ins_portal']},
+    {id:'v-users',        icon:'user-check',   lbl:'Nutzerverwaltung',roles:['superadmin'],adm:true},
+    {id:'v-settings',     icon:'settings',     lbl:'Einstellungen', roles:['superadmin','management'],adm:true},
   ]},
 ];
 
 function svgIcon(name){
   var icons={
+
+    'target':      '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    'truck':       '<rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+    'calendar':    '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    'clipboard':   '<path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
+    'briefcase':   '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>',
+    'shopping-cart':'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61H19a2 2 0 001.99-1.83L22 6H6"/>',
+    'file-minus':  '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/>',
+    'alert-circle':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    'tag':         '<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+    'layers':      '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    'pie-chart':   '<path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/>',
+
     'grid':      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     'users':     '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
     'box':       '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>',
@@ -1520,7 +1815,23 @@ function showView(id){
     'v-banking':'Banking','v-projekte':'Projekte','v-zeit':'Zeiterfassung',
     'v-chatbot':'KI-Assistent','v-forecast':'Forecast & Cashflow','v-insurance':'Versicherungen',
     'v-ins-portal':'Upload-Portal','v-users':'Nutzerverwaltung','v-analytics':'Analysen',
-    'v-settings':'Einstellungen'
+    'v-settings':'Einstellungen',
+    'v-crm-kontakte':'CRM · Kontakte',
+    'v-crm-interessenten':'CRM · Interessenten',
+    'v-crm-kunden':'CRM · Kunden',
+    'v-crm-lieferanten':'CRM · Lieferanten',
+    'v-crm-ereignisse':'CRM · Ereignisse',
+    'v-crm-chancen':'CRM · Chancen',
+    'v-vk-angebote':'Verkauf · Angebote',
+    'v-vk-rahmen':'Verkauf · Rahmenaufträge',
+    'v-vk-auftraege':'Verkauf · Aufträge',
+    'v-ek-bestellungen':'Einkauf · Bestellungen',
+    'v-ek-rechnungen':'Einkauf · Eingangsrechnungen',
+    'v-ek-op':'Einkauf · OP Liste Eingang',
+    'v-art-vkpreise':'Artikel · Verkaufspreise',
+    'v-art-ekpreise':'Artikel · Einkaufspreise',
+    'v-proj-auftraege':'Projekte · Projektaufträge',
+    'v-proj-buchungen':'Projekte · Buchungsberichte'
   };
   if(pt) pt.textContent=titles[id]||id;
   if(id==='v-invoices')  renderInvoices();
@@ -1539,6 +1850,22 @@ function showView(id){
   if(id==='v-analytics') renderAnalytics();
   if(id==='v-settings')  loadSettings();
   if(id==='v-dashboard') renderDashboard();
+  if(id==='v-crm-kontakte')    renderKontakte();
+  if(id==='v-crm-interessenten') renderInteressenten();
+  if(id==='v-crm-kunden')      renderCrmKunden();
+  if(id==='v-crm-lieferanten') renderLieferanten();
+  if(id==='v-crm-ereignisse')  renderEreignisse();
+  if(id==='v-crm-chancen')     renderChancen();
+  if(id==='v-vk-angebote')     renderAngebote();
+  if(id==='v-vk-rahmen')       renderRahmen();
+  if(id==='v-vk-auftraege')    renderAuftraege();
+  if(id==='v-ek-bestellungen') renderBestellungen();
+  if(id==='v-ek-rechnungen')   renderEkRechnungen();
+  if(id==='v-ek-op')           renderOPListe();
+  if(id==='v-art-vkpreise')    renderVkPreise();
+  if(id==='v-art-ekpreise')    renderEkPreise();
+  if(id==='v-proj-auftraege')  renderProjAuftraege();
+  if(id==='v-proj-buchungen')  renderBuchungsberichte();
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -3312,6 +3639,1370 @@ function doLogout(){
   if(appDiv)appDiv.style.display='none';
 })();
 
+
+// ══════ NEW SECTIONS ══════
+
+// ═══════════════════════════════════════════════════════════════
+//  NEW SECTIONS: CRM / VERKAUF / EINKAUF / ARTIKEL / PROJEKTE
+// ═══════════════════════════════════════════════════════════════
+
+// ─── CRM DATA STORES ─────────────────────────────────────────
+var DEMO_KONTAKTE = [
+  {id:'C-001',nr:'C-001',type:'kontakt',firma:'Freelance Media',name:'Stefan Braun',email:'s.braun@freelance.de',phone:'+49 89 111 222',position:'Geschäftsführer',status:'aktiv',tags:['Design','IT'],created:'01.01.2025',notes:''},
+  {id:'C-002',nr:'C-002',type:'kontakt',firma:'MediaGroup AG',name:'Lena Fischer',email:'l.fischer@mediagroup.de',phone:'+49 89 333 444',position:'Marketing',status:'aktiv',tags:['Marketing'],created:'15.02.2025',notes:''},
+  {id:'C-003',nr:'C-003',type:'kontakt',firma:'StartUp Hub',name:'Jonas Müller',email:'j.mueller@startup.de',phone:'+49 89 555 666',position:'CEO',status:'inaktiv',tags:['IT'],created:'01.03.2025',notes:''},
+];
+function getKontakte(){var d=lsGet('if_kontakte');return(d&&d.length)?d:DEMO_KONTAKTE;}
+function saveKontakte(v){lsSet('if_kontakte',v);}
+
+var DEMO_INTERESSENTEN = [
+  {id:'I-001',nr:'I-001',firma:'Neue Medien GmbH',name:'Petra König',email:'p.koenig@neuemedien.de',phone:'+49 89 700 800',quelle:'Messe',status:'neu',potential:'hoch',umsatz:15000,created:'10.03.2025',notes:'Erstkontakt Messe München'},
+  {id:'I-002',nr:'I-002',firma:'Digital Services AG',name:'Markus Lange',email:'m.lange@digitalservices.de',phone:'+49 89 900 100',quelle:'Website',status:'qualifiziert',potential:'mittel',umsatz:8000,created:'12.03.2025',notes:'Interesse an Webentwicklung'},
+  {id:'I-003',nr:'I-003',firma:'Content Factory',name:'Anna Wolf',email:'a.wolf@contentfactory.de',phone:'+49 89 200 300',quelle:'Empfehlung',status:'in Verhandlung',potential:'hoch',umsatz:25000,created:'14.03.2025',notes:'Empfehlung von Acme GmbH'},
+];
+function getInteressenten(){var d=lsGet('if_interessenten');return(d&&d.length)?d:DEMO_INTERESSENTEN;}
+function saveInteressenten(v){lsSet('if_interessenten',v);}
+
+var DEMO_LIEFERANTEN = [
+  {id:'L-001',nr:'L-001',firma:'Print & More GmbH',name:'Klaus Schmidt',email:'k.schmidt@printmore.de',phone:'+49 89 400 500',iban:'DE11 2233 4455 6677 8899 00',uid:'DE987654321',zahlungsziel:30,rabatt:0,umsatz:12400,status:'aktiv',created:'01.01.2025'},
+  {id:'L-002',nr:'L-002',firma:'Technik-Depot AG',name:'Maria Hoffmann',email:'m.hoffmann@technikdepot.de',phone:'+49 89 600 700',iban:'DE22 3344 5566 7788 9900 11',uid:'DE123456789',zahlungsziel:14,rabatt:3,umsatz:8750,status:'aktiv',created:'01.02.2025'},
+  {id:'L-003',nr:'L-003',firma:'Cloud-Provider GmbH',name:'Thomas Becker',email:'t.becker@cloudprovider.de',phone:'+49 89 800 900',iban:'DE33 4455 6677 8899 0011 22',uid:'',zahlungsziel:7,rabatt:0,umsatz:4320,status:'aktiv',created:'01.03.2025'},
+];
+function getLieferanten(){var d=lsGet('if_lieferanten');return(d&&d.length)?d:DEMO_LIEFERANTEN;}
+function saveLieferanten(v){lsSet('if_lieferanten',v);}
+
+var DEMO_EREIGNISSE = [
+  {id:'E-001',type:'Anruf',datum:'17.03.2025',zeit:'09:00',kontakt:'Thomas Müller',firma:'Acme GmbH',betreff:'Statusupdate Projekt Website',notiz:'Kunde zufrieden, neues Angebot gewünscht',status:'erledigt',user:'Alexandra Weber'},
+  {id:'E-002',type:'E-Mail',datum:'17.03.2025',zeit:'11:30',kontakt:'Sabine Koch',firma:'TechStart AG',betreff:'Angebotsnachfrage RE-2025-004',notiz:'Fragen zu Lieferzeiten beantwortet',status:'erledigt',user:'Max Mustermann'},
+  {id:'E-003',type:'Meeting',datum:'18.03.2025',zeit:'14:00',kontakt:'Jonas Müller',firma:'StartUp Hub',betreff:'Erstpräsentation Leistungen',notiz:'Termin vereinbart, Präsentation vorbereiten',status:'geplant',user:'Julia Bauer'},
+  {id:'E-004',type:'Termin',datum:'20.03.2025',zeit:'10:00',kontakt:'Petra König',firma:'Neue Medien GmbH',betreff:'Demo-Termin Website-Konzept',notiz:'Prototyp zeigen',status:'geplant',user:'Alexandra Weber'},
+];
+function getEreignisse(){var d=lsGet('if_ereignisse');return(d&&d.length)?d:DEMO_EREIGNISSE;}
+function saveEreignisse(v){lsSet('if_ereignisse',v);}
+
+var DEMO_CHANCEN = [
+  {id:'CH-001',nr:'CH-001',name:'Website Relaunch Neue Medien',firma:'Neue Medien GmbH',kontakt:'Petra König',wert:18000,phase:'Qualifizierung',wahrscheinlichkeit:40,erwartet:'30.04.2025',quelle:'Messe',notes:'',created:'10.03.2025'},
+  {id:'CH-002',nr:'CH-002',name:'ERP-Einführung Content Factory',firma:'Content Factory',kontakt:'Anna Wolf',wert:35000,phase:'Angebot',wahrscheinlichkeit:70,erwartet:'15.04.2025',quelle:'Empfehlung',notes:'Angebot in Vorbereitung',created:'14.03.2025'},
+  {id:'CH-003',nr:'CH-003',name:'App-Entwicklung Digital Services',firma:'Digital Services AG',kontakt:'Markus Lange',wert:22000,phase:'Verhandlung',wahrscheinlichkeit:85,erwartet:'31.03.2025',quelle:'Website',notes:'Fast abgeschlossen',created:'12.03.2025'},
+];
+function getChancen(){var d=lsGet('if_chancen');return(d&&d.length)?d:DEMO_CHANCEN;}
+function saveChancen(v){lsSet('if_chancen',v);}
+
+// ─── VERKAUF DATA STORES ──────────────────────────────────────
+var DEMO_ANGEBOTE = [
+  {id:'ANG-001',nr:'ANG-2025-001',customer:'Neue Medien GmbH',customerId:'',date:'10.03.2025',valid:'10.04.2025',net:15126.05,vatAmt:2873.95,gross:18000,status:'offen',items:[{desc:'Konzeption & Design',qty:1,unit:'Pauschal',price:8000,total:8000},{desc:'Entwicklung',qty:40,unit:'h',price:120,total:4800},{desc:'Testing & Abnahme',qty:10,unit:'h',price:120,total:1200},{desc:'Projektmanagement',qty:5,unit:'h',price:225.21,total:1126.05}],notes:'Angebot gültig 30 Tage',created:'10.03.2025'},
+  {id:'ANG-002',nr:'ANG-2025-002',customer:'Content Factory',customerId:'',date:'14.03.2025',valid:'14.04.2025',net:29411.76,vatAmt:5588.24,gross:35000,status:'versendet',items:[{desc:'ERP Analyse & Konzept',qty:1,unit:'Pauschal',price:5000,total:5000},{desc:'Implementierung',qty:100,unit:'h',price:200,total:20000},{desc:'Schulung',qty:20,unit:'h',price:180,total:3600},{desc:'Support 12 Monate',qty:1,unit:'Jahr',price:811.76,total:811.76}],notes:'',created:'14.03.2025'},
+  {id:'ANG-003',nr:'ANG-2025-003',customer:'Digital Services AG',customerId:'',date:'12.03.2025',valid:'12.04.2025',net:18487.39,vatAmt:3512.61,gross:22000,status:'angenommen',items:[{desc:'App-Entwicklung iOS',qty:1,unit:'Pauschal',price:12000,total:12000},{desc:'App-Entwicklung Android',qty:1,unit:'Pauschal',price:4000,total:4000},{desc:'API-Integration',qty:10,unit:'h',price:248.74,total:2487.39}],notes:'',created:'12.03.2025'},
+];
+function getAngebote(){var d=lsGet('if_angebote');return(d&&d.length)?d:DEMO_ANGEBOTE;}
+function saveAngebote(v){lsSet('if_angebote',v);}
+function nextAngNr(){var a=getAngebote();var yr=new Date().getFullYear();var nums=a.filter(function(x){return x.nr&&x.nr.indexOf('ANG-'+yr)===0;}).map(function(x){return parseInt(x.nr.split('-')[2])||0;});return 'ANG-'+yr+'-'+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(3,'0');}
+
+var DEMO_RAHMEN = [
+  {id:'RA-001',nr:'RA-2025-001',customer:'Acme GmbH',date:'01.01.2025',end:'31.12.2025',net:60000,verbraucht:32000,status:'aktiv',items:[{desc:'Webentwicklung',qty:200,unit:'h',price:120,total:24000},{desc:'Consulting',qty:100,unit:'h',price:180,total:18000},{desc:'Design',qty:1,unit:'Pauschal',price:18000,total:18000}],notes:'Jahresrahmenvertrag 2025'},
+  {id:'RA-002',nr:'RA-2025-002',customer:'TechStart AG',date:'01.02.2025',end:'31.01.2026',net:80000,verbraucht:15000,status:'aktiv',items:[{desc:'IT-Beratung',qty:200,unit:'h',price:250,total:50000},{desc:'Projektmanagement',qty:100,unit:'h',price:150,total:15000},{desc:'Entwicklung',qty:100,unit:'h',price:150,total:15000}],notes:''},
+];
+function getRahmen(){var d=lsGet('if_rahmen');return(d&&d.length)?d:DEMO_RAHMEN;}
+function saveRahmen(v){lsSet('if_rahmen',v);}
+
+var DEMO_AUFTRAEGE = [
+  {id:'AU-001',nr:'AU-2025-001',customer:'Acme GmbH',date:'05.01.2025',due:'30.04.2025',net:25210.08,vatAmt:4789.92,gross:30000,status:'in Bearbeitung',fortschritt:74,items:[{desc:'Website Relaunch gesamt',qty:1,unit:'Pauschal',price:25210.08,total:25210.08}],angNr:'',notes:'Aus Angebot ANG-2024-015'},
+  {id:'AU-002',nr:'AU-2025-002',customer:'TechStart AG',date:'15.02.2025',due:'30.06.2025',net:33613.45,vatAmt:6386.55,gross:40000,status:'in Bearbeitung',fortschritt:30,items:[{desc:'ERP Migration komplett',qty:1,unit:'Pauschal',price:33613.45,total:33613.45}],angNr:'',notes:''},
+  {id:'AU-003',nr:'AU-2025-003',customer:'FreshBrand GmbH',date:'01.11.2024',due:'15.01.2025',net:6722.69,vatAmt:1277.31,gross:8000,status:'abgeschlossen',fortschritt:100,items:[{desc:'CI Refresh',qty:1,unit:'Pauschal',price:6722.69,total:6722.69}],angNr:'',notes:''},
+];
+function getAuftraege(){var d=lsGet('if_auftraege');return(d&&d.length)?d:DEMO_AUFTRAEGE;}
+function saveAuftraege(v){lsSet('if_auftraege',v);}
+
+// ─── EINKAUF DATA STORES ──────────────────────────────────────
+var DEMO_BESTELLUNGEN = [
+  {id:'BE-001',nr:'BE-2025-001',lieferant:'Print & More GmbH',lieferantId:'L-001',date:'05.03.2025',due:'04.04.2025',net:2100,vatAmt:399,gross:2499,status:'bestellt',items:[{desc:'Drucksachen Flyer A4',qty:1000,unit:'Stück',price:1.50,total:1500},{desc:'Visitenkarten',qty:200,unit:'Stück',price:1.80,total:360},{desc:'Versand',qty:1,unit:'Pauschal',price:240,total:240}],notes:'Lieferung bis 04.04.'},
+  {id:'BE-002',nr:'BE-2025-002',lieferant:'Technik-Depot AG',lieferantId:'L-002',date:'10.03.2025',due:'24.03.2025',net:2100.84,vatAmt:399.16,gross:2500,status:'geliefert',items:[{desc:'MacBook Pro M3',qty:1,unit:'Stück',price:1999,total:1999},{desc:'USB-Hub',qty:1,unit:'Stück',price:49.99,total:49.99},{desc:'Kabel-Set',qty:1,unit:'Stück',price:51.85,total:51.85}],notes:''},
+  {id:'BE-003',nr:'BE-2025-003',lieferant:'Cloud-Provider GmbH',lieferantId:'L-003',date:'01.03.2025',due:'01.04.2025',net:356.30,vatAmt:67.70,gross:424,status:'offen',items:[{desc:'Cloud Hosting Premium',qty:1,unit:'Monat',price:312.44,total:312.44},{desc:'SSL Zertifikat',qty:1,unit:'Jahr',price:43.86,total:43.86}],notes:'Monatliche Abrechnung'},
+];
+function getBestellungen(){var d=lsGet('if_bestellungen');return(d&&d.length)?d:DEMO_BESTELLUNGEN;}
+function saveBestellungen(v){lsSet('if_bestellungen',v);}
+function nextBestNr(){var b=getBestellungen();var yr=new Date().getFullYear();var nums=b.filter(function(x){return x.nr&&x.nr.indexOf('BE-'+yr)===0;}).map(function(x){return parseInt(x.nr.split('-')[2])||0;});return 'BE-'+yr+'-'+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(3,'0');}
+
+var DEMO_EK_RECHNUNGEN = [
+  {id:'EKR-001',nr:'RE-2025-8821',lieferant:'Office Depot GmbH',date:'15.01.2025',due:'14.02.2025',net:420,vatAmt:79.80,gross:499.80,status:'bezahlt',cat:'Büromaterial',account:'6800',bestNr:''},
+  {id:'EKR-002',nr:'RE-2025-0199',lieferant:'Deutsche Telekom AG',date:'01.02.2025',due:'28.02.2025',net:89.08,vatAmt:16.92,gross:106,status:'bezahlt',cat:'Telefon & Internet',account:'4900',bestNr:''},
+  {id:'EKR-003',nr:'INV-2025-441',lieferant:'Technik-Depot AG',date:'10.03.2025',due:'24.03.2025',net:2100.84,vatAmt:399.16,gross:2500,status:'offen',cat:'Hardware',account:'0690',bestNr:'BE-2025-002'},
+  {id:'EKR-004',nr:'RE-2025-03',lieferant:'Cloud-Provider GmbH',date:'01.03.2025',due:'01.04.2025',net:356.30,vatAmt:67.70,gross:424,status:'offen',cat:'Software/Cloud',account:'4970',bestNr:'BE-2025-003'},
+];
+function getEkRechnungen(){var d=lsGet('if_ek_rech');return(d&&d.length)?d:DEMO_EK_RECHNUNGEN;}
+function saveEkRechnungen(v){lsSet('if_ek_rech',v);}
+
+// ─── ARTIKEL PREISE DATA STORES ───────────────────────────────
+var DEMO_VK_PREISE = [
+  {id:'VP-001',artikelId:'A-001',name:'Webentwicklung',kunde:'Standard',preis:120,ab:'01.01.2025',bis:'',rabatt:0,aktiv:true},
+  {id:'VP-002',artikelId:'A-001',name:'Webentwicklung',kunde:'Acme GmbH',preis:110,ab:'01.01.2025',bis:'',rabatt:8.33,aktiv:true},
+  {id:'VP-003',artikelId:'A-002',name:'Consulting',kunde:'Standard',preis:250,ab:'01.01.2025',bis:'',rabatt:0,aktiv:true},
+  {id:'VP-004',artikelId:'A-003',name:'Design Paket',kunde:'Standard',preis:3500,ab:'01.01.2025',bis:'',rabatt:0,aktiv:true},
+  {id:'VP-005',artikelId:'A-004',name:'SEO Optimierung',kunde:'Standard',preis:200,ab:'01.01.2025',bis:'',rabatt:0,aktiv:true},
+  {id:'VP-006',artikelId:'A-005',name:'Hosting Premium',kunde:'Standard',preis:89,ab:'01.01.2025',bis:'',rabatt:0,aktiv:true},
+];
+function getVkPreise(){var d=lsGet('if_vk_preise');return(d&&d.length)?d:DEMO_VK_PREISE;}
+function saveVkPreise(v){lsSet('if_vk_preise',v);}
+
+var DEMO_EK_PREISE = [
+  {id:'EP-001',artikelId:'A-001',name:'Webentwicklung',lieferant:'Freelancer Pool',einkauf:65,marge:45.83,ab:'01.01.2025',bis:'',aktiv:true},
+  {id:'EP-002',artikelId:'A-003',name:'Design Paket',lieferant:'Design Studio XY',einkauf:1800,marge:48.57,ab:'01.01.2025',bis:'',aktiv:true},
+  {id:'EP-003',artikelId:'A-005',name:'Hosting Premium',lieferant:'Cloud-Provider GmbH',einkauf:42,marge:52.81,ab:'01.01.2025',bis:'',aktiv:true},
+  {id:'EP-004',artikelId:'A-006',name:'Lizenz Enterprise',lieferant:'Software AG',einkauf:2200,marge:54.17,ab:'01.01.2025',bis:'',aktiv:true},
+];
+function getEkPreise(){var d=lsGet('if_ek_preise');return(d&&d.length)?d:DEMO_EK_PREISE;}
+function saveEkPreise(v){lsSet('if_ek_preise',v);}
+
+// ─── PROJEKT AUFTRÄGE DATA STORES ─────────────────────────────
+var DEMO_PROJ_AUFTRAEGE = [
+  {id:'PA-001',nr:'PA-2025-001',name:'Website Relaunch Acme GmbH',projektId:'P-001',auftragId:'AU-2025-001',budget:30000,abgerechnet:11900,offen:18100,start:'01.01.2025',end:'30.04.2025',status:'aktiv',members:['Max Mustermann','Anna Schmidt'],created:'01.01.2025'},
+  {id:'PA-002',nr:'PA-2025-002',name:'ERP Migration TechStart AG',projektId:'P-002',auftragId:'AU-2025-002',budget:40000,abgerechnet:5950,offen:34050,start:'15.02.2025',end:'30.06.2025',status:'aktiv',members:['Alexandra Weber'],created:'15.02.2025'},
+  {id:'PA-003',nr:'PA-2025-003',name:'CI Refresh FreshBrand',projektId:'P-003',auftragId:'AU-2025-003',budget:8000,abgerechnet:4165,offen:0,start:'01.11.2024',end:'15.01.2025',status:'abgeschlossen',members:['Anna Schmidt'],created:'01.11.2024'},
+];
+function getProjAuftraege(){var d=lsGet('if_proj_auftr');return(d&&d.length)?d:DEMO_PROJ_AUFTRAEGE;}
+function saveProjAuftraege(v){lsSet('if_proj_auftr',v);}
+
+var DEMO_BUCHUNGSBERICHTE = [
+  {id:'BB-001',nr:'BB-2025-001',projektId:'PA-001',name:'Website Relaunch Acme — März 2025',zeitraum:'01.03.2025–31.03.2025',stunden:47.5,betrag:5700,status:'erstellt',user:'Max Mustermann',created:'31.03.2025'},
+  {id:'BB-002',nr:'BB-2025-002',projektId:'PA-001',name:'Website Relaunch Acme — Feb 2025',zeitraum:'01.02.2025–28.02.2025',stunden:38,betrag:4560,status:'abgerechnet',user:'Max Mustermann',created:'28.02.2025'},
+  {id:'BB-003',nr:'BB-2025-003',projektId:'PA-002',name:'ERP Migration — März 2025',zeitraum:'01.03.2025–31.03.2025',stunden:24,betrag:3000,status:'erstellt',user:'Alexandra Weber',created:'31.03.2025'},
+];
+function getBuchungsberichte(){var d=lsGet('if_buchber');return(d&&d.length)?d:DEMO_BUCHUNGSBERICHTE;}
+function saveBuchungsberichte(v){lsSet('if_buchber',v);}
+
+// ═══════════════════════════════════════════════════════════════
+//  CRM RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function renderKontakte(){
+  var list=getKontakte();
+  var el=document.getElementById('kontak-list');
+  setT2('kontak-count',list.length);
+  setT2('kontak-aktiv',list.filter(function(c){return c.status==='aktiv';}).length);
+  if(!el)return;
+  el.innerHTML=list.map(function(c,i){
+    var colors=['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444'];
+    var ini=(c.name||'?').split(' ').map(function(n){return n[0]||'';}).join('').slice(0,2).toUpperCase();
+    return crm_icard(ini,colors[i%colors.length],c.name,c.firma+' · '+c.position,
+      [badge('tg',c.status),badge('tk',c.email),badge('tb',c.phone)],
+      '<button class="btn bg bsm" onclick="editKontakt(\''+c.id+'\')">✏️</button>'+
+      '<button class="btn bd bsm" onclick="delGeneric(\'if_kontakte\',\''+c.id+'\',renderKontakte)">✕</button>');
+  }).join('')||emptyState('👤','Keine Kontakte');
+}
+
+function renderInteressenten(){
+  var list=getInteressenten();
+  var el=document.getElementById('inter-list');
+  var total=list.reduce(function(s,i){return s+i.umsatz;},0);
+  setT2('inter-count',list.length);
+  setT2('inter-potential',fmtEur(total));
+  if(!el)return;
+  var phaseColor={neu:'tk',qualifiziert:'tb',in_Verhandlung:'tg'};
+  el.innerHTML=list.map(function(c){
+    var sc={hoch:'tg',mittel:'ta',niedrig:'tr'}[c.potential]||'tk';
+    return crm_icard('🎯','var(--s2)',c.firma,c.name+' · '+c.quelle,
+      [badge('tk',c.status),badge(sc,c.potential+' Potenzial'),badge('ta',fmtEur(c.umsatz))],
+      '<button class="btn bg bsm" onclick="editInteressent(\''+c.id+'\')">✏️</button>'+
+      '<button class="btn bs bsm" onclick="interessentToChance(\''+c.id+'\')">→ Chance</button>'+
+      '<button class="btn bd bsm" onclick="delGeneric(\'if_interessenten\',\''+c.id+'\',renderInteressenten)">✕</button>');
+  }).join('')||emptyState('🎯','Keine Interessenten');
+}
+
+function renderCrmKunden(){
+  var list=getKunden();
+  var el=document.getElementById('crm-kunden-list');
+  setT2('crm-kunden-count',list.filter(function(k){return k.active;}).length);
+  setT2('crm-kunden-umsatz',fmtEur(list.reduce(function(s,k){return s+(k.revenue||0);},0)));
+  if(!el)return;
+  var colors=['#f59e0b','#3b82f6','#10b981','#a78bfa','#ef4444','#06b6d4'];
+  el.innerHTML=list.map(function(k,i){
+    return crm_icard(k.company[0].toUpperCase(),colors[i%colors.length],k.company,k.name+' · '+k.email,
+      [badge(k.active?'tg':'tr',k.active?'Aktiv':'Inaktiv'),badge('tk',k.nr),badge('ta',fmtEur(k.revenue))],
+      '<button class="btn bg bsm" onclick="editKunde(\''+k.id+'\')">✏️</button>');
+  }).join('')||emptyState('🏢','Keine Kunden');
+}
+
+function renderLieferanten(){
+  var list=getLieferanten();
+  var el=document.getElementById('lief-list');
+  setT2('lief-count',list.length);
+  setT2('lief-umsatz',fmtEur(list.reduce(function(s,l){return s+(l.umsatz||0);},0)));
+  if(!el)return;
+  el.innerHTML=list.map(function(l,i){
+    var colors=['#a78bfa','#3b82f6','#10b981','#f59e0b'];
+    var ini=(l.firma||'?')[0].toUpperCase();
+    return crm_icard(ini,colors[i%colors.length],l.firma,l.name+' · '+l.email,
+      [badge('tg',l.status),badge('tk',l.nr),badge('ta',fmtEur(l.umsatz))],
+      '<button class="btn bg bsm" onclick="editLieferant(\''+l.id+'\')">✏️</button>'+
+      '<button class="btn bd bsm" onclick="delGeneric(\'if_lieferanten\',\''+l.id+'\',renderLieferanten)">✕</button>');
+  }).join('')||emptyState('🏭','Keine Lieferanten');
+}
+
+function renderEreignisse(){
+  var list=getEreignisse();
+  var el=document.getElementById('ereignis-list');
+  var heute=list.filter(function(e){return e.datum===today();}).length;
+  setT2('ereignis-count',list.length);
+  setT2('ereignis-heute',heute+' heute');
+  if(!el)return;
+  var typeIcon={Anruf:'📞',Email:'📧','E-Mail':'📧',Meeting:'👥',Termin:'📅',Aufgabe:'✅'};
+  var statusC={erledigt:'tg',geplant:'tb',überfällig:'tr'};
+  el.innerHTML=list.map(function(e){
+    return '<div class="er-card">'+
+      '<div class="er-icon">'+(typeIcon[e.type]||'📌')+'</div>'+
+      '<div class="er-body">'+
+        '<div class="er-title">'+e.betreff+'</div>'+
+        '<div class="er-meta">'+e.datum+' '+e.zeit+' · '+e.kontakt+' ('+e.firma+') · '+e.user+'</div>'+
+        (e.notiz?'<div class="er-note">'+e.notiz+'</div>':'')+
+      '</div>'+
+      '<div class="er-right">'+
+        badge(statusC[e.status]||'tk',e.status)+
+        '<div style="display:flex;gap:4px;margin-top:6px">'+
+          '<button class="btn bg bsm" onclick="editEreignis(\''+e.id+'\')">✏️</button>'+
+          '<button class="btn bd bsm" onclick="delGeneric(\'if_ereignisse\',\''+e.id+'\',renderEreignisse)">✕</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('')||emptyState('📅','Keine Ereignisse');
+}
+
+function renderChancen(){
+  var list=getChancen();
+  var el=document.getElementById('chance-list');
+  var total=list.reduce(function(s,c){return s+c.wert*(c.wahrscheinlichkeit/100);},0);
+  setT2('chance-count',list.length);
+  setT2('chance-gewichtet',fmtEur(total));
+  setT2('chance-volume',fmtEur(list.reduce(function(s,c){return s+c.wert;},0)));
+  if(!el)return;
+  var phaseCols={Qualifizierung:'tk',Angebot:'ta',Verhandlung:'tb',Abschluss:'tg',Verloren:'tr'};
+  el.innerHTML=list.map(function(c){
+    var pct=c.wahrscheinlichkeit;
+    var pCol=pct>=70?'var(--gn)':pct>=40?'var(--am)':'var(--rd)';
+    return '<div class="chance-card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">'+
+        '<div><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700">'+c.name+'</div>'+
+        '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+c.firma+' · '+c.kontakt+'</div></div>'+
+        badge(phaseCols[c.phase]||'tk',c.phase)+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px">'+
+        '<span style="font-size:20px;font-weight:700;font-family:Syne,sans-serif;color:var(--am)">'+fmtEur(c.wert)+'</span>'+
+        '<div style="text-align:right"><div style="font-size:11px;color:var(--t3)">Wahrscheinlichkeit</div>'+
+          '<div style="font-size:18px;font-weight:700;color:'+pCol+'">'+pct+'%</div></div>'+
+      '</div>'+
+      '<div class="pbar"><div class="pfill" style="width:'+pct+'%;background:'+pCol+'"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">'+
+        '<span style="font-size:10px;color:var(--t3)">Erwartet: '+c.erwartet+' · '+c.quelle+'</span>'+
+        '<div style="display:flex;gap:5px">'+
+          '<button class="btn bg bsm" onclick="editChance(\''+c.id+'\')">✏️</button>'+
+          '<button class="btn bp bsm" onclick="chanceToAngebot(\''+c.id+'\')">→ Angebot</button>'+
+          '<button class="btn bd bsm" onclick="delGeneric(\'if_chancen\',\''+c.id+'\',renderChancen)">✕</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('')||emptyState('💡','Keine Chancen');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  VERKAUF RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function renderAngebote(){
+  var list=getAngebote();
+  var el=document.getElementById('ang-tbody');
+  setT2('ang-count',list.length);
+  setT2('ang-vol',fmtEur(list.reduce(function(s,a){return s+a.gross;},0)));
+  setT2('ang-offen',list.filter(function(a){return a.status==='offen'||a.status==='versendet';}).length+' aktiv');
+  if(!el)return;
+  var sc={offen:'ta',versendet:'tb',angenommen:'tg',abgelehnt:'tr',abgelaufen:'tk'};
+  el.innerHTML=list.map(function(a){
+    return '<tr>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+a.nr+'</td>'+
+      '<td style="font-weight:500">'+a.customer+'</td>'+
+      '<td>'+a.date+'</td>'+
+      '<td>'+a.valid+'</td>'+
+      '<td style="text-align:right;font-weight:600">'+fmtEur(a.gross)+'</td>'+
+      '<td>'+badge(sc[a.status]||'tk',a.status)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="viewAngebot(\''+a.id+'\')" title="Detail">👁</button>'+
+        '<button class="btn bg bsm" onclick="editAngebot(\''+a.id+'\')">✏️</button>'+
+        (a.status==='angenommen'?'<button class="btn bs bsm" onclick="angebotToAuftrag(\''+a.id+'\')">→ Auftrag</button>':'')+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_angebote\',\''+a.id+'\',renderAngebote)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">Keine Angebote</td></tr>';
+}
+
+function renderRahmen(){
+  var list=getRahmen();
+  var el=document.getElementById('rahmen-list');
+  setT2('rahmen-count',list.length);
+  setT2('rahmen-vol',fmtEur(list.reduce(function(s,r){return s+r.net;},0)));
+  if(!el)return;
+  el.innerHTML=list.map(function(r){
+    var pct=Math.round((r.verbraucht/r.net)*100);
+    var pCol=pct>85?'var(--rd)':pct>60?'var(--am)':'var(--gn)';
+    return '<div class="ra-card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">'+
+        '<div><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600">'+r.nr+' · '+r.customer+'</div>'+
+          '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+r.date+' – '+r.end+'</div></div>'+
+        badge('tg',r.status)+'</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">'+
+        '<span>Abruf: '+fmtEur(r.verbraucht)+' / '+fmtEur(r.net)+'</span>'+
+        '<span style="color:'+pCol+';font-weight:600">'+pct+'%</span></div>'+
+      '<div class="pbar"><div class="pfill" style="width:'+pct+'%;background:'+pCol+'"></div></div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:8px">'+r.notes+'</div>'+
+      '<div style="display:flex;gap:5px;margin-top:10px">'+
+        '<button class="btn bg bsm" onclick="editRahmen(\''+r.id+'\')">✏️ Bearbeiten</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_rahmen\',\''+r.id+'\',renderRahmen)">✕</button>'+
+      '</div></div>';
+  }).join('')||emptyState('📋','Keine Rahmenaufträge');
+}
+
+function renderAuftraege(){
+  var list=getAuftraege();
+  var el=document.getElementById('auftr-tbody');
+  setT2('auftr-count',list.length);
+  setT2('auftr-vol',fmtEur(list.reduce(function(s,a){return s+a.gross;},0)));
+  setT2('auftr-aktiv',list.filter(function(a){return a.status==='in Bearbeitung';}).length+' aktiv');
+  if(!el)return;
+  var sc={'in Bearbeitung':'tb',abgeschlossen:'tg',storniert:'tr',offen:'ta'};
+  el.innerHTML=list.map(function(a){
+    return '<tr>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+a.nr+'</td>'+
+      '<td style="font-weight:500">'+a.customer+'</td>'+
+      '<td>'+a.date+'</td>'+
+      '<td>'+a.due+'</td>'+
+      '<td style="text-align:right;font-weight:600">'+fmtEur(a.gross)+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:6px">'+
+        '<div class="pbar" style="width:60px"><div class="pfill" style="width:'+a.fortschritt+'%"></div></div>'+
+        '<span style="font-size:10px;color:var(--t3)">'+a.fortschritt+'%</span></div></td>'+
+      '<td>'+badge(sc[a.status]||'tk',a.status)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="editAuftrag(\''+a.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_auftraege\',\''+a.id+'\',renderAuftraege)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)">Keine Aufträge</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EINKAUF RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function renderBestellungen(){
+  var list=getBestellungen();
+  var el=document.getElementById('best-tbody');
+  setT2('best-count',list.length);
+  setT2('best-vol',fmtEur(list.reduce(function(s,b){return s+b.gross;},0)));
+  setT2('best-offen',list.filter(function(b){return b.status==='offen'||b.status==='bestellt';}).length+' laufend');
+  if(!el)return;
+  var sc={offen:'ta',bestellt:'tb',geliefert:'tg',storniert:'tr'};
+  el.innerHTML=list.map(function(b){
+    return '<tr>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+b.nr+'</td>'+
+      '<td style="font-weight:500">'+b.lieferant+'</td>'+
+      '<td>'+b.date+'</td>'+
+      '<td>'+b.due+'</td>'+
+      '<td style="text-align:right;font-weight:600">'+fmtEur(b.gross)+'</td>'+
+      '<td>'+badge(sc[b.status]||'tk',b.status)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="viewBestellung(\''+b.id+'\')">👁</button>'+
+        '<button class="btn bg bsm" onclick="editBestellung(\''+b.id+'\')">✏️</button>'+
+        (b.status==='bestellt'?'<button class="btn bs bsm" onclick="markBestGeliefert(\''+b.id+'\')">Geliefert</button>':'')+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_bestellungen\',\''+b.id+'\',renderBestellungen)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">Keine Bestellungen</td></tr>';
+}
+
+function renderEkRechnungen(){
+  var list=getEkRechnungen();
+  var el=document.getElementById('ekr-tbody');
+  var offen=list.filter(function(r){return r.status==='offen';});
+  setT2('ekr-count',list.length);
+  setT2('ekr-offen',fmtEur(offen.reduce(function(s,r){return s+r.gross;},0)));
+  setT2('ekr-bezahlt',fmtEur(list.filter(function(r){return r.status==='bezahlt';}).reduce(function(s,r){return s+r.gross;},0)));
+  if(!el)return;
+  var sc={offen:'ta',bezahlt:'tg',überfällig:'tr'};
+  el.innerHTML=list.map(function(r){
+    return '<tr>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+r.nr+'</td>'+
+      '<td style="font-weight:500">'+r.lieferant+'</td>'+
+      '<td>'+r.date+'</td>'+
+      '<td>'+r.due+'</td>'+
+      '<td>'+r.cat+'</td>'+
+      '<td style="text-align:right;font-weight:600">'+fmtEur(r.gross)+'</td>'+
+      '<td>'+badge(sc[r.status]||'tk',r.status)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        (r.status==='offen'?'<button class="btn bs bsm" onclick="payEkRech(\''+r.id+'\')">✓ Zahlen</button>':'')+
+        '<button class="btn bg bsm" onclick="editEkRech(\''+r.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_ek_rech\',\''+r.id+'\',renderEkRechnungen)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)">Keine Eingangsrechnungen</td></tr>';
+}
+
+function renderOPListe(){
+  var list=getEkRechnungen().filter(function(r){return r.status==='offen';});
+  var el=document.getElementById('op-list');
+  setT2('op-count',list.length+' offene Posten');
+  setT2('op-total',fmtEur(list.reduce(function(s,r){return s+r.gross;},0)));
+  if(!el)return;
+  el.innerHTML=list.length?list.map(function(r){
+    return '<div class="op-row">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:12px;font-weight:600;color:#e2e8f0">'+r.lieferant+'</div>'+
+        '<div style="font-size:10px;color:var(--t3);margin-top:2px">'+r.nr+' · Fällig: '+r.due+'</div>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div style="font-size:14px;font-weight:700;color:var(--rd);font-family:\'IBM Plex Mono\',monospace">'+fmtEur(r.gross)+'</div>'+
+        '<button class="btn bs bsm" style="margin-top:4px" onclick="payEkRech(\''+r.id+'\')">✓ Zahlen</button>'+
+      '</div>'+
+    '</div>';
+  }).join(''):emptyState('✅','Keine offenen Posten');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ARTIKEL PREISE RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function renderVkPreise(){
+  var list=getVkPreise();
+  var el=document.getElementById('vkp-tbody');
+  setT2('vkp-count',list.length+' Preiszeilen');
+  if(!el)return;
+  el.innerHTML=list.map(function(p){
+    return '<tr>'+
+      '<td style="font-weight:500">'+p.name+'</td>'+
+      '<td>'+p.kunde+'</td>'+
+      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:600;color:var(--gn)">'+fmtEur(p.preis)+'</td>'+
+      '<td>'+p.ab+'</td>'+
+      '<td>'+(p.bis||'—')+'</td>'+
+      '<td>'+(p.rabatt?badge('ta',p.rabatt+'% Rabatt'):'—')+'</td>'+
+      '<td>'+badge(p.aktiv?'tg':'tr',p.aktiv?'Aktiv':'Inaktiv')+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="editVkPreis(\''+p.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_vk_preise\',\''+p.id+'\',renderVkPreise)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)">Keine Verkaufspreise</td></tr>';
+}
+
+function renderEkPreise(){
+  var list=getEkPreise();
+  var el=document.getElementById('ekp-tbody');
+  setT2('ekp-count',list.length+' Preiszeilen');
+  if(!el)return;
+  el.innerHTML=list.map(function(p){
+    return '<tr>'+
+      '<td style="font-weight:500">'+p.name+'</td>'+
+      '<td>'+p.lieferant+'</td>'+
+      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:600;color:var(--rd)">'+fmtEur(p.einkauf)+'</td>'+
+      '<td style="text-align:right;font-weight:600;color:var(--gn)">'+p.marge.toFixed(1)+'%</td>'+
+      '<td>'+p.ab+'</td>'+
+      '<td>'+(p.bis||'—')+'</td>'+
+      '<td>'+badge(p.aktiv?'tg':'tr',p.aktiv?'Aktiv':'Inaktiv')+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn bg bsm" onclick="editEkPreis(\''+p.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_ek_preise\',\''+p.id+'\',renderEkPreise)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)">Keine Einkaufspreise</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PROJEKT AUFTRÄGE RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function renderProjAuftraege(){
+  var list=getProjAuftraege();
+  var el=document.getElementById('pa-list');
+  setT2('pa-budget',fmtEur(list.reduce(function(s,p){return s+p.budget;},0)));
+  setT2('pa-abgerechnet',fmtEur(list.reduce(function(s,p){return s+p.abgerechnet;},0)));
+  setT2('pa-offen',fmtEur(list.reduce(function(s,p){return s+p.offen;},0)));
+  if(!el)return;
+  var sc={aktiv:'tg',abgeschlossen:'tb',pausiert:'ta',geplant:'tk'};
+  el.innerHTML=list.map(function(p){
+    var pct=p.budget?Math.round(((p.budget-p.offen)/p.budget)*100):100;
+    return '<div class="pa-card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">'+
+        '<div>'+
+          '<div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600">'+p.name+'</div>'+
+          '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+p.nr+' · '+p.start+' – '+p.end+'</div>'+
+        '</div>'+
+        badge(sc[p.status]||'tk',p.status)+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'+
+        kpi_mini('Budget',fmtEur(p.budget),'#e2e8f0')+
+        kpi_mini('Abgerechnet',fmtEur(p.abgerechnet),'var(--gn)')+
+        kpi_mini('Offen',fmtEur(p.offen),'var(--am)')+
+      '</div>'+
+      '<div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">'+
+        '<div style="display:flex;gap:4px;flex-wrap:wrap">'+
+          p.members.map(function(m){return badge('tk',m);}).join('')+
+        '</div>'+
+        '<div style="display:flex;gap:5px">'+
+          '<button class="btn bg bsm" onclick="editProjAuftrag(\''+p.id+'\')">✏️</button>'+
+          '<button class="btn bc bsm" onclick="newBuchungsbericht(\''+p.id+'\')">+ Buchungsbericht</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('')||emptyState('📋','Keine Projektaufträge');
+}
+
+function renderBuchungsberichte(){
+  var list=getBuchungsberichte();
+  var el=document.getElementById('bb-tbody');
+  setT2('bb-stunden',list.reduce(function(s,b){return s+b.stunden;},0).toFixed(1)+' h');
+  setT2('bb-betrag',fmtEur(list.reduce(function(s,b){return s+b.betrag;},0)));
+  if(!el)return;
+  var sc={erstellt:'ta',abgerechnet:'tg',storniert:'tr'};
+  el.innerHTML=list.map(function(b){
+    return '<tr>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+b.nr+'</td>'+
+      '<td style="font-weight:500">'+b.name+'</td>'+
+      '<td>'+b.zeitraum+'</td>'+
+      '<td style="text-align:right">'+b.stunden+' h</td>'+
+      '<td style="text-align:right;font-weight:600">'+fmtEur(b.betrag)+'</td>'+
+      '<td>'+b.user+'</td>'+
+      '<td>'+badge(sc[b.status]||'tk',b.status)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        (b.status==='erstellt'?'<button class="btn bs bsm" onclick="abrechneBuchung(\''+b.id+'\')">Abrechnen</button>':'')+
+        '<button class="btn bg bsm" onclick="editBuchung(\''+b.id+'\')">✏️</button>'+
+        '<button class="btn bd bsm" onclick="delGeneric(\'if_buchber\',\''+b.id+'\',renderBuchungsberichte)">✕</button>'+
+      '</div></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)">Keine Buchungsberichte</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function setT2(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function badge(cls,txt){return '<span class="badge '+cls+'">'+txt+'</span>';}
+function emptyState(icon,txt){return '<div class="na"><div class="na-i">'+icon+'</div><div class="na-t">'+txt+'</div></div>';}
+function kpi_mini(label,val,color){
+  return '<div style="background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:8px 10px">'+
+    '<div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">'+label+'</div>'+
+    '<div style="font-size:13px;font-weight:700;color:'+color+'">'+val+'</div>'+
+  '</div>';
+}
+
+function crm_icard(initial,color,title,sub,badges_arr,actions){
+  return '<div class="icard">'+
+    '<div class="iav" style="background:'+color+';color:#fff;font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+initial+'</div>'+
+    '<div class="iinfo">'+
+      '<div class="inm">'+title+'</div>'+
+      '<div class="isub">'+sub+'</div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+badges_arr.join('')+'</div>'+
+    '</div>'+
+    '<div class="iact">'+actions+'</div>'+
+  '</div>';
+}
+
+function delGeneric(lsKey,id,renderFn){
+  if(!confirm('Eintrag wirklich löschen?'))return;
+  var list=lsGet(lsKey)||[];
+  var filtered=list.filter(function(x){return x.id!==id;});
+  if(!filtered.length){
+    // Use demo data length as fallback check
+    filtered=[];
+  }
+  lsSet(lsKey,filtered);
+  renderFn();
+  toast('Eintrag gelöscht','s');
+}
+
+// ─── CRM EDIT DIALOGS ─────────────────────────────────────────
+
+function editKontakt(id){
+  var c=id?getKontakte().find(function(x){return x.id===id;}):null;
+  document.getElementById('kont-id').value=id||'';
+  document.getElementById('kont-firma').value=c?c.firma:'';
+  document.getElementById('kont-name').value=c?c.name:'';
+  document.getElementById('kont-email').value=c?c.email:'';
+  document.getElementById('kont-phone').value=c?c.phone:'';
+  document.getElementById('kont-position').value=c?c.position:'';
+  document.getElementById('kont-status').value=c?c.status:'aktiv';
+  document.getElementById('m-kont-title').textContent=id?'Kontakt bearbeiten':'Neuer Kontakt';
+  openModal('m-kontakt');
+}
+function saveKontaktForm(){
+  var id=document.getElementById('kont-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var k={id:id||newId('C'),nr:id?((getKontakte().find(function(x){return x.id===id;})||{nr:newId('C')}).nr):newId('C'),type:'kontakt',firma:gv('kont-firma'),name:gv('kont-name'),email:gv('kont-email'),phone:gv('kont-phone'),position:gv('kont-position'),status:gv('kont-status'),tags:[],created:today(),notes:''};
+  if(!k.name){toast('Bitte Name eingeben','e');return;}
+  var list=getKontakte();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=k;else list.push(k);}else list.push(k);
+  saveKontakte(list);closeModal('m-kontakt');renderKontakte();toast('✓ Kontakt gespeichert','s');
+}
+
+function editInteressent(id){
+  var c=id?getInteressenten().find(function(x){return x.id===id;}):null;
+  document.getElementById('int-id').value=id||'';
+  document.getElementById('int-firma').value=c?c.firma:'';
+  document.getElementById('int-name').value=c?c.name:'';
+  document.getElementById('int-email').value=c?c.email:'';
+  document.getElementById('int-quelle').value=c?c.quelle:'';
+  document.getElementById('int-status').value=c?c.status:'neu';
+  document.getElementById('int-potential').value=c?c.potential:'mittel';
+  document.getElementById('int-umsatz').value=c?c.umsatz:0;
+  document.getElementById('m-int-title').textContent=id?'Interessent bearbeiten':'Neuer Interessent';
+  openModal('m-interessent');
+}
+function saveInteressentForm(){
+  var id=document.getElementById('int-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var k={id:id||newId('I'),nr:id?((getInteressenten().find(function(x){return x.id===id;})||{nr:newId('I')}).nr):newId('I'),firma:gv('int-firma'),name:gv('int-name'),email:gv('int-email'),quelle:gv('int-quelle'),status:gv('int-status'),potential:gv('int-potential'),umsatz:parseFloat(gv('int-umsatz'))||0,created:today(),notes:''};
+  if(!k.firma){toast('Bitte Firma eingeben','e');return;}
+  var list=getInteressenten();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=k;else list.push(k);}else list.push(k);
+  saveInteressenten(list);closeModal('m-interessent');renderInteressenten();toast('✓ Interessent gespeichert','s');
+}
+
+function interessentToChance(id){
+  var i=getInteressenten().find(function(x){return x.id===id;});
+  if(!i)return;
+  var list=getChancen();
+  list.push({id:newId('CH'),nr:newId('CH'),name:i.firma+' – Neue Chance',firma:i.firma,kontakt:i.name,wert:i.umsatz||0,phase:'Qualifizierung',wahrscheinlichkeit:20,erwartet:addDays(today(),30),quelle:i.quelle||'Interessent',notes:'',created:today()});
+  saveChancen(list);showView('v-crm-chancen');toast('✓ Zu Chancen hinzugefügt','s');
+}
+
+function editLieferant(id){
+  var c=id?getLieferanten().find(function(x){return x.id===id;}):null;
+  document.getElementById('lf-id').value=id||'';
+  document.getElementById('lf-firma').value=c?c.firma:'';
+  document.getElementById('lf-name').value=c?c.name:'';
+  document.getElementById('lf-email').value=c?c.email:'';
+  document.getElementById('lf-phone').value=c?c.phone:'';
+  document.getElementById('lf-iban').value=c?c.iban:'';
+  document.getElementById('lf-uid').value=c?c.uid:'';
+  document.getElementById('lf-zahlungsziel').value=c?c.zahlungsziel:14;
+  document.getElementById('m-lf-title').textContent=id?'Lieferant bearbeiten':'Neuer Lieferant';
+  openModal('m-lieferant');
+}
+function saveLieferantForm(){
+  var id=document.getElementById('lf-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var k={id:id||newId('L'),nr:id?((getLieferanten().find(function(x){return x.id===id;})||{nr:newId('L')}).nr):newId('L'),firma:gv('lf-firma'),name:gv('lf-name'),email:gv('lf-email'),phone:gv('lf-phone'),iban:gv('lf-iban'),uid:gv('lf-uid'),zahlungsziel:parseInt(gv('lf-zahlungsziel'))||14,rabatt:0,umsatz:0,status:'aktiv',created:today()};
+  if(!k.firma){toast('Bitte Firma eingeben','e');return;}
+  var list=getLieferanten();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=k;else list.push(k);}else list.push(k);
+  saveLieferanten(list);closeModal('m-lieferant');renderLieferanten();toast('✓ Lieferant gespeichert','s');
+}
+
+function editEreignis(id){
+  var c=id?getEreignisse().find(function(x){return x.id===id;}):null;
+  document.getElementById('er-id').value=id||'';
+  document.getElementById('er-type').value=c?c.type:'Anruf';
+  document.getElementById('er-datum').value=c?c.datum:today();
+  document.getElementById('er-zeit').value=c?c.zeit:'09:00';
+  document.getElementById('er-kontakt').value=c?c.kontakt:'';
+  document.getElementById('er-firma').value=c?c.firma:'';
+  document.getElementById('er-betreff').value=c?c.betreff:'';
+  document.getElementById('er-notiz').value=c?c.notiz:'';
+  document.getElementById('er-status').value=c?c.status:'geplant';
+  document.getElementById('m-er-title').textContent=id?'Ereignis bearbeiten':'Neues Ereignis';
+  openModal('m-ereignis');
+}
+function saveEreignisForm(){
+  var id=document.getElementById('er-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var k={id:id||newId('E'),type:gv('er-type'),datum:gv('er-datum'),zeit:gv('er-zeit'),kontakt:gv('er-kontakt'),firma:gv('er-firma'),betreff:gv('er-betreff'),notiz:gv('er-notiz'),status:gv('er-status'),user:CU?CU.name:'Unbekannt'};
+  if(!k.betreff){toast('Bitte Betreff eingeben','e');return;}
+  var list=getEreignisse();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=k;else list.push(k);}else list.push(k);
+  saveEreignisse(list);closeModal('m-ereignis');renderEreignisse();toast('✓ Ereignis gespeichert','s');
+}
+
+function editChance(id){
+  var c=id?getChancen().find(function(x){return x.id===id;}):null;
+  document.getElementById('ch-id').value=id||'';
+  document.getElementById('ch-name').value=c?c.name:'';
+  document.getElementById('ch-firma').value=c?c.firma:'';
+  document.getElementById('ch-kontakt').value=c?c.kontakt:'';
+  document.getElementById('ch-wert').value=c?c.wert:0;
+  document.getElementById('ch-phase').value=c?c.phase:'Qualifizierung';
+  document.getElementById('ch-wkeit').value=c?c.wahrscheinlichkeit:20;
+  document.getElementById('ch-erwartet').value=c?c.erwartet:'';
+  document.getElementById('ch-quelle').value=c?c.quelle:'';
+  document.getElementById('m-ch-title').textContent=id?'Chance bearbeiten':'Neue Chance';
+  openModal('m-chance');
+}
+function saveChanceForm(){
+  var id=document.getElementById('ch-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var k={id:id||newId('CH'),nr:id?((getChancen().find(function(x){return x.id===id;})||{nr:newId('CH')}).nr):newId('CH'),name:gv('ch-name'),firma:gv('ch-firma'),kontakt:gv('ch-kontakt'),wert:parseFloat(gv('ch-wert'))||0,phase:gv('ch-phase'),wahrscheinlichkeit:parseInt(gv('ch-wkeit'))||20,erwartet:gv('ch-erwartet'),quelle:gv('ch-quelle'),notes:'',created:today()};
+  if(!k.name){toast('Bitte Name eingeben','e');return;}
+  var list=getChancen();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=k;else list.push(k);}else list.push(k);
+  saveChancen(list);closeModal('m-chance');renderChancen();toast('✓ Chance gespeichert','s');
+}
+
+function chanceToAngebot(id){
+  var c=getChancen().find(function(x){return x.id===id;});
+  if(!c)return;
+  var kunden=getKunden();
+  var k=kunden.find(function(x){return x.company===c.firma;});
+  var list=getAngebote();
+  list.push({id:newId('ANG'),nr:nextAngNr(),customer:c.firma,customerId:k?k.id:'',date:today(),valid:addDays(today(),30),net:c.wert/1.19,vatAmt:c.wert-(c.wert/1.19),gross:c.wert,status:'offen',items:[{desc:c.name,qty:1,unit:'Pauschal',price:c.wert/1.19,total:c.wert/1.19}],notes:'Aus Chance: '+c.name,created:today()});
+  saveAngebote(list);showView('v-vk-angebote');toast('✓ Angebot erstellt','s');
+}
+
+// ─── VERKAUF EDIT DIALOGS ─────────────────────────────────────
+function viewAngebot(id){
+  var a=getAngebote().find(function(x){return x.id===id;});
+  if(!a)return;
+  document.getElementById('ang-view-nr').textContent=a.nr;
+  document.getElementById('ang-view-customer').textContent=a.customer;
+  document.getElementById('ang-view-date').textContent=a.date;
+  document.getElementById('ang-view-valid').textContent=a.valid;
+  document.getElementById('ang-view-status').innerHTML=badge({offen:'ta',versendet:'tb',angenommen:'tg',abgelehnt:'tr'}[a.status]||'tk',a.status);
+  document.getElementById('ang-view-items').innerHTML=(a.items||[]).map(function(it){
+    return '<tr><td>'+it.desc+'</td><td style="text-align:right">'+it.qty+' '+it.unit+'</td><td style="text-align:right">'+fmtEur(it.price)+'</td><td style="text-align:right;font-weight:600">'+fmtEur(it.total)+'</td></tr>';
+  }).join('');
+  document.getElementById('ang-view-net').textContent=fmtEur(a.net);
+  document.getElementById('ang-view-vat').textContent=fmtEur(a.vatAmt);
+  document.getElementById('ang-view-gross').textContent=fmtEur(a.gross);
+  openModal('m-ang-view');
+}
+
+function editAngebot(id){
+  var a=id?getAngebote().find(function(x){return x.id===id;}):null;
+  var kunden=getKunden().filter(function(k){return k.active;});
+  document.getElementById('ang-id').value=id||'';
+  document.getElementById('ang-nr').value=a?a.nr:nextAngNr();
+  document.getElementById('ang-date').value=a?a.date:today();
+  document.getElementById('ang-valid').value=a?a.valid:addDays(today(),30);
+  document.getElementById('ang-status').value=a?a.status:'offen';
+  document.getElementById('ang-notes').value=a?a.notes:'';
+  var custSel=document.getElementById('ang-customer');
+  custSel.innerHTML=kunden.map(function(k){return '<option value="'+k.id+'"'+(a&&a.customerId===k.id?' selected':'')+'>'+k.company+'</option>';}).join('');
+  document.getElementById('ang-items-container').innerHTML='';
+  (a?a.items:[{desc:'',qty:1,unit:'h',price:0,total:0}]).forEach(function(it,i){addAngItemRow(it,i);});
+  calcAngTotals();
+  openModal('m-ang-edit');
+}
+function addAngItemRow(it,idx){
+  if(idx===undefined){
+    var rows=document.querySelectorAll('.ang-item-row');
+    idx=rows.length;
+    it={desc:'',qty:1,unit:'h',price:0,total:0};
+  }
+  var container=document.getElementById('ang-items-container');
+  var art=getArtikel();
+  var artOpts=art.map(function(a){return '<option value="'+a.id+'" data-price="'+a.price+'" data-unit="'+a.unit+'"'+(it.desc===a.name?' selected':'')+'>'+a.name+'</option>';}).join('');
+  var div=document.createElement('div');
+  div.className='ang-item-row';
+  div.dataset.idx=idx;
+  div.style.cssText='display:grid;grid-template-columns:2fr 60px 70px 90px 90px 30px;gap:6px;align-items:center;margin-bottom:6px';
+  div.innerHTML='<select class="inp" style="font-size:11px" onchange="onAngArtSelect(this,'+idx+')"><option value="">Freitext</option>'+artOpts+'</select>'+
+    '<input class="inp" style="font-size:11px" type="number" value="'+it.qty+'" step="0.01" onchange="calcAngRow(this,'+idx+')" data-field="qty">'+
+    '<input class="inp" style="font-size:11px" value="'+(it.unit||'h')+'" data-field="unit">'+
+    '<input class="inp" style="font-size:11px" type="number" value="'+it.price+'" step="0.01" onchange="calcAngRow(this,'+idx+')" data-field="price">'+
+    '<input class="inp" style="font-size:11px;font-weight:600;color:var(--am)" type="number" value="'+it.total+'" readonly data-field="total">'+
+    '<button class="btn bd bsm" onclick="this.closest(\'.ang-item-row\').remove();calcAngTotals()" style="padding:4px">✕</button>';
+  container.appendChild(div);
+}
+function onAngArtSelect(sel,idx){
+  var row=document.querySelector('.ang-item-row[data-idx="'+idx+'"]');
+  if(!row)return;
+  var opt=sel.options[sel.selectedIndex];
+  var price=parseFloat(opt.getAttribute('data-price'))||0;
+  var unit=opt.getAttribute('data-unit')||'h';
+  if(price>0){row.querySelector('[data-field="price"]').value=price;row.querySelector('[data-field="unit"]').value=unit;calcAngRow(row.querySelector('[data-field="qty"]'),idx);}
+}
+function calcAngRow(el,idx){
+  var row=document.querySelector('.ang-item-row[data-idx="'+idx+'"]');
+  if(!row)return;
+  var qty=parseFloat(row.querySelector('[data-field="qty"]').value)||0;
+  var price=parseFloat(row.querySelector('[data-field="price"]').value)||0;
+  row.querySelector('[data-field="total"]').value=(qty*price).toFixed(2);
+  calcAngTotals();
+}
+function calcAngTotals(){
+  var rows=document.querySelectorAll('.ang-item-row');
+  var net=0;
+  rows.forEach(function(row){net+=parseFloat(row.querySelector('[data-field="total"]').value)||0;});
+  var vat=net*0.19; var gross=net+vat;
+  setT2('ang-edit-net',fmtEur(net));setT2('ang-edit-vat',fmtEur(vat));setT2('ang-edit-gross',fmtEur(gross));
+}
+function saveAngebotForm(){
+  var id=document.getElementById('ang-id').value;
+  var custId=document.getElementById('ang-customer').value;
+  var kunden=getKunden();
+  var k=kunden.find(function(x){return x.id===custId;})||{company:'',id:''};
+  var rows=document.querySelectorAll('.ang-item-row');
+  var items=[];
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var desc=sel?sel.options[sel.selectedIndex].text:'';
+    var qty=parseFloat(row.querySelector('[data-field="qty"]').value)||0;
+    var unit=row.querySelector('[data-field="unit"]').value||'h';
+    var price=parseFloat(row.querySelector('[data-field="price"]').value)||0;
+    var total=parseFloat(row.querySelector('[data-field="total"]').value)||0;
+    if(price||qty)items.push({desc:desc==='Freitext'?'Leistung':desc,qty:qty,unit:unit,price:price,total:total});
+  });
+  var net=items.reduce(function(s,i){return s+i.total;},0);
+  var vatAmt=net*0.19; var gross=net+vatAmt;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var a={id:id||newId('ANG'),nr:gv('ang-nr'),customer:k.company,customerId:custId,date:gv('ang-date'),valid:gv('ang-valid'),items:items,net:net,vatAmt:vatAmt,gross:gross,status:gv('ang-status'),notes:gv('ang-notes'),created:id?undefined:today()};
+  var list=getAngebote();
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=a;else list.push(a);}else list.push(a);
+  saveAngebote(list);closeModal('m-ang-edit');renderAngebote();toast('✓ Angebot gespeichert','s');
+}
+function angebotToAuftrag(id){
+  var a=getAngebote().find(function(x){return x.id===id;});
+  if(!a)return;
+  var list=getAuftraege();
+  var yr=new Date().getFullYear();
+  var nums=list.map(function(x){return parseInt((x.nr||'').split('-')[2])||0;});
+  var nr='AU-'+yr+'-'+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(3,'0');
+  list.push({id:newId('AU'),nr:nr,customer:a.customer,customerId:a.customerId,date:today(),due:addDays(today(),90),net:a.net,vatAmt:a.vatAmt,gross:a.gross,status:'in Bearbeitung',fortschritt:0,items:a.items,angNr:a.nr,notes:'Aus Angebot '+a.nr});
+  saveAuftraege(list);
+  var angs=getAngebote();var aidx=angs.findIndex(function(x){return x.id===id;});if(aidx>=0){angs[aidx].status='angenommen';saveAngebote(angs);}
+  showView('v-vk-auftraege');toast('✓ Auftrag erstellt','s');
+}
+
+function editAuftrag(id){
+  var a=id?getAuftraege().find(function(x){return x.id===id;}):null;
+  document.getElementById('au-id').value=id||'';
+  document.getElementById('au-nr').value=a?a.nr:('AU-'+new Date().getFullYear()+'-001');
+  document.getElementById('au-customer').value=a?a.customer:'';
+  document.getElementById('au-date').value=a?a.date:today();
+  document.getElementById('au-status').value=a?a.status:'in Bearbeitung';
+  document.getElementById('au-fortschritt').value=a?a.fortschritt:0;
+  openModal('m-auftrag');
+}
+function saveAuftragForm(){
+  var id=document.getElementById('au-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var list=getAuftraege();
+  var existing=id?list.find(function(x){return x.id===id;}):null;
+  var a=Object.assign({},existing||{},{id:id||newId('AU'),nr:gv('au-nr'),customer:gv('au-customer'),date:gv('au-date'),status:gv('au-status'),fortschritt:parseInt(gv('au-fortschritt'))||0});
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=a;else list.push(a);}else list.push(a);
+  saveAuftraege(list);closeModal('m-auftrag');renderAuftraege();toast('✓ Auftrag gespeichert','s');
+}
+
+function editRahmen(id){
+  var r=id?getRahmen().find(function(x){return x.id===id;}):null;
+  document.getElementById('ra-id').value=id||'';
+  document.getElementById('ra-nr').value=r?r.nr:'RA-'+new Date().getFullYear()+'-001';
+  document.getElementById('ra-customer').value=r?r.customer:'';
+  document.getElementById('ra-start').value=r?r.date:today();
+  document.getElementById('ra-end').value=r?r.end:'';
+  document.getElementById('ra-budget').value=r?r.net:0;
+  document.getElementById('ra-notes').value=r?r.notes:'';
+  openModal('m-rahmen');
+}
+function saveRahmenForm(){
+  var id=document.getElementById('ra-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var list=getRahmen();
+  var existing=id?list.find(function(x){return x.id===id;}):null;
+  var r=Object.assign({},existing||{verbraucht:0,items:[],status:'aktiv'},{id:id||newId('RA'),nr:gv('ra-nr'),customer:gv('ra-customer'),date:gv('ra-start'),end:gv('ra-end'),net:parseFloat(gv('ra-budget'))||0,notes:gv('ra-notes')});
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=r;else list.push(r);}else list.push(r);
+  saveRahmen(list);closeModal('m-rahmen');renderRahmen();toast('✓ Rahmenauftrag gespeichert','s');
+}
+
+// ─── EINKAUF EDIT DIALOGS ─────────────────────────────────────
+function viewBestellung(id){
+  var b=getBestellungen().find(function(x){return x.id===id;});
+  if(!b)return;
+  document.getElementById('best-view-nr').textContent=b.nr;
+  document.getElementById('best-view-lief').textContent=b.lieferant;
+  document.getElementById('best-view-date').textContent=b.date+' → '+b.due;
+  document.getElementById('best-view-status').innerHTML=badge({offen:'ta',bestellt:'tb',geliefert:'tg'}[b.status]||'tk',b.status);
+  document.getElementById('best-view-items').innerHTML=(b.items||[]).map(function(it){
+    return '<tr><td>'+it.desc+'</td><td style="text-align:right">'+it.qty+' '+it.unit+'</td><td style="text-align:right">'+fmtEur(it.price)+'</td><td style="text-align:right;font-weight:600">'+fmtEur(it.total)+'</td></tr>';
+  }).join('');
+  document.getElementById('best-view-net').textContent=fmtEur(b.net);
+  document.getElementById('best-view-vat').textContent=fmtEur(b.vatAmt);
+  document.getElementById('best-view-gross').textContent=fmtEur(b.gross);
+  openModal('m-best-view');
+}
+function editBestellung(id){
+  var b=id?getBestellungen().find(function(x){return x.id===id;}):null;
+  var liefs=getLieferanten();
+  document.getElementById('be-id').value=id||'';
+  document.getElementById('be-nr').value=b?b.nr:nextBestNr();
+  document.getElementById('be-date').value=b?b.date:today();
+  document.getElementById('be-status').value=b?b.status:'offen';
+  document.getElementById('be-notes').value=b?b.notes:'';
+  var liefSel=document.getElementById('be-lieferant');
+  liefSel.innerHTML=liefs.map(function(l){return '<option value="'+l.id+'"'+(b&&b.lieferantId===l.id?' selected':'')+'>'+l.firma+'</option>';}).join('');
+  openModal('m-bestellung');
+}
+function saveBestellungForm(){
+  var id=document.getElementById('be-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var liefId=gv('be-lieferant');
+  var lief=getLieferanten().find(function(x){return x.id===liefId;})||{firma:'',id:''};
+  var list=getBestellungen();
+  var existing=id?list.find(function(x){return x.id===id;}):null;
+  var b=Object.assign({},existing||{items:[],net:0,vatAmt:0,gross:0},{id:id||newId('BE'),nr:gv('be-nr'),lieferant:lief.firma,lieferantId:liefId,date:gv('be-date'),due:addDays(gv('be-date'),30),status:gv('be-status'),notes:gv('be-notes')});
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=b;else list.push(b);}else list.push(b);
+  saveBestellungen(list);closeModal('m-bestellung');renderBestellungen();toast('✓ Bestellung gespeichert','s');
+}
+function markBestGeliefert(id){
+  var list=getBestellungen();var b=list.find(function(x){return x.id===id;});
+  if(b){b.status='geliefert';}saveBestellungen(list);renderBestellungen();toast('✓ Als geliefert markiert','s');
+}
+
+function editEkRech(id){
+  var r=id?getEkRechnungen().find(function(x){return x.id===id;}):null;
+  document.getElementById('ekr-id').value=id||'';
+  document.getElementById('ekr-nr-f').value=r?r.nr:'';
+  document.getElementById('ekr-lief-f').value=r?r.lieferant:'';
+  document.getElementById('ekr-date-f').value=r?r.date:today();
+  document.getElementById('ekr-due-f').value=r?r.due:addDays(today(),30);
+  document.getElementById('ekr-gross-f').value=r?r.gross:0;
+  document.getElementById('ekr-cat-f').value=r?r.cat:'Sonstiges';
+  openModal('m-ekr');
+}
+function saveEkRechForm(){
+  var id=document.getElementById('ekr-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var gross=parseFloat(gv('ekr-gross-f'))||0;
+  var net=gross/1.19; var vat=gross-net;
+  var list=getEkRechnungen();
+  var r={id:id||newId('EKR'),nr:gv('ekr-nr-f'),lieferant:gv('ekr-lief-f'),date:gv('ekr-date-f'),due:gv('ekr-due-f'),net:Math.round(net*100)/100,vatAmt:Math.round(vat*100)/100,gross:gross,status:'offen',cat:gv('ekr-cat-f'),account:'',bestNr:''};
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=r;else list.push(r);}else list.push(r);
+  saveEkRechnungen(list);closeModal('m-ekr');renderEkRechnungen();renderOPListe();toast('✓ Eingangsrechnung gespeichert','s');
+}
+function payEkRech(id){
+  var list=getEkRechnungen();var r=list.find(function(x){return x.id===id;});
+  if(r){r.status='bezahlt';}saveEkRechnungen(list);renderEkRechnungen();renderOPListe();toast('✓ Als bezahlt markiert','s');
+}
+
+// ─── ARTIKEL PREISE EDIT DIALOGS ─────────────────────────────
+function editVkPreis(id){
+  var p=id?getVkPreise().find(function(x){return x.id===id;}):null;
+  var art=getArtikel();
+  document.getElementById('vkp-id').value=id||'';
+  var artSel=document.getElementById('vkp-artikel');
+  artSel.innerHTML=art.map(function(a){return '<option value="'+a.id+'"'+(p&&p.artikelId===a.id?' selected':'')+'>'+a.name+'</option>';}).join('');
+  document.getElementById('vkp-kunde').value=p?p.kunde:'Standard';
+  document.getElementById('vkp-preis').value=p?p.preis:0;
+  document.getElementById('vkp-ab').value=p?p.ab:today();
+  document.getElementById('vkp-bis').value=p?p.bis:'';
+  document.getElementById('vkp-rabatt').value=p?p.rabatt:0;
+  openModal('m-vkp');
+}
+function saveVkPreisForm(){
+  var id=document.getElementById('vkp-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var artId=gv('vkp-artikel');
+  var art=getArtikel().find(function(x){return x.id===artId;})||{name:''};
+  var list=getVkPreise();
+  var p={id:id||newId('VP'),artikelId:artId,name:art.name,kunde:gv('vkp-kunde'),preis:parseFloat(gv('vkp-preis'))||0,ab:gv('vkp-ab'),bis:gv('vkp-bis'),rabatt:parseFloat(gv('vkp-rabatt'))||0,aktiv:true};
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=p;else list.push(p);}else list.push(p);
+  saveVkPreise(list);closeModal('m-vkp');renderVkPreise();toast('✓ Verkaufspreis gespeichert','s');
+}
+
+function editEkPreis(id){
+  var p=id?getEkPreise().find(function(x){return x.id===id;}):null;
+  var art=getArtikel();
+  document.getElementById('ekp-id').value=id||'';
+  var artSel=document.getElementById('ekp-artikel');
+  artSel.innerHTML=art.map(function(a){return '<option value="'+a.id+'"'+(p&&p.artikelId===a.id?' selected':'')+'>'+a.name+'</option>';}).join('');
+  document.getElementById('ekp-lief').value=p?p.lieferant:'';
+  document.getElementById('ekp-preis').value=p?p.einkauf:0;
+  document.getElementById('ekp-ab').value=p?p.ab:today();
+  document.getElementById('ekp-bis').value=p?p.bis:'';
+  openModal('m-ekp');
+}
+function saveEkPreisForm(){
+  var id=document.getElementById('ekp-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var artId=gv('ekp-artikel');
+  var art=getArtikel().find(function(x){return x.id===artId;})||{name:''};
+  var einkauf=parseFloat(gv('ekp-preis'))||0;
+  var vkPreis=getVkPreise().find(function(x){return x.artikelId===artId&&x.kunde==='Standard';});
+  var marge=vkPreis&&vkPreis.preis?((vkPreis.preis-einkauf)/vkPreis.preis)*100:0;
+  var list=getEkPreise();
+  var p={id:id||newId('EP'),artikelId:artId,name:art.name,lieferant:gv('ekp-lief'),einkauf:einkauf,marge:Math.round(marge*100)/100,ab:gv('ekp-ab'),bis:gv('ekp-bis'),aktiv:true};
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=p;else list.push(p);}else list.push(p);
+  saveEkPreise(list);closeModal('m-ekp');renderEkPreise();toast('✓ Einkaufspreis gespeichert','s');
+}
+
+// ─── PROJEKT AUFTRÄGE EDIT DIALOGS ───────────────────────────
+function editProjAuftrag(id){
+  var p=id?getProjAuftraege().find(function(x){return x.id===id;}):null;
+  document.getElementById('pa-id').value=id||'';
+  document.getElementById('pa-name').value=p?p.name:'';
+  document.getElementById('paf-budget').value=p?p.budget:0;
+  document.getElementById('pa-start').value=p?p.start:today();
+  document.getElementById('pa-end').value=p?p.end:'';
+  document.getElementById('pa-status').value=p?p.status:'geplant';
+  openModal('m-proj-auftrag');
+}
+function saveProjAuftragForm(){
+  var id=document.getElementById('pa-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var list=getProjAuftraege();
+  var existing=id?list.find(function(x){return x.id===id;}):null;
+  var p=Object.assign({},existing||{abgerechnet:0,offen:0,members:[],projektId:'',auftragId:'',created:today()},{id:id||newId('PA'),nr:id?existing.nr:('PA-'+new Date().getFullYear()+'-'+String(list.length+1).padStart(3,'0')),name:gv('pa-name'),budget:parseFloat(gv('paf-budget'))||0,offen:parseFloat(gv('paf-budget'))||0,start:gv('pa-start'),end:gv('pa-end'),status:gv('pa-status')});
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=p;else list.push(p);}else list.push(p);
+  saveProjAuftraege(list);closeModal('m-proj-auftrag');renderProjAuftraege();toast('✓ Projektauftrag gespeichert','s');
+}
+
+function newBuchungsbericht(projId){
+  document.getElementById('bb-id').value='';
+  document.getElementById('bb-proj').value=projId;
+  document.getElementById('bb-name').value='';
+  document.getElementById('bb-von').value=today();
+  document.getElementById('bb-bis-f').value=today();
+  document.getElementById('bb-stunden').value=0;
+  document.getElementById('bb-betrag').value=0;
+  openModal('m-buchung');
+}
+function editBuchung(id){
+  var b=id?getBuchungsberichte().find(function(x){return x.id===id;}):null;
+  document.getElementById('bb-id').value=id||'';
+  document.getElementById('bb-proj').value=b?b.projektId:'';
+  document.getElementById('bb-name').value=b?b.name:'';
+  document.getElementById('bbf-stunden').value=b?b.stunden:0;
+  document.getElementById('bbf-betrag').value=b?b.betrag:0;
+  openModal('m-buchung');
+}
+function saveBuchungForm(){
+  var id=document.getElementById('bb-id').value;
+  function gv(x){var e=document.getElementById(x);return e?e.value:'';}
+  var von=gv('bb-von');var bis=gv('bb-bis-f');
+  var list=getBuchungsberichte();
+  var yr=new Date().getFullYear();
+  var nums=list.map(function(x){return parseInt((x.nr||'').split('-')[2])||0;});
+  var nr='BB-'+yr+'-'+String((nums.length?Math.max.apply(null,nums):0)+1).padStart(3,'0');
+  var b={id:id||newId('BB'),nr:id?(list.find(function(x){return x.id===id;})||{nr:nr}).nr:nr,projektId:gv('bb-proj'),name:gv('bb-name'),zeitraum:von+(bis&&bis!==von?'–'+bis:''),stunden:parseFloat(gv('bbf-stunden'))||0,betrag:parseFloat(gv('bbf-betrag'))||0,status:'erstellt',user:CU?CU.name:'Unbekannt',created:today()};
+  if(!b.name){toast('Bitte Bezeichnung eingeben','e');return;}
+  if(id){var idx=list.findIndex(function(x){return x.id===id;});if(idx>=0)list[idx]=b;else list.push(b);}else list.push(b);
+  saveBuchungsberichte(list);closeModal('m-buchung');renderBuchungsberichte();toast('✓ Buchungsbericht gespeichert','s');
+}
+function abrechneBuchung(id){
+  var list=getBuchungsberichte();var b=list.find(function(x){return x.id===id;});
+  if(b){b.status='abgerechnet';}saveBuchungsberichte(list);renderBuchungsberichte();toast('✓ Abgerechnet','s');
+}
+
 </script>
+
+<!-- CRM MODALS -->
+<div class="modal-ov" id="m-kontakt">
+  <div class="modal">
+    <div class="mtitle" id="m-kont-title">Neuer Kontakt</div>
+    <input type="hidden" id="kont-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Firma</label><input class="inp" id="kont-firma" placeholder="Firma GmbH"></div>
+      <div class="fi"><label class="fl">Name *</label><input class="inp" id="kont-name" placeholder="Max Müller"></div>
+      <div class="fi"><label class="fl">E-Mail</label><input class="inp" id="kont-email" type="email"></div>
+      <div class="fi"><label class="fl">Telefon</label><input class="inp" id="kont-phone" placeholder="+49 89 ..."></div>
+      <div class="fi"><label class="fl">Position</label><input class="inp" id="kont-position" placeholder="Geschäftsführer"></div>
+      <div class="fi"><label class="fl">Status</label><select class="inp" id="kont-status"><option value="aktiv">Aktiv</option><option value="inaktiv">Inaktiv</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn bp" style="flex:1" onclick="saveKontaktForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-kontakt')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-interessent">
+  <div class="modal">
+    <div class="mtitle" id="m-int-title">Neuer Interessent</div>
+    <input type="hidden" id="int-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Firma *</label><input class="inp" id="int-firma" placeholder="Neue GmbH"></div>
+      <div class="fi"><label class="fl">Ansprechpartner</label><input class="inp" id="int-name"></div>
+      <div class="fi"><label class="fl">E-Mail</label><input class="inp" id="int-email" type="email"></div>
+      <div class="fi"><label class="fl">Quelle</label><select class="inp" id="int-quelle"><option>Messe</option><option>Website</option><option>Empfehlung</option><option>Kaltakquise</option><option>Social Media</option><option>Sonstiges</option></select></div>
+      <div class="fi"><label class="fl">Status</label><select class="inp" id="int-status"><option value="neu">Neu</option><option value="qualifiziert">Qualifiziert</option><option value="in Verhandlung">In Verhandlung</option><option value="verloren">Verloren</option></select></div>
+      <div class="fi"><label class="fl">Potenzial</label><select class="inp" id="int-potential"><option value="hoch">Hoch</option><option value="mittel">Mittel</option><option value="niedrig">Niedrig</option></select></div>
+    </div>
+    <div class="fi"><label class="fl">Erwarteter Umsatz €</label><input class="inp" id="int-umsatz" type="number" value="0"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn bp" style="flex:1" onclick="saveInteressentForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-interessent')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-lieferant">
+  <div class="modal">
+    <div class="mtitle" id="m-lf-title">Neuer Lieferant</div>
+    <input type="hidden" id="lf-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Firma *</label><input class="inp" id="lf-firma" placeholder="Lieferant GmbH"></div>
+      <div class="fi"><label class="fl">Ansprechpartner</label><input class="inp" id="lf-name"></div>
+      <div class="fi"><label class="fl">E-Mail</label><input class="inp" id="lf-email" type="email"></div>
+      <div class="fi"><label class="fl">Telefon</label><input class="inp" id="lf-phone"></div>
+      <div class="fi"><label class="fl">Zahlungsziel (Tage)</label><input class="inp" id="lf-zahlungsziel" type="number" value="14"></div>
+      <div class="fi"><label class="fl">USt-IdNr.</label><input class="inp" id="lf-uid" placeholder="DE123456789"></div>
+    </div>
+    <div class="fi"><label class="fl">IBAN</label><input class="inp" id="lf-iban" placeholder="DE12 3456 ..."></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn bp" style="flex:1" onclick="saveLieferantForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-lieferant')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-ereignis">
+  <div class="modal">
+    <div class="mtitle" id="m-er-title">Neues Ereignis</div>
+    <input type="hidden" id="er-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Typ</label><select class="inp" id="er-type"><option>Anruf</option><option>E-Mail</option><option>Meeting</option><option>Termin</option><option>Aufgabe</option></select></div>
+      <div class="fi"><label class="fl">Status</label><select class="inp" id="er-status"><option value="geplant">Geplant</option><option value="erledigt">Erledigt</option><option value="überfällig">Überfällig</option></select></div>
+      <div class="fi"><label class="fl">Datum</label><input class="inp" id="er-datum" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Uhrzeit</label><input class="inp" id="er-zeit" placeholder="09:00"></div>
+      <div class="fi"><label class="fl">Kontakt</label><input class="inp" id="er-kontakt" placeholder="Max Müller"></div>
+      <div class="fi"><label class="fl">Firma</label><input class="inp" id="er-firma" placeholder="Acme GmbH"></div>
+    </div>
+    <div class="fi"><label class="fl">Betreff *</label><input class="inp" id="er-betreff" placeholder="Betreff des Ereignisses"></div>
+    <div class="fi"><label class="fl">Notiz</label><textarea class="inp" id="er-notiz" rows="3"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn bp" style="flex:1" onclick="saveEreignisForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-ereignis')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-chance">
+  <div class="modal">
+    <div class="mtitle" id="m-ch-title">Neue Chance</div>
+    <input type="hidden" id="ch-id">
+    <div class="fi"><label class="fl">Bezeichnung *</label><input class="inp" id="ch-name" placeholder="Projekt XY bei Kunde ABC"></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Firma</label><input class="inp" id="ch-firma" placeholder="Firma GmbH"></div>
+      <div class="fi"><label class="fl">Kontakt</label><input class="inp" id="ch-kontakt" placeholder="Max Müller"></div>
+      <div class="fi"><label class="fl">Wert (Brutto €)</label><input class="inp" id="ch-wert" type="number" value="0"></div>
+      <div class="fi"><label class="fl">Wahrscheinlichkeit %</label><input class="inp" id="ch-wkeit" type="number" min="0" max="100" value="20"></div>
+      <div class="fi"><label class="fl">Phase</label><select class="inp" id="ch-phase"><option>Qualifizierung</option><option>Angebot</option><option>Verhandlung</option><option>Abschluss</option><option>Verloren</option></select></div>
+      <div class="fi"><label class="fl">Quelle</label><select class="inp" id="ch-quelle"><option>Messe</option><option>Website</option><option>Empfehlung</option><option>Kaltakquise</option><option>Interessent</option></select></div>
+    </div>
+    <div class="fi"><label class="fl">Erwarteter Abschluss</label><input class="inp" id="ch-erwartet" placeholder="TT.MM.JJJJ"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn bp" style="flex:1" onclick="saveChanceForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-chance')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERKAUF MODALS -->
+<div class="modal-ov" id="m-ang-view">
+  <div class="modal" style="max-width:620px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div><div class="mtitle" style="margin-bottom:4px" id="ang-view-nr">Angebot</div><div id="ang-view-status"></div></div>
+      <button class="btn bd bsm" onclick="closeModal('m-ang-view')">✕ Schließen</button>
+    </div>
+    <div class="g2" style="gap:8px;margin-bottom:14px">
+      <div class="card" style="padding:10px 12px"><div class="kpi-l">Kunde</div><div style="font-weight:500" id="ang-view-customer"></div></div>
+      <div class="card" style="padding:10px 12px"><div class="kpi-l">Datum / Gültig bis</div><div id="ang-view-date"></div><div style="font-size:11px;color:var(--t3)" id="ang-view-valid"></div></div>
+    </div>
+    <div class="card" style="padding:0;margin-bottom:14px"><table><thead><tr><th>Position</th><th style="text-align:right">Menge</th><th style="text-align:right">Preis</th><th style="text-align:right">Gesamt</th></tr></thead><tbody id="ang-view-items"></tbody></table></div>
+    <div class="card" style="padding:10px 14px">
+      <div class="ir"><span>Netto</span><span id="ang-view-net"></span></div>
+      <div class="ir"><span>MwSt. 19%</span><span id="ang-view-vat"></span></div>
+      <div class="ir"><span style="font-weight:600">Brutto</span><span style="font-weight:700;color:var(--am)" id="ang-view-gross"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-ang-edit">
+  <div class="modal" style="max-width:680px">
+    <div class="mtitle">Angebot erstellen / bearbeiten</div>
+    <input type="hidden" id="ang-id">
+    <div class="g2" style="gap:10px;margin-bottom:12px">
+      <div class="fi" style="margin:0"><label class="fl">Angebotsnummer</label><input class="inp" id="ang-nr"></div>
+      <div class="fi" style="margin:0"><label class="fl">Datum</label><input class="inp" id="ang-date" placeholder="TT.MM.JJJJ"></div>
+    </div>
+    <div class="g2" style="gap:10px;margin-bottom:12px">
+      <div class="fi" style="margin:0"><label class="fl">Kunde</label><select class="inp" id="ang-customer"></select></div>
+      <div class="fi" style="margin:0"><label class="fl">Gültig bis</label><input class="inp" id="ang-valid" placeholder="TT.MM.JJJJ"></div>
+    </div>
+    <div class="fi"><label class="fl">Status</label><select class="inp" id="ang-status" style="width:200px"><option value="offen">Offen</option><option value="versendet">Versendet</option><option value="angenommen">Angenommen</option><option value="abgelehnt">Abgelehnt</option></select></div>
+    <div style="font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Positionen</div>
+    <div id="ang-items-container"></div>
+    <button class="btn bg bsm" style="margin-bottom:12px" onclick="addAngItemRow()">+ Position</button>
+    <div class="card" style="padding:10px 14px;background:var(--s2);margin-bottom:12px">
+      <div class="ir"><span>Netto</span><span id="ang-edit-net">€ 0,00</span></div>
+      <div class="ir"><span>MwSt. 19%</span><span id="ang-edit-vat">€ 0,00</span></div>
+      <div class="ir"><span style="font-weight:600">Brutto</span><span style="font-weight:700;color:var(--am)" id="ang-edit-gross">€ 0,00</span></div>
+    </div>
+    <div class="fi"><label class="fl">Notizen</label><textarea class="inp" id="ang-notes" rows="2"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn bp" style="flex:1" onclick="saveAngebotForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-ang-edit')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-rahmen">
+  <div class="modal">
+    <div class="mtitle">Rahmenauftrag</div>
+    <input type="hidden" id="ra-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Nummer</label><input class="inp" id="ra-nr"></div>
+      <div class="fi"><label class="fl">Kunde</label><input class="inp" id="ra-customer"></div>
+      <div class="fi"><label class="fl">Von</label><input class="inp" id="ra-start" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Bis</label><input class="inp" id="ra-end" placeholder="TT.MM.JJJJ"></div>
+    </div>
+    <div class="fi"><label class="fl">Rahmenbudget €</label><input class="inp" id="ra-budget" type="number" value="0"></div>
+    <div class="fi"><label class="fl">Notizen</label><textarea class="inp" id="ra-notes" rows="2"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveRahmenForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-rahmen')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-auftrag">
+  <div class="modal">
+    <div class="mtitle">Auftrag bearbeiten</div>
+    <input type="hidden" id="au-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Nummer</label><input class="inp" id="au-nr"></div>
+      <div class="fi"><label class="fl">Kunde</label><input class="inp" id="au-customer"></div>
+      <div class="fi"><label class="fl">Datum</label><input class="inp" id="au-date" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Status</label><select class="inp" id="au-status"><option value="in Bearbeitung">In Bearbeitung</option><option value="abgeschlossen">Abgeschlossen</option><option value="storniert">Storniert</option></select></div>
+    </div>
+    <div class="fi"><label class="fl">Fortschritt %</label><input class="inp" id="au-fortschritt" type="number" min="0" max="100" value="0"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveAuftragForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-auftrag')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- EINKAUF MODALS -->
+<div class="modal-ov" id="m-best-view">
+  <div class="modal" style="max-width:580px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div><div class="mtitle" style="margin-bottom:4px" id="best-view-nr">Bestellung</div><div id="best-view-status"></div></div>
+      <button class="btn bd bsm" onclick="closeModal('m-best-view')">✕ Schließen</button>
+    </div>
+    <div class="g2" style="gap:8px;margin-bottom:14px">
+      <div class="card" style="padding:10px 12px"><div class="kpi-l">Lieferant</div><div style="font-weight:500" id="best-view-lief"></div></div>
+      <div class="card" style="padding:10px 12px"><div class="kpi-l">Datum / Erwartet</div><div style="font-size:12px" id="best-view-date"></div></div>
+    </div>
+    <div class="card" style="padding:0;margin-bottom:14px"><table><thead><tr><th>Position</th><th style="text-align:right">Menge</th><th style="text-align:right">Preis</th><th style="text-align:right">Gesamt</th></tr></thead><tbody id="best-view-items"></tbody></table></div>
+    <div class="card" style="padding:10px 14px">
+      <div class="ir"><span>Netto</span><span id="best-view-net"></span></div>
+      <div class="ir"><span>MwSt. 19%</span><span id="best-view-vat"></span></div>
+      <div class="ir"><span style="font-weight:600">Brutto</span><span style="font-weight:700;color:var(--am)" id="best-view-gross"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-bestellung">
+  <div class="modal">
+    <div class="mtitle">Bestellung</div>
+    <input type="hidden" id="be-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Nummer</label><input class="inp" id="be-nr"></div>
+      <div class="fi"><label class="fl">Datum</label><input class="inp" id="be-date" placeholder="TT.MM.JJJJ"></div>
+    </div>
+    <div class="fi"><label class="fl">Lieferant</label><select class="inp" id="be-lieferant"></select></div>
+    <div class="fi"><label class="fl">Status</label><select class="inp" id="be-status"><option value="offen">Offen</option><option value="bestellt">Bestellt</option><option value="geliefert">Geliefert</option><option value="storniert">Storniert</option></select></div>
+    <div class="fi"><label class="fl">Notizen</label><textarea class="inp" id="be-notes" rows="2"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveBestellungForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-bestellung')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-ekr">
+  <div class="modal">
+    <div class="mtitle">Eingangsrechnung</div>
+    <input type="hidden" id="ekr-id">
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Rechnungsnr.</label><input class="inp" id="ekr-nr-f" placeholder="RE-2025-001"></div>
+      <div class="fi"><label class="fl">Lieferant *</label><input class="inp" id="ekr-lief-f" placeholder="Lieferant GmbH"></div>
+      <div class="fi"><label class="fl">Datum</label><input class="inp" id="ekr-date-f" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Fällig am</label><input class="inp" id="ekr-due-f" placeholder="TT.MM.JJJJ"></div>
+    </div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Brutto €</label><input class="inp" id="ekr-gross-f" type="number" value="0" step="0.01"></div>
+      <div class="fi"><label class="fl">Kategorie</label><select class="inp" id="ekr-cat-f"><option>Büromaterial</option><option>Hardware</option><option>Software/Cloud</option><option>Telefon &amp; Internet</option><option>Miete</option><option>Personal</option><option>Fahrtkosten</option><option>Beratung</option><option>Sonstiges</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveEkRechForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-ekr')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ARTIKEL PREISE MODALS -->
+<div class="modal-ov" id="m-vkp">
+  <div class="modal">
+    <div class="mtitle">Verkaufspreis</div>
+    <input type="hidden" id="vkp-id">
+    <div class="fi"><label class="fl">Artikel</label><select class="inp" id="vkp-artikel"></select></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Kunde / Gruppe</label><input class="inp" id="vkp-kunde" placeholder="Standard"></div>
+      <div class="fi"><label class="fl">Preis €</label><input class="inp" id="vkp-preis" type="number" value="0" step="0.01"></div>
+      <div class="fi"><label class="fl">Gültig ab</label><input class="inp" id="vkp-ab" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Gültig bis</label><input class="inp" id="vkp-bis" placeholder="—"></div>
+    </div>
+    <div class="fi"><label class="fl">Rabatt %</label><input class="inp" id="vkp-rabatt" type="number" value="0" step="0.01"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveVkPreisForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-vkp')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-ekp">
+  <div class="modal">
+    <div class="mtitle">Einkaufspreis</div>
+    <input type="hidden" id="ekp-id">
+    <div class="fi"><label class="fl">Artikel</label><select class="inp" id="ekp-artikel"></select></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Lieferant</label><input class="inp" id="ekp-lief" placeholder="Lieferant GmbH"></div>
+      <div class="fi"><label class="fl">Einkaufspreis €</label><input class="inp" id="ekp-preis" type="number" value="0" step="0.01"></div>
+      <div class="fi"><label class="fl">Gültig ab</label><input class="inp" id="ekp-ab" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Gültig bis</label><input class="inp" id="ekp-bis" placeholder="—"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveEkPreisForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-ekp')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJEKT AUFTRÄGE MODALS -->
+<div class="modal-ov" id="m-proj-auftrag">
+  <div class="modal">
+    <div class="mtitle">Projektauftrag</div>
+    <input type="hidden" id="pa-id">
+    <div class="fi"><label class="fl">Bezeichnung *</label><input class="inp" id="pa-name" placeholder="Projekt XY bei Kunde ABC"></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Budget €</label><input class="inp" id="paf-budget" type="number" value="0"></div>
+      <div class="fi"><label class="fl">Status</label><select class="inp" id="pa-status"><option value="geplant">Geplant</option><option value="aktiv">Aktiv</option><option value="pausiert">Pausiert</option><option value="abgeschlossen">Abgeschlossen</option></select></div>
+      <div class="fi"><label class="fl">Von</label><input class="inp" id="pa-start" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Bis</label><input class="inp" id="pa-end" placeholder="TT.MM.JJJJ"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveProjAuftragForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-proj-auftrag')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-buchung">
+  <div class="modal">
+    <div class="mtitle">Buchungsbericht</div>
+    <input type="hidden" id="bb-id">
+    <input type="hidden" id="bb-proj">
+    <div class="fi"><label class="fl">Bezeichnung *</label><input class="inp" id="bb-name" placeholder="Leistungen März 2025"></div>
+    <div class="g2" style="gap:10px">
+      <div class="fi"><label class="fl">Von</label><input class="inp" id="bb-von" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Bis</label><input class="inp" id="bb-bis-f" placeholder="TT.MM.JJJJ"></div>
+      <div class="fi"><label class="fl">Stunden</label><input class="inp" id="bbf-stunden" type="number" value="0" step="0.5"></div>
+      <div class="fi"><label class="fl">Betrag €</label><input class="inp" id="bbf-betrag" type="number" value="0" step="0.01"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn bp" style="flex:1" onclick="saveBuchungForm()">✓ Speichern</button>
+      <button class="btn bg" onclick="closeModal('m-buchung')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
