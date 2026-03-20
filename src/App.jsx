@@ -332,7 +332,7 @@ const icons = {
   ),
 }
 
-const Icon = ({ name }) => icons[name] || null
+const Icon = ({ name, size }) => icons[name] || null
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App
@@ -636,7 +636,7 @@ function AppInner() {
             title="Einstellungen"
             style={{ marginLeft:4 }}
           >
-            <Icon name="settings" size={16} />
+            <Icon name="settings" />
           </button>
         </div>
 
