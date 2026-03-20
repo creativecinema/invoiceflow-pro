@@ -1,33 +1,35 @@
-version: "3.9"
+version: '3.9'
 
 services:
-  invoiceflow:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  db:
+    image: postgres:16-alpine
+    container_name: invoiceflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       invoiceflow
+      POSTGRES_USER:     invoiceflow
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-invoiceflow}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invoiceflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
     container_name: invoiceflow
     restart: unless-stopped
     ports:
       - "80:3000"
-    volumes:
-      - ifp-data:/app/data
-      - ifp-uploads:/app/uploads
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - DATA_DIR=/app/data
-
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    restart: unless-stopped
-    ports:
-      - "9443:9443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data
+      DATABASE_URL: postgresql://invoiceflow:${DB_PASSWORD:-invoiceflow}@db:5432/invoiceflow
+      JWT_SECRET:   ${JWT_SECRET:-change-me-in-production}
+      PORT:         3000
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
-  ifp-data:
-  ifp-uploads:
-  portainer-data:
+  pg_data:
